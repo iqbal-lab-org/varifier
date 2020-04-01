@@ -1,0 +1,10 @@
+##fileformat=VCFv4.1
+##contig=<ID=ref,length=430>
+##INFO=<ID=QNAME,Number=1,Type=String,Description="Query name">
+##INFO=<ID=QSTART,Number=1,Type=Integer,Description="Query start">
+##INFO=<ID=QSTRAND,Number=1,Type=String,Description="Query strand">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref	40	.	A	C	60	.	QNAME=truth;QSTART=40;QSTRAND=+	GT	1/1
+ref	60	.	A	G	60	.	QNAME=truth;QSTART=60;QSTRAND=+	GT	1/1
+ref	80	.	T	C	60	.	QNAME=truth;QSTART=80;QSTRAND=+	GT	1/1

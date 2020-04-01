@@ -1,0 +1,6 @@
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref2	4	.	T	q	.	PASS	.	GT	1/1
+ref2	5	.	TTT	xyz	.	PASS	.	GT	1/1
+ref2	9	.	T	t	.	PASS	.	GT	1/1
+ref1	4	.	T	zz	.	PASS	.	GT	1/1
+ref2	2	.	GA	g	.	PASS	.	GT	1/1

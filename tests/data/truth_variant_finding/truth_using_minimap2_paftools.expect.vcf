@@ -1,0 +1,20 @@
+##fileformat=VCFv4.1
+##contig=<ID=ref,length=430>
+##INFO=<ID=QNAME,Number=1,Type=String,Description="Query name">
+##INFO=<ID=QSTART,Number=1,Type=Integer,Description="Query start">
+##INFO=<ID=QSTRAND,Number=1,Type=String,Description="Query strand">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref	40	.	A	G	60	.	QNAME=truth;QSTART=40;QSTRAND=+	GT	1/1
+ref	60	.	A	G	60	.	QNAME=truth;QSTART=60;QSTRAND=+	GT	1/1
+ref	80	.	T	C	60	.	QNAME=truth;QSTART=80;QSTRAND=+	GT	1/1
+ref	109	.	G	C	60	.	QNAME=truth;QSTART=109;QSTRAND=+	GT	1/1
+ref	110	.	C	T	60	.	QNAME=truth;QSTART=110;QSTRAND=+	GT	1/1
+ref	111	.	A	G	60	.	QNAME=truth;QSTART=111;QSTRAND=+	GT	1/1
+ref	140	.	GT	G	60	.	QNAME=truth;QSTART=141;QSTRAND=+	GT	1/1
+ref	160	.	A	AT	60	.	QNAME=truth;QSTART=160;QSTRAND=+	GT	1/1
+ref	250	.	G	C	60	.	QNAME=truth;QSTART=250;QSTRAND=+	GT	1/1
+ref	300	.	AT	A	60	.	QNAME=truth;QSTART=301;QSTRAND=+	GT	1/1
+ref	302	.	GC	G	60	.	QNAME=truth;QSTART=302;QSTRAND=+	GT	1/1
+ref	306	.	AT	A	60	.	QNAME=truth;QSTART=305;QSTRAND=+	GT	1/1
+ref	309	.	G	GAGA	60	.	QNAME=truth;QSTART=307;QSTRAND=+	GT	1/1

@@ -1,0 +1,9 @@
+#header line 1
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref	42	1	T	A	.	PASS	.	GT	1/1
+ref	43	2	T	A	.	FILTER_X	.	GT	1/1
+ref	44	3	T	A	.	PASS	.	FOO	BAR
+ref	45	4	.	A	.	PASS	.	GT	1/1
+ref	46	5	T	A	.	MISMAPPED_UNPLACEABLE	.	GT	1/1
+ref	47	6	T	A	.	PASS	.	GT	0/1
+ref	48	7	T	A	.	PASS	.	GT	0/0

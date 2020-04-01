@@ -1,0 +1,5 @@
+#header line 1
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref1	15	1	T	A	.	PASS	.	GT	1/1
+ref1	29	2	T	A	.	PASS	.	GT	1/1
+ref1	43	9	T	A	.	PASS	.	GT	1/1
