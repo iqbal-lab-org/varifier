@@ -26,7 +26,7 @@ To verify calls in a VCF file, you will need:
 
 Run:
 ```
-varifier truth.fasta ref.fasta test.vcf out_dir
+varifier vcf_eval truth.fasta ref.fasta test.vcf out_dir
 ```
 
 This makes a new directory called `out_dir`. The results are in the file
