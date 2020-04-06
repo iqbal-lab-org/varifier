@@ -7,15 +7,15 @@ from varifier import probe_mapping, recall, utils, vcf_stats
 
 def _add_overall_precision_and_recall_to_summary_stats(summary_stats):
     # The recall came from the recall VCF. It contains all variants that
-    # should be found. TP means it was found, FP means it wasn't found
+    # should be found. TP means it was found, FN means it wasn't found
     # (because these tags were added by probe mapping, which uses TP,FP).
-    # "FP" in this file is really a false-negative. Which means the
-    # calculations for precision and recall are using the keys.
+    # So we either have FP or FN for the "wrong" variants from probe mapping.
     for prec_or_recall in "Precision", "Recall":
+        fp_key = "FP" if prec_or_recall == "Precision" else "FN"
         for all_or_filt in "ALL", "FILT":
             d = summary_stats[prec_or_recall][all_or_filt]
             tp = d["TP"]["Count"]
-            fp = d["FP"]["Count"]
+            fp = d[fp_key]["Count"]
             total_calls = tp + fp
             if total_calls > 0:
                 d[prec_or_recall] = round(tp / total_calls, 8)
@@ -76,10 +76,10 @@ def evaluate_vcf(
         vcf_for_recall_filtered
     )
     recall_stats_all = vcf_stats.summary_stats_from_per_record_stats(
-        per_record_recall_all
+        per_record_recall_all, for_recall=True
     )
     recall_stats_filtered = vcf_stats.summary_stats_from_per_record_stats(
-        per_record_recall_filtered
+        per_record_recall_filtered, for_recall=True
     )
     recall_stats = {
         "ALL": recall_stats_all["ALL"],

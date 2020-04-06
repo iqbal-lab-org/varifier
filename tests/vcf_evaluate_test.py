@@ -17,8 +17,8 @@ def test_add_overall_precision_and_recall_to_summary_stats():
             "FILT": {"TP": {"Count": 5}, "FP": {"Count": 0}},
         },
         "Recall": {
-            "ALL": {"TP": {"Count": 4}, "FP": {"Count": 1}},
-            "FILT": {"TP": {"Count": 0}, "FP": {"Count": 0}},
+            "ALL": {"TP": {"Count": 4}, "FN": {"Count": 1}},
+            "FILT": {"TP": {"Count": 0}, "FN": {"Count": 0}},
         },
     }
     expect = copy.deepcopy(stats)

@@ -121,3 +121,9 @@ def test_summary_stats_from_per_record_stats():
     }
     got = vcf_stats.summary_stats_from_per_record_stats(record_stats)
     assert got == expect
+
+    for all_or_filt in "ALL", "FILT":
+        expect[all_or_filt]["FN"] = expect[all_or_filt]["FP"]
+        del expect[all_or_filt]["FP"]
+    got = vcf_stats.summary_stats_from_per_record_stats(record_stats, for_recall=True)
+    assert got == expect

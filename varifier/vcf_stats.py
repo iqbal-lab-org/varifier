@@ -80,13 +80,21 @@ def per_record_stats_from_vcf_file(infile):
     return stats
 
 
-def summary_stats_from_per_record_stats(per_record_stats):
+def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
     """Given a list of stats made by per_record_stats_from_vcf_file(),
-    returns a dictionary of summary stats"""
+    returns a dictionary of summary stats. Set for_recall to True if the
+    VCF was made for getting recall"""
     default_counts = {k: 0 for k in ("Count", "SUM_ALLELE_MATCH_FRAC", "SUM_EDIT_DIST")}
     stats = {"UNUSED": 0}
+
+    # By default, this is for getting the precision. Which means counting up
+    # TPs and FPs. For recall, each call is an expected call from the truth.
+    # This means TP is the same as for precision, but a wrong call now means
+    # a FN. We expected to find the variant, but didn't.
+    fp_key = "FN" if for_recall else "FP"
+
     for key in "ALL", "FILT":
-        stats[key] = {"TP": copy.copy(default_counts), "FP": copy.copy(default_counts)}
+        stats[key] = {"TP": copy.copy(default_counts), fp_key: copy.copy(default_counts)}
 
     for d in per_record_stats:
         if d["VFR_FILTER"] not in ["PASS", "FAIL_BUT_TEST"]:
@@ -95,7 +103,7 @@ def summary_stats_from_per_record_stats(per_record_stats):
             if d["VFR_RESULT"] == "TP":
                 result = "TP"
             else:
-                result = "FP"
+                result = fp_key
             keys_to_update = ["ALL"]
             if d["VFR_FILTER"] == "PASS":
                 keys_to_update.append("FILT")

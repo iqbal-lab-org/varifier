@@ -30,7 +30,7 @@
   },
   "Recall": {
     "ALL": {
-      "FP": {
+      "FN": {
         "Count": 3,
         "SUM_ALLELE_MATCH_FRAC": 1.0,
         "SUM_EDIT_DIST": 3
@@ -43,7 +43,7 @@
       }
     },
     "FILT": {
-      "FP": {
+      "FN": {
         "Count": 4,
         "SUM_ALLELE_MATCH_FRAC": 1.0,
         "SUM_EDIT_DIST": 4
