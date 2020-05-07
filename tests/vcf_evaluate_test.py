@@ -13,12 +13,12 @@ data_dir = os.path.join(this_dir, "data", "vcf_evaluate")
 def test_add_overall_precision_and_recall_to_summary_stats():
     stats = {
         "Precision": {
-            "ALL": {"TP": {"Count": 9}, "FP": {"Count": 1}},
-            "FILT": {"TP": {"Count": 5}, "FP": {"Count": 0}},
+            "ALL": {"TP": {"Count": 9, "SUM_ALLELE_MATCH_FRAC": 9.0}, "FP": {"Count": 1, "SUM_ALLELE_MATCH_FRAC": 0.99}},
+            "FILT": {"TP": {"Count": 5, "SUM_ALLELE_MATCH_FRAC": 5.0}, "FP": {"Count": 0, "SUM_ALLELE_MATCH_FRAC": 0}},
         },
         "Recall": {
-            "ALL": {"TP": {"Count": 4}, "FN": {"Count": 1}},
-            "FILT": {"TP": {"Count": 0}, "FN": {"Count": 0}},
+            "ALL": {"TP": {"Count": 5, "SUM_ALLELE_MATCH_FRAC": 5.0}, "FN": {"Count": 1, "SUM_ALLELE_MATCH_FRAC": 0.2}},
+            "FILT": {"TP": {"Count": 0, "SUM_ALLELE_MATCH_FRAC": 0.0}, "FN": {"Count": 0, "SUM_ALLELE_MATCH_FRAC": 0.0}},
         },
     }
     expect = copy.deepcopy(stats)
@@ -26,8 +26,12 @@ def test_add_overall_precision_and_recall_to_summary_stats():
     assert stats != expect
     expect["Precision"]["ALL"]["Precision"] = 0.9
     expect["Precision"]["FILT"]["Precision"] = 1
-    expect["Recall"]["ALL"]["Recall"] = 0.8
+    expect["Recall"]["ALL"]["Recall"] = 0.83333333
     expect["Recall"]["FILT"]["Recall"] = 0
+    expect["Precision"]["ALL"]["Precision_frac"] = 0.999
+    expect["Precision"]["FILT"]["Precision_frac"] = 1.0
+    expect["Recall"]["ALL"]["Recall_frac"] = 0.86666667
+    expect["Recall"]["FILT"]["Recall_frac"] = 0
     assert stats == expect
 
 
