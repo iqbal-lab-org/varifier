@@ -6,13 +6,13 @@ import pyfastaq
 from varifier import edit_distance, probe, utils
 
 
-def get_probes_and_vcf_records(vcf_file, ref_seqs, flank_length):
+def get_probes_and_vcf_records(vcf_file, ref_seqs, flank_length, discard_ref_calls=True):
     """For each line of the input VCF file, yields a
     tuple (vcf_record, alt probe sequence).
     vcf_file = name of VCF file.
     ref_seqs = dictionary of sequence name -> sequence.
     flank_length = number of nucleotides to add either side of variant sequence."""
-    vcf_reader = utils.read_vcf_file(vcf_file)
+    vcf_reader = utils.read_vcf_file(vcf_file, discard_ref_calls=discard_ref_calls)
     header_lines = next(vcf_reader)
     yield header_lines
     for record, filter_result in vcf_reader:
@@ -124,13 +124,13 @@ def evaluate_vcf_record(mapper, vcf_record, ref_probe, alt_probe, map_outfile=No
 
 
 def annotate_vcf_with_probe_mapping(
-    vcf_file, vcf_ref_fasta, truth_ref_fasta, flank_length, vcf_out, map_outfile=None
+    vcf_file, vcf_ref_fasta, truth_ref_fasta, flank_length, vcf_out, map_outfile=None, discard_ref_calls=True,
 ):
     vcf_ref_seqs = {}
     pyfastaq.tasks.file_to_dict(vcf_ref_fasta, vcf_ref_seqs)
     vcf_ref_seqs = {x.split()[0]: vcf_ref_seqs[x] for x in vcf_ref_seqs}
     probes_and_vcf_reader = get_probes_and_vcf_records(
-        vcf_file, vcf_ref_seqs, flank_length
+        vcf_file, vcf_ref_seqs, flank_length, discard_ref_calls=discard_ref_calls,
     )
 
     # Some notes on the mapper options...

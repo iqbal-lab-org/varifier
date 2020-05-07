@@ -11,4 +11,5 @@ def run(options):
         debug=options.debug,
         force=options.force,
         mask_bed_file=options.mask,
+        discard_ref_calls=not options.use_ref_calls,
     )

@@ -62,6 +62,10 @@ def main(args=None):
         "--mask", help="BED file of regions to mask. Any variants in the VCF overlapping the mask are removed at the start of the pipeline",
         metavar="FILENAME",
     )
+    subparser_vcf_eval.add_argument(
+        "--use_ref_calls", help="Include 0/0 genotype calls when calculating TPs and precision. By default they are ignored",
+        action="store_true",
+    )
     subparser_vcf_eval.add_argument("truth_fasta", help="FASTA file of truth genome")
     subparser_vcf_eval.add_argument(
         "vcf_fasta", help="FASTA file corresponding to vcf_file"

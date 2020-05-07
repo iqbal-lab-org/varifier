@@ -35,6 +35,7 @@ def evaluate_vcf(
     debug=False,
     force=False,
     mask_bed_file=None,
+    discard_ref_calls=True,
 ):
     if force:
         subprocess.check_output(f"rm -rf {outdir}", shell=True)
@@ -60,6 +61,7 @@ def evaluate_vcf(
         flank_length,
         vcf_for_precision,
         map_outfile=map_outfile,
+        discard_ref_calls=discard_ref_calls,
     )
 
     # Make truth VCF annotated with TP/FP for recall
