@@ -15,12 +15,15 @@ def _add_overall_precision_and_recall_to_summary_stats(summary_stats):
         for all_or_filt in "ALL", "FILT":
             d = summary_stats[prec_or_recall][all_or_filt]
             tp = d["TP"]["Count"]
+            tp_frac = d["TP"]["SUM_ALLELE_MATCH_FRAC"] + d[fp_key]["SUM_ALLELE_MATCH_FRAC"]
             fp = d[fp_key]["Count"]
             total_calls = tp + fp
             if total_calls > 0:
                 d[prec_or_recall] = round(tp / total_calls, 8)
+                d[f"{prec_or_recall}_frac"] = round(tp_frac / total_calls, 8)
             else:
                 d[prec_or_recall] = 0
+                d[f"{prec_or_recall}_frac"] = 0
 
 
 def evaluate_vcf(
