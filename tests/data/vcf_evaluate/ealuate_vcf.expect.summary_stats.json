@@ -1,0 +1,63 @@
+{
+  "Precision": {
+    "ALL": {
+      "FP": {
+        "Count": 1,
+        "SUM_ALLELE_MATCH_FRAC": 0.0,
+        "SUM_EDIT_DIST": 1
+      },
+      "Precision": 0.90909091,
+      "Precision_frac": 0.90909091,
+      "TP": {
+        "Count": 10,
+        "SUM_ALLELE_MATCH_FRAC": 10.0,
+        "SUM_EDIT_DIST": 10
+      }
+    },
+    "FILT": {
+      "FP": {
+        "Count": 1,
+        "SUM_ALLELE_MATCH_FRAC": 0.0,
+        "SUM_EDIT_DIST": 1
+      },
+      "Precision": 0.9,
+      "Precision_frac": 0.9,
+      "TP": {
+        "Count": 9,
+        "SUM_ALLELE_MATCH_FRAC": 9.0,
+        "SUM_EDIT_DIST": 9
+      }
+    },
+    "UNUSED": 1
+  },
+  "Recall": {
+    "ALL": {
+      "FN": {
+        "Count": 3,
+        "SUM_ALLELE_MATCH_FRAC": 1.0,
+        "SUM_EDIT_DIST": 3
+      },
+      "Recall": 0.76923077,
+      "Recall_frac": 0.84615385,
+      "TP": {
+        "Count": 10,
+        "SUM_ALLELE_MATCH_FRAC": 10.0,
+        "SUM_EDIT_DIST": 10
+      }
+    },
+    "FILT": {
+      "FN": {
+        "Count": 4,
+        "SUM_ALLELE_MATCH_FRAC": 1.0,
+        "SUM_EDIT_DIST": 4
+      },
+      "Recall": 0.69230769,
+      "Recall_frac": 0.76923077,
+      "TP": {
+        "Count": 9,
+        "SUM_ALLELE_MATCH_FRAC": 9.0,
+        "SUM_EDIT_DIST": 9
+      }
+    }
+  }
+}
