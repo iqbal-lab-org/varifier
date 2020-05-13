@@ -74,6 +74,7 @@ def evaluate_vcf(
         vcf_for_recall_all = f"{vcf_for_recall_all}.masked.vcf"
         utils.mask_vcf_file(vcf_for_recall_filtered, mask_bed_file, f"{vcf_for_recall_filtered}.masked.vcf")
         vcf_for_recall_filtered = f"{vcf_for_recall_filtered}.masked.vcf"
+        os.unlink(masked_vcf)
 
     # Gather stats and make plots
     per_record_recall_all = vcf_stats.per_record_stats_from_vcf_file(vcf_for_recall_all)
