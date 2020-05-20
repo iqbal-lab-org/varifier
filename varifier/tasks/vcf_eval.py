@@ -8,6 +8,7 @@ def run(options):
         options.truth_fasta,
         options.flank_length,
         options.outdir,
+        truth_vcf=options.truth_vcf,
         debug=options.debug,
         force=options.force,
         mask_bed_file=options.mask,

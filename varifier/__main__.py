@@ -59,11 +59,18 @@ def main(args=None):
         "--force", help="Replace outdir if it already exists", action="store_true"
     )
     subparser_vcf_eval.add_argument(
-        "--mask", help="BED file of regions to mask. Any variants in the VCF overlapping the mask are removed at the start of the pipeline",
+        "--mask",
+        help="BED file of regions to mask. Any variants in the VCF overlapping the mask are removed at the start of the pipeline",
         metavar="FILENAME",
     )
     subparser_vcf_eval.add_argument(
-        "--use_ref_calls", help="Include 0/0 genotype calls when calculating TPs and precision. By default they are ignored",
+        "--truth_vcf",
+        help="VCF file of variant calls between vcf_fasta and truth_fasta, where reference of this VCF file is truth_fasta. If provided, used to calculate recall",
+        metavar="FILENAME",
+    )
+    subparser_vcf_eval.add_argument(
+        "--use_ref_calls",
+        help="Include 0/0 genotype calls when calculating TPs and precision. By default they are ignored",
         action="store_true",
     )
     subparser_vcf_eval.add_argument("truth_fasta", help="FASTA file of truth genome")

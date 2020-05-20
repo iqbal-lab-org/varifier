@@ -53,17 +53,23 @@ def apply_variants_to_genome(ref_fasta, vcf_file, out_fasta, pass_only=True):
             print(new_seq, file=f)
 
 
-def get_recall(ref_fasta, vcf_to_test, truth_fasta, outdir, debug=False):
+def get_recall(
+    ref_fasta, vcf_to_test, outdir, truth_fasta=None, truth_vcf=None, debug=False
+):
     os.mkdir(outdir)
 
-    # Make truth VCF. This only depends on ref_fasta and truth_fasta, not
-    # on VCF to test. In particular, is independent of whether or not
-    # were using all records in vcf_to_test, or PASS records only. This means
-    # only need to make one truth VCF, which can be used for both cases.
-    truth_outdir = os.path.join(outdir, "truth_vcf")
-    truth_vcf = truth_variant_finding.make_truth_vcf(
-        ref_fasta, truth_fasta, truth_outdir, debug=debug
-    )
+    if truth_vcf is None:
+        assert truth_fasta is not None
+        # Make truth VCF. This only depends on ref_fasta and truth_fasta, not
+        # on VCF to test. In particular, is independent of whether or not
+        # were using all records in vcf_to_test, or PASS records only. This means
+        # only need to make one truth VCF, which can be used for both cases.
+        truth_outdir = os.path.join(outdir, "truth_vcf")
+        truth_vcf = truth_variant_finding.make_truth_vcf(
+            ref_fasta, truth_fasta, truth_outdir, debug=debug
+        )
+    else:
+        assert truth_fasta is None
 
     vcfs_out = {}
     for all_or_filt in "ALL", "FILT":
