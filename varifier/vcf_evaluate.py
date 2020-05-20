@@ -15,7 +15,9 @@ def _add_overall_precision_and_recall_to_summary_stats(summary_stats):
         for all_or_filt in "ALL", "FILT":
             d = summary_stats[prec_or_recall][all_or_filt]
             tp = d["TP"]["Count"]
-            tp_frac = d["TP"]["SUM_ALLELE_MATCH_FRAC"] + d[fp_key]["SUM_ALLELE_MATCH_FRAC"]
+            tp_frac = (
+                d["TP"]["SUM_ALLELE_MATCH_FRAC"] + d[fp_key]["SUM_ALLELE_MATCH_FRAC"]
+            )
             fp = d[fp_key]["Count"]
             total_calls = tp + fp
             if total_calls > 0:
@@ -32,6 +34,7 @@ def evaluate_vcf(
     truth_ref_fasta,
     flank_length,
     outdir,
+    truth_vcf=None,
     debug=False,
     force=False,
     mask_bed_file=None,
@@ -64,15 +67,25 @@ def evaluate_vcf(
         discard_ref_calls=discard_ref_calls,
     )
 
-    # Make truth VCF annotated with TP/FP for recall
     recall_dir = os.path.join(outdir, "recall")
     vcf_for_recall_all, vcf_for_recall_filtered = recall.get_recall(
-        vcf_ref_fasta, vcf_to_eval, truth_ref_fasta, recall_dir, debug=debug
+        vcf_ref_fasta,
+        vcf_to_eval,
+        recall_dir,
+        debug=debug,
+        truth_fasta=truth_ref_fasta if truth_vcf is None else None,
+        truth_vcf=truth_vcf,
     )
     if mask_bed_file is not None:
-        utils.mask_vcf_file(vcf_for_recall_all, mask_bed_file, f"{vcf_for_recall_all}.masked.vcf")
+        utils.mask_vcf_file(
+            vcf_for_recall_all, mask_bed_file, f"{vcf_for_recall_all}.masked.vcf"
+        )
         vcf_for_recall_all = f"{vcf_for_recall_all}.masked.vcf"
-        utils.mask_vcf_file(vcf_for_recall_filtered, mask_bed_file, f"{vcf_for_recall_filtered}.masked.vcf")
+        utils.mask_vcf_file(
+            vcf_for_recall_filtered,
+            mask_bed_file,
+            f"{vcf_for_recall_filtered}.masked.vcf",
+        )
         vcf_for_recall_filtered = f"{vcf_for_recall_filtered}.masked.vcf"
         os.unlink(masked_vcf)
 
