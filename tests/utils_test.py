@@ -42,6 +42,11 @@ def test_read_vcf_file():
             vcf_record.VcfRecord("ref\t48\t7\tT\tA\t.\tPASS\t.\tGT\t0/0"),
             "CANNOT_USE_GT",
         ),
+        (vcf_record.VcfRecord("ref\t49\t8\tT\tA,*\t.\tPASS\t.\tGT\t1/1"), "PASS",),
+        (
+            vcf_record.VcfRecord("ref\t50\t9\tT\tA,*\t.\tPASS\t.\tGT\t2/2"),
+            "CANNOT_USE_GT",
+        ),
     ]
 
     assert header_lines == expect_header

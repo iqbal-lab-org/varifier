@@ -15,9 +15,7 @@ def read_vcf_file(
     yield header_lines
 
     for record in vcf_records:
-        record.remove_asterisk_alts()
         record.remove_useless_start_nucleotides()
-
         if len(record.ALT) == 0 or record.ALT == ["."]:
             yield record, "NO_ALTS"
             continue
@@ -34,11 +32,17 @@ def read_vcf_file(
         genotype = record.FORMAT["GT"]
         genotypes = genotype.split("/")
         called_alleles = set(genotypes)
+
         if (
             len(called_alleles) != 1
             or (discard_ref_calls and called_alleles == {"0"})
             or "." in called_alleles
         ):
+            yield record, "CANNOT_USE_GT"
+            continue
+
+        allele_index = int(called_alleles.pop())
+        if allele_index > 0 and record.ALT[allele_index - 1] == "*":
             yield record, "CANNOT_USE_GT"
             continue
 
@@ -61,12 +65,12 @@ def mask_vcf_file(vcf_in, mask_bed_file, vcf_out):
             chrom, start, end = line.rstrip().split("\t")
             if chrom not in mask:
                 mask[chrom] = set()
-            for  i in range(int(start), int(end)):
+            for i in range(int(start), int(end)):
                 mask[chrom].add(i)
 
     with open(vcf_in) as f_in, open(vcf_out, "w") as f_out:
         for line in f_in:
-            if not line.startswith('#'):
+            if not line.startswith("#"):
                 chrom, pos, _, ref, _ = line.split("\t", maxsplit=4)
                 in_mask = False
                 if chrom in mask:
