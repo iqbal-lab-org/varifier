@@ -7,3 +7,5 @@ ref	45	4	.	A	.	PASS	.	GT	1/1
 ref	46	5	T	A	.	MISMAPPED_UNPLACEABLE	.	GT	1/1
 ref	47	6	T	A	.	PASS	.	GT	0/1
 ref	48	7	T	A	.	PASS	.	GT	0/0
+ref	49	8	T	A,*	.	PASS	.	GT	1/1
+ref	50	9	T	A,*	.	PASS	.	GT	2/2
