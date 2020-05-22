@@ -109,7 +109,7 @@ def test_summary_stats_from_per_record_stats():
         },
     ]
     expect = {
-        "UNUSED": 1,
+        "UNUSED": {"CONFLICT": 0, "OTHER": 1},
         "ALL": {
             "TP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.72, "SUM_EDIT_DIST": 3},
             "FP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.75, "SUM_EDIT_DIST": 3},

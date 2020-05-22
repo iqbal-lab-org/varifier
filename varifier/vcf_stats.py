@@ -85,7 +85,7 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
     returns a dictionary of summary stats. Set for_recall to True if the
     VCF was made for getting recall"""
     default_counts = {k: 0 for k in ("Count", "SUM_ALLELE_MATCH_FRAC", "SUM_EDIT_DIST")}
-    stats = {"UNUSED": 0}
+    stats = {"UNUSED": {"CONFLICT": 0, "OTHER": 0}}
 
     # By default, this is for getting the precision. Which means counting up
     # TPs and FPs. For recall, each call is an expected call from the truth.
@@ -94,11 +94,16 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
     fp_key = "FN" if for_recall else "FP"
 
     for key in "ALL", "FILT":
-        stats[key] = {"TP": copy.copy(default_counts), fp_key: copy.copy(default_counts)}
+        stats[key] = {
+            "TP": copy.copy(default_counts),
+            fp_key: copy.copy(default_counts),
+        }
 
     for d in per_record_stats:
-        if d["VFR_FILTER"] not in ["PASS", "FAIL_BUT_TEST"]:
-            stats["UNUSED"] += 1
+        if d["VFR_FILTER"] == "FAIL_CONFLICT":
+            stats["UNUSED"]["CONFLICT"] += 1
+        elif d["VFR_FILTER"] not in ["PASS", "FAIL_BUT_TEST"]:
+            stats["UNUSED"]["OTHER"] += 1
         else:
             if d["VFR_RESULT"] == "TP":
                 result = "TP"

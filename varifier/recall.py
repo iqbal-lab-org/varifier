@@ -2,6 +2,7 @@ import operator
 import os
 
 import pyfastaq
+from cluster_vcf_records import vcf_file_read
 
 from varifier import probe_mapping, truth_variant_finding, utils
 
@@ -10,15 +11,18 @@ def _vcf_file_to_dict(vcf_file, pass_only=True):
     """Loads VCF file. Returns a dictionary of sequence name -> sorted list
     by position of variants"""
     records = {}
-    vcf_reader = utils.read_vcf_file(vcf_file)
-    header_lines = next(vcf_reader)
-    for record, filter_result in vcf_reader:
-        if filter_result == "PASS" or (
-            not pass_only and filter_result == "FAIL_BUT_TEST"
-        ):
-            if record.CHROM not in records:
-                records[record.CHROM] = []
-            records[record.CHROM].append(record)
+    wanted_format = {"PASS"}
+    if not pass_only:
+        wanted_format.add("FAIL_BUT_TEST")
+
+    header_lines, vcf_records = vcf_file_read.vcf_file_to_list(vcf_file)
+    for record in vcf_records:
+        if record.FORMAT["VFR_FILTER"] not in wanted_format:
+            continue
+
+        if record.CHROM not in records:
+            records[record.CHROM] = []
+        records[record.CHROM].append(record)
 
     for l in records.values():
         l.sort(key=operator.attrgetter("POS"))

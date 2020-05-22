@@ -2,7 +2,7 @@ import filecmp
 import os
 import pytest
 
-from varifier import probe_mapping
+from varifier import vcf_qc_annotate, probe_mapping
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "probe_mapping")
@@ -38,10 +38,21 @@ def test_annotate_vcf_with_probe_mapping():
     tmp_map = "tmp.probe_mapping.annotate_vcf_with_probe_mapping.map"
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
     probe_mapping.annotate_vcf_with_probe_mapping(
-        vcf_in, vcf_ref_fa, truth_ref_fa, 100, tmp_vcf, map_outfile=tmp_map
+        vcf_in,
+        vcf_ref_fa,
+        truth_ref_fa,
+        100,
+        tmp_vcf,
+        map_outfile=tmp_map,
+        use_fail_conflict=True,
     )
     probe_mapping.annotate_vcf_with_probe_mapping(
-        vcf_in, vcf_ref_fa, truth_ref_revcomp_fa, 100, tmp_vcf_revcomp
+        vcf_in,
+        vcf_ref_fa,
+        truth_ref_revcomp_fa,
+        100,
+        tmp_vcf_revcomp,
+        use_fail_conflict=True,
     )
     expect_file = os.path.join(data_dir, "annotate_vcf_with_probe_mapping.expect.vcf")
     assert filecmp.cmp(tmp_vcf, expect_file, shallow=False)
