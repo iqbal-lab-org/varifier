@@ -1,3 +1,5 @@
+import pyfastaq
+
 from cluster_vcf_records import vcf_file_read
 
 
@@ -60,7 +62,7 @@ def mask_vcf_file(vcf_in, mask_bed_file, vcf_out):
     # Put the coords of the mask into a set, and then for each VCF record,
     # check if the ref position(s) are in the set
     mask = {}
-    with open(mask_bed_file) as f:
+    with pyfastaq.utils.open_file_read(mask_bed_file) as f:
         for line in f:
             chrom, start, end = line.rstrip().split("\t")
             if chrom not in mask:
@@ -68,7 +70,7 @@ def mask_vcf_file(vcf_in, mask_bed_file, vcf_out):
             for i in range(int(start), int(end)):
                 mask[chrom].add(i)
 
-    with open(vcf_in) as f_in, open(vcf_out, "w") as f_out:
+    with pyfastaq.utils.open_file_read(vcf_in) as f_in, open(vcf_out, "w") as f_out:
         for line in f_in:
             if not line.startswith("#"):
                 chrom, pos, _, ref, _ = line.split("\t", maxsplit=4)
