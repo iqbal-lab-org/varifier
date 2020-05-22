@@ -22,17 +22,27 @@ def vcf_records_are_the_same(file1, file2):
 def test_vcf_file_to_dict():
     vcf_file = os.path.join(data_dir, "vcf_file_to_dict.vcf")
     expect = {
-        "ref1": [vcf_record.VcfRecord("ref1\t42\t1\tT\tA\t.\tPASS\t.\tGT\t1/1")],
+        "ref1": [
+            vcf_record.VcfRecord(
+                "ref1\t42\t1\tT\tA\t.\tPASS\t.\tGT:VFR_FILTER\t1/1:PASS"
+            )
+        ],
         "ref2": [
-            vcf_record.VcfRecord("ref2\t43\t3\tT\tA,C\t.\tPASS\t.\tGT\t2/2"),
-            vcf_record.VcfRecord("ref2\t44\t2\tT\tA\t.\tPASS\t.\tGT\t1/1"),
+            vcf_record.VcfRecord(
+                "ref2\t43\t3\tT\tA,C\t.\tPASS\t.\tGT:VFR_FILTER\t2/2:PASS"
+            ),
+            vcf_record.VcfRecord(
+                "ref2\t44\t2\tT\tA\t.\tPASS\t.\tGT:VFR_FILTER\t1/1:PASS"
+            ),
         ],
     }
     got = recall._vcf_file_to_dict(vcf_file)
     assert got == expect
 
     expect["ref2"].append(
-        vcf_record.VcfRecord("ref2\t45\t4\tT\tA\t.\tFAIL\t.\tGT\t1/1")
+        vcf_record.VcfRecord(
+            "ref2\t45\t4\tT\tA\t.\tFAIL\t.\tGT:VFR_FILTER\t1/1:FAIL_BUT_TEST"
+        )
     )
     got = recall._vcf_file_to_dict(vcf_file, pass_only=False)
     assert got == expect

@@ -1,25 +1,36 @@
 import collections
+import os
 
 import mappy
 import pyfastaq
+from cluster_vcf_records import vcf_file_read
 
-from varifier import edit_distance, probe, utils
+from varifier import edit_distance, probe, vcf_qc_annotate
 
 
-def get_probes_and_vcf_records(vcf_file, ref_seqs, flank_length, discard_ref_calls=True):
-    """For each line of the input VCF file, yields a
+def _get_wanted_format(use_fail_conflict):
+    wanted_format = {"PASS", "FAIL_BUT_TEST"}
+    if use_fail_conflict:
+        wanted_format.add("FAIL_CONFLICT")
+    return wanted_format
+
+
+def get_probes_and_vcf_records(
+    vcf_file, ref_seqs, flank_length, use_fail_conflict=False
+):
+    """Input vcf_file is assumed to have been made by vcf_qc_annotate.add_qc_to_vcf(),
+    so that each record has the FORMAT tag VFR_FILTER.
+    For each line of the input VCF file, yields a
     tuple (vcf_record, alt probe sequence).
     vcf_file = name of VCF file.
     ref_seqs = dictionary of sequence name -> sequence.
     flank_length = number of nucleotides to add either side of variant sequence."""
-    vcf_reader = utils.read_vcf_file(vcf_file, discard_ref_calls=discard_ref_calls)
-    header_lines = next(vcf_reader)
+    header_lines, vcf_records = vcf_file_read.vcf_file_to_list(vcf_file)
     yield header_lines
-    for record, filter_result in vcf_reader:
-        if filter_result is not None:
-            record.set_format_key_value("VFR_FILTER", filter_result)
+    wanted_format = _get_wanted_format(use_fail_conflict)
 
-        if filter_result not in ["PASS", "FAIL_BUT_TEST"]:
+    for record in vcf_records:
+        if record.FORMAT["VFR_FILTER"] not in wanted_format:
             yield record, None, None
             continue
 
@@ -65,8 +76,10 @@ def probe_hits_to_best_allele_counts(probe, hits, debug_outfile=None):
     return best
 
 
-def evaluate_vcf_record(mapper, vcf_record, ref_probe, alt_probe, map_outfile=None):
-    if vcf_record.FORMAT["VFR_FILTER"] not in ["PASS", "FAIL_BUT_TEST"]:
+def evaluate_vcf_record(
+    mapper, vcf_record, ref_probe, alt_probe, map_outfile=None, use_fail_conflict=False
+):
+    if vcf_record.FORMAT["VFR_FILTER"] not in _get_wanted_format(use_fail_conflict):
         return
 
     ed = edit_distance.edit_distance_between_seqs(
@@ -124,13 +137,23 @@ def evaluate_vcf_record(mapper, vcf_record, ref_probe, alt_probe, map_outfile=No
 
 
 def annotate_vcf_with_probe_mapping(
-    vcf_file, vcf_ref_fasta, truth_ref_fasta, flank_length, vcf_out, map_outfile=None, discard_ref_calls=True,
+    vcf_in,
+    vcf_ref_fasta,
+    truth_ref_fasta,
+    flank_length,
+    vcf_out,
+    map_outfile=None,
+    use_fail_conflict=False,
+    use_ref_calls=False,
+    debug=False,
 ):
     vcf_ref_seqs = {}
     pyfastaq.tasks.file_to_dict(vcf_ref_fasta, vcf_ref_seqs)
     vcf_ref_seqs = {x.split()[0]: vcf_ref_seqs[x] for x in vcf_ref_seqs}
+    vcf_with_qc = vcf_out + ".debug.vcf"
+    vcf_qc_annotate.add_qc_to_vcf(vcf_in, vcf_with_qc, want_ref_calls=use_ref_calls)
     probes_and_vcf_reader = get_probes_and_vcf_records(
-        vcf_file, vcf_ref_seqs, flank_length, discard_ref_calls=discard_ref_calls,
+        vcf_with_qc, vcf_ref_seqs, flank_length, use_fail_conflict=use_fail_conflict,
     )
 
     # Some notes on the mapper options...
@@ -167,36 +190,35 @@ def annotate_vcf_with_probe_mapping(
     else:
         f_map = None
 
+    new_header_lines = [
+        '##FORMAT=<ID=VFR_RESULT,Number=1,Type=String,Description="FP, TP, or Partial_TP when part of the allele matches the truth reference>"',
+        '##FORMAT=<ID=VFR_ALLELE_LEN,Number=1,Type=Integer,Description="Number of positions in allele that were checked if they match the truth">',
+        '##FORMAT=<ID=VFR_ALLELE_MATCH_COUNT,Number=1,Type=String,Description="Number of positions in allele that match the truth">',
+        '##FORMAT=<ID=VFR_ALLELE_MATCH_FRAC,Number=1,Type=String,Description="Fraction of positions in allele that match the truth">',
+    ]
+
     with open(vcf_out, "w") as f_vcf:
-        for line in header_lines[:-1]:
-            print(line, file=f_vcf)
         print(
-            '##FORMAT=<ID=VFR_FILTER,Number=1,Type=String,Description="Initial filtering of VCF record. If PASS, then it is evaluated, otherwise is skipped">',
+            *header_lines[:-1],
+            *new_header_lines,
+            header_lines[-1],
+            sep="\n",
             file=f_vcf,
         )
-        print(
-            '##FORMAT=<ID=VFR_RESULT,Number=1,Type=String,Description="FP, TP, or Partial_TP when part of the allele matches the truth reference>"',
-            file=f_vcf,
-        )
-        print(
-            '##FORMAT=<ID=VFR_ALLELE_LEN,Number=1,Type=Integer,Description="Number of positions in allele that were checked if they match the truth">',
-            file=f_vcf,
-        )
-        print(
-            '##FORMAT=<ID=VFR_ALLELE_MATCH_COUNT,Number=1,Type=String,Description="Number of positions in allele that match the truth">',
-            file=f_vcf,
-        )
-        print(
-            '##FORMAT=<ID=VFR_ALLELE_MATCH_FRAC,Number=1,Type=String,Description="Fraction of positions in allele that match the truth">',
-            file=f_vcf,
-        )
-        print(header_lines[-1], file=f_vcf)
 
         for (vcf_record, ref_probe, alt_probe) in probes_and_vcf_reader:
             evaluate_vcf_record(
-                mapper, vcf_record, ref_probe, alt_probe, map_outfile=f_map
+                mapper,
+                vcf_record,
+                ref_probe,
+                alt_probe,
+                map_outfile=f_map,
+                use_fail_conflict=use_fail_conflict,
             )
             print(vcf_record, file=f_vcf)
 
     if map_outfile is not None:
         f_map.close()
+
+    if not debug:
+        os.unlink(vcf_with_qc)

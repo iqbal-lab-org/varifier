@@ -58,7 +58,7 @@ def _merge_vcf_files_for_probe_mapping(list_of_vcf_files, ref_fasta, vcf_out):
                 new_record.ALT = [alt]
                 new_record.INFO = {}
                 new_record.FILTER = set(["PASS"])
-                new_record.FORMAT = {"GT": "1/1"}
+                new_record.FORMAT = {"GT": "1/1", "VFR_FILTER": "PASS"}
                 print(new_record, file=f)
 
 

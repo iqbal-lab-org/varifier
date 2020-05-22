@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 
-from varifier import probe_mapping, recall, utils, vcf_stats
+from varifier import probe_mapping, recall, utils, vcf_qc_annotate, vcf_stats
 
 
 def _add_overall_precision_and_recall_to_summary_stats(summary_stats):
@@ -64,13 +64,13 @@ def evaluate_vcf(
         flank_length,
         vcf_for_precision,
         map_outfile=map_outfile,
-        discard_ref_calls=discard_ref_calls,
+        use_ref_calls=not discard_ref_calls,
     )
 
     recall_dir = os.path.join(outdir, "recall")
     vcf_for_recall_all, vcf_for_recall_filtered = recall.get_recall(
         vcf_ref_fasta,
-        vcf_to_eval,
+        vcf_for_precision,
         recall_dir,
         debug=debug,
         truth_fasta=truth_ref_fasta if truth_vcf is None else None,

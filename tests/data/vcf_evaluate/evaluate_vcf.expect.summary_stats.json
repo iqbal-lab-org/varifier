@@ -28,7 +28,10 @@
         "SUM_EDIT_DIST": 9
       }
     },
-    "UNUSED": 1
+    "UNUSED": {
+      "CONFLICT": 1,
+      "OTHER": 1
+    }
   },
   "Recall": {
     "ALL": {

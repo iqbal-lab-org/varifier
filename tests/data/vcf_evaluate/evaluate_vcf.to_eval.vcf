@@ -3,6 +3,7 @@
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
 ref	40	0	A	G	.	PASS	.	GT	1/1
+ref	40	0	A	C	.	FAIL	.	GT	1/1
 ref	80	1	T	C	.	FAIL	.	GT	1/1
 ref	90	2	A	C	.	PASS	.	GT	1/1
 ref	109	3	G	C	.	PASS	.	GT	0/0
