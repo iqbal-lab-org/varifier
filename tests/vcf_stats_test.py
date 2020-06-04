@@ -1,4 +1,3 @@
-import filecmp
 import os
 import pytest
 
@@ -36,7 +35,7 @@ def test_per_record_stats_from_vcf_file():
             "GT_CONF": 100.0,
             "GT_CONF_PERCENTILE": 0.12,
             "POS": 1,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
             "VFR_ALLELE_LEN": 1,
             "VFR_ALLELE_MATCH_COUNT": 0,
             "VFR_ALLELE_MATCH_FRAC": 0.0,
@@ -51,7 +50,7 @@ def test_per_record_stats_from_vcf_file():
             "GT_CONF": 200.0,
             "GT_CONF_PERCENTILE": 0.95,
             "POS": 2,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
             "VFR_ALLELE_LEN": 1,
             "VFR_ALLELE_MATCH_COUNT": 0,
             "VFR_ALLELE_MATCH_FRAC": 0.0,
@@ -69,43 +68,43 @@ def test_summary_stats_from_per_record_stats():
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.1,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
         },
         {
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.12,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
         },
         {
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "FP",
             "VFR_ALLELE_MATCH_FRAC": 0.2,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
         },
         {
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "Partial_TP",
             "VFR_ALLELE_MATCH_FRAC": 0.25,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
         },
         {
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "FP",
             "VFR_ALLELE_MATCH_FRAC": 0.3,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
         },
         {
             "VFR_FILTER": "FAIL",
             "VFR_RESULT": "FP",
             "VFR_ALLELE_MATCH_FRAC": 0.4,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
         },
         {
             "VFR_FILTER": "FAIL_BUT_TEST",
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.5,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
         },
     ]
     expect = {

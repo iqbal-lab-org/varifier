@@ -37,14 +37,13 @@ def per_record_stats_from_vcf_file(infile):
     Returns a list of dictionaries of stats. One dict per VCF line.
     List is sorted by ref seq name (CHROM), then position (POS)"""
     stats = []
-    used_keys = set()
     wanted_keys = [
         "DP",
         "DPF",
         "FRS",
         "GT_CONF",
         "GT_CONF_PERCENTILE",
-        "VFR_EDIT_DIST",
+        "VFR_ED_RA",
         "VFR_FILTER",
         "VFR_ALLELE_LEN",
         "VFR_ALLELE_MATCH_COUNT",
@@ -57,7 +56,7 @@ def per_record_stats_from_vcf_file(infile):
         "GT_CONF": float,
         "GT_CONF_PERCENTILE": float,
         "FRS": float,
-        "VFR_EDIT_DIST": int,
+        "VFR_ED_RA": int,
         "VFR_ALLELE_MATCH_FRAC": float,
         "VFR_ALLELE_LEN": int,
         "VFR_ALLELE_MATCH_COUNT": int,
@@ -121,7 +120,7 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
                 except TypeError:  # the value could be "NA"
                     pass
 
-                stats[key][result]["SUM_EDIT_DIST"] += d["VFR_EDIT_DIST"]
+                stats[key][result]["SUM_EDIT_DIST"] += d["VFR_ED_RA"]
                 stats[key][result]["Count"] += 1
 
     return stats
