@@ -1,4 +1,4 @@
-import collections
+import operator
 import os
 
 import mappy
@@ -76,42 +76,107 @@ def probe_hits_to_best_allele_counts(probe, hits, debug_outfile=None):
     return best
 
 
+def hit_debug_string(hit, map_probe):
+    contain = map_probe.map_hit_includes_allele(hit)
+    return "\t".join(
+        [
+            f"contain_allele={contain}",
+            f"ctg={hit.ctg}",
+            f"strand={hit.strand}",
+            f"qstart/end={hit.q_st}/{hit.q_en}",
+            f"rstart/end={hit.r_st}/{hit.r_en}",
+            f"cigar={hit.cigar}",
+        ]
+    )
+
+
 def evaluate_vcf_record(
-    mapper, vcf_record, ref_probe, alt_probe, map_outfile=None, use_fail_conflict=False
+    mapper,
+    vcf_record,
+    ref_probe,
+    alt_probe,
+    ref_seq,
+    truth_seqs,
+    map_outfile=None,
+    use_fail_conflict=False,
 ):
     if vcf_record.FORMAT["VFR_FILTER"] not in _get_wanted_format(use_fail_conflict):
         return
 
-    ed = edit_distance.edit_distance_between_seqs(
+    edit_dist_allele_v_ref = edit_distance.edit_distance_between_seqs(
         ref_probe.allele_seq(), alt_probe.allele_seq()
     )
-    vcf_record.set_format_key_value("VFR_EDIT_DIST", str(ed))
+    vcf_record.set_format_key_value("VFR_ED_RA", str(edit_dist_allele_v_ref))
 
     alt_hits = list(mapper.map(alt_probe.seq, MD=True))
 
     if map_outfile is not None:
         print("VCF", vcf_record, sep="\t", file=map_outfile)
-        print("PROBE", alt_probe.seq, sep="\t", file=map_outfile)
+        print(
+            "ALT_PROBE",
+            f"len={len(alt_probe.seq)}",
+            alt_probe.seq,
+            sep="\t",
+            file=map_outfile,
+        )
         for hit in alt_hits:
             print(
-                "PROBE_HIT",
-                f"ctg={hit.ctg}",
-                f"strand={hit.strand}",
-                f"qstart/end={hit.q_st}/{hit.q_en}",
-                f"rstart/end={hit.r_st}/{hit.r_en}",
-                f"cigar={hit.cigar}",
+                "ALT_PROBE_HIT",
+                hit_debug_string(hit, alt_probe),
                 sep="\t",
                 file=map_outfile,
             )
 
+    alt_hits = [x for x in alt_hits if alt_probe.map_hit_includes_allele(x)]
     alt_match, alt_allele_length, alt_best_hit = probe_hits_to_best_allele_counts(
         alt_probe, alt_hits, debug_outfile=map_outfile
     )
 
     if alt_match is None:
         vcf_record.set_format_key_value("VFR_RESULT", "FP_PROBE_UNMAPPED")
+        vcf_record.set_format_key_value("VFR_ED_SCORE", "0")
         return
 
+    ref_hits = list(mapper.map(ref_probe.seq, MD=True))
+    if map_outfile is not None:
+        print("VCF", vcf_record, sep="\t", file=map_outfile)
+        print(
+            "REF_PROBE",
+            f"len={len(ref_probe.seq)}",
+            ref_probe.seq,
+            sep="\t",
+            file=map_outfile,
+        )
+        for hit in ref_hits:
+            print(
+                "REF_PROBE_HIT",
+                hit_debug_string(hit, ref_probe),
+                sep="\t",
+                file=map_outfile,
+            )
+
+    ref_hits = [
+        x
+        for x in ref_hits
+        if ref_probe.map_hit_includes_allele(x)
+        and alt_best_hit.ctg == x.ctg
+        and x.r_st == alt_best_hit.r_st
+    ]
+
+    if len(ref_hits) == 0:
+        best_ref_hit = None
+    else:
+        ref_hits.sort(key=operator.attrgetter("NM"))
+        best_ref_hit = ref_hits[0]
+        edit_dist_ref_allele = ref_probe.edit_distance_vs_ref(
+            best_ref_hit, truth_seqs[best_ref_hit.ctg]
+        )
+        vcf_record.set_format_key_value("VFR_ED_TR", str(edit_dist_ref_allele))
+
+    edit_dist_alt_allele = alt_probe.edit_distance_vs_ref(
+        alt_best_hit, truth_seqs[alt_best_hit.ctg]
+    )
+    vcf_record.set_format_key_value("VFR_ED_TA", str(edit_dist_alt_allele))
     vcf_record.set_format_key_value("VFR_ALLELE_LEN", str(alt_allele_length))
     vcf_record.set_format_key_value("VFR_ALLELE_MATCH_COUNT", str(alt_match))
     match_frac = round(alt_match / alt_allele_length, 5) if alt_allele_length > 0 else 0
@@ -119,21 +184,21 @@ def evaluate_vcf_record(
     if alt_match == 0 or alt_allele_length == 0:
         result = "FP"
     elif match_frac == 1:
-        ref_hits = list(mapper.map(ref_probe.seq, MD=True))
-        ref_hits = [
-            x
-            for x in ref_hits
-            if alt_best_hit.ctg == x.ctg
-            and x.r_st == alt_best_hit.r_st
-            and x.NM < alt_best_hit.NM
-        ]
-        if len(ref_hits) > 0:
+        if any([x for x in ref_hits if x.NM < alt_best_hit.NM]):
             result = "FP_REF_PROBE_BETTER_MATCH"
         else:
             result = "TP"
     else:
         result = "Partial_TP"
     vcf_record.set_format_key_value("VFR_RESULT", result)
+    if map_outfile is not None:
+        print("FINISH:", vcf_record, file=map_outfile)
+
+
+def fasta_to_dict(filename):
+    d = {}
+    pyfastaq.tasks.file_to_dict(filename, d)
+    return {x.split()[0]: d[x] for x in d}
 
 
 def annotate_vcf_with_probe_mapping(
@@ -147,9 +212,8 @@ def annotate_vcf_with_probe_mapping(
     use_ref_calls=False,
     debug=False,
 ):
-    vcf_ref_seqs = {}
-    pyfastaq.tasks.file_to_dict(vcf_ref_fasta, vcf_ref_seqs)
-    vcf_ref_seqs = {x.split()[0]: vcf_ref_seqs[x] for x in vcf_ref_seqs}
+    vcf_ref_seqs = fasta_to_dict(vcf_ref_fasta)
+    truth_ref_seqs = fasta_to_dict(truth_ref_fasta)
     vcf_with_qc = vcf_out + ".debug.vcf"
     vcf_qc_annotate.add_qc_to_vcf(vcf_in, vcf_with_qc, want_ref_calls=use_ref_calls)
     probes_and_vcf_reader = get_probes_and_vcf_records(
@@ -195,6 +259,9 @@ def annotate_vcf_with_probe_mapping(
         '##FORMAT=<ID=VFR_ALLELE_LEN,Number=1,Type=Integer,Description="Number of positions in allele that were checked if they match the truth">',
         '##FORMAT=<ID=VFR_ALLELE_MATCH_COUNT,Number=1,Type=String,Description="Number of positions in allele that match the truth">',
         '##FORMAT=<ID=VFR_ALLELE_MATCH_FRAC,Number=1,Type=String,Description="Fraction of positions in allele that match the truth">',
+        '##FORMAT=<ID=VFR_ED_RA,Number=1,Type=String,Description="Edit distance between ref and alt allele (using the called allele where more than one alt)">',
+        '##FORMAT=<ID=VFR_ED_TR,Number=1,Type=String,Description="Edit distance between truth and ref allele">',
+        '##FORMAT=<ID=VFR_ED_TA,Number=1,Type=String,Description="Edit distance between truth and alt allele">',
     ]
 
     with open(vcf_out, "w") as f_vcf:
@@ -212,6 +279,8 @@ def annotate_vcf_with_probe_mapping(
                 vcf_record,
                 ref_probe,
                 alt_probe,
+                vcf_ref_seqs[vcf_record.CHROM],
+                truth_ref_seqs,
                 map_outfile=f_map,
                 use_fail_conflict=use_fail_conflict,
             )

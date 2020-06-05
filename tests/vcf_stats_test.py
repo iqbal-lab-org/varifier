@@ -1,4 +1,3 @@
-import filecmp
 import os
 import pytest
 
@@ -25,6 +24,48 @@ def test_frs_from_vcf_record():
     assert vcf_stats._frs_from_vcf_record(record) == 0
 
 
+def test_format_dict_to_edit_dist_scores():
+    format_dict = {
+        "VFR_RESULT": "TP",
+        "VFR_ED_RA": 1,
+        "VFR_ED_TR": 1,
+        "VFR_ED_TA": 0,
+    }
+    assert (1, 1) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
+
+    format_dict = {
+        "VFR_RESULT": "TP",
+        "VFR_ED_RA": 1,
+        "VFR_ED_TR": 0,
+        "VFR_ED_TA": 0,
+    }
+    assert (1, 1) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
+
+    format_dict = {
+        "VFR_RESULT": "TP",
+        "VFR_ED_RA": 2,
+        "VFR_ED_TR": 6,
+        "VFR_ED_TA": 5,
+    }
+    assert (1, 6) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
+
+    format_dict = {
+        "VFR_RESULT": "FP",
+        "VFR_ED_RA": 2,
+        "VFR_ED_TR": 0,
+        "VFR_ED_TA": 0,
+    }
+    assert (0, 2) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
+
+    format_dict = {
+        "VFR_RESULT": "FP",
+        "VFR_ED_RA": 2,
+        "VFR_ED_TR": 6,
+        "VFR_ED_TA": 5,
+    }
+    assert (1, 6) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
+
+
 def test_per_record_stats_from_vcf_file():
     infile = os.path.join(data_dir, "per_record_stats_from_vcf_file.vcf")
     expect = [
@@ -36,7 +77,9 @@ def test_per_record_stats_from_vcf_file():
             "GT_CONF": 100.0,
             "GT_CONF_PERCENTILE": 0.12,
             "POS": 1,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
+            "VFR_ED_TR": 0,
+            "VFR_ED_TA": 1,
             "VFR_ALLELE_LEN": 1,
             "VFR_ALLELE_MATCH_COUNT": 0,
             "VFR_ALLELE_MATCH_FRAC": 0.0,
@@ -51,7 +94,9 @@ def test_per_record_stats_from_vcf_file():
             "GT_CONF": 200.0,
             "GT_CONF_PERCENTILE": 0.95,
             "POS": 2,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
+            "VFR_ED_TR": 0,
+            "VFR_ED_TA": 1,
             "VFR_ALLELE_LEN": 1,
             "VFR_ALLELE_MATCH_COUNT": 0,
             "VFR_ALLELE_MATCH_FRAC": 0.0,
@@ -69,43 +114,57 @@ def test_summary_stats_from_per_record_stats():
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.1,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
+            "VFR_ED_TR": 1,
+            "VFR_ED_TA": 0,
         },
         {
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.12,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
+            "VFR_ED_TR": 1,
+            "VFR_ED_TA": 0,
         },
         {
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "FP",
             "VFR_ALLELE_MATCH_FRAC": 0.2,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
+            "VFR_ED_TR": 0,
+            "VFR_ED_TA": 1,
         },
         {
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "Partial_TP",
             "VFR_ALLELE_MATCH_FRAC": 0.25,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
+            "VFR_ED_TR": 2,
+            "VFR_ED_TA": 1,
         },
         {
             "VFR_FILTER": "PASS",
             "VFR_RESULT": "FP",
             "VFR_ALLELE_MATCH_FRAC": 0.3,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
+            "VFR_ED_TR": 0,
+            "VFR_ED_TA": 1,
         },
         {
             "VFR_FILTER": "FAIL",
             "VFR_RESULT": "FP",
             "VFR_ALLELE_MATCH_FRAC": 0.4,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
+            "VFR_ED_TR": 3,
+            "VFR_ED_TA": 1,
         },
         {
             "VFR_FILTER": "FAIL_BUT_TEST",
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.5,
-            "VFR_EDIT_DIST": 1,
+            "VFR_ED_RA": 1,
+            "VFR_ED_TR": 1,
+            "VFR_ED_TA": 0,
         },
     ]
     expect = {
@@ -113,10 +172,12 @@ def test_summary_stats_from_per_record_stats():
         "ALL": {
             "TP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.72, "SUM_EDIT_DIST": 3},
             "FP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.75, "SUM_EDIT_DIST": 3},
+            "EDIT_DIST_COUNTS": {"numerator": 4, "denominator": 7},
         },
         "FILT": {
             "TP": {"Count": 2, "SUM_ALLELE_MATCH_FRAC": 0.22, "SUM_EDIT_DIST": 2},
             "FP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.75, "SUM_EDIT_DIST": 3},
+            "EDIT_DIST_COUNTS": {"numerator": 3, "denominator": 6},
         },
     }
     got = vcf_stats.summary_stats_from_per_record_stats(record_stats)

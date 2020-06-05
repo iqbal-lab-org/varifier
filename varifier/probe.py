@@ -1,5 +1,7 @@
 import pyfastaq
 
+from varifier import edit_distance
+
 
 class Probe:
     def __init__(self, seq, allele_start, allele_end):
@@ -15,6 +17,16 @@ class Probe:
 
     def allele_seq(self):
         return self.seq[self.allele_start : self.allele_end + 1]
+
+    def map_hit_includes_allele(self, map_hit):
+        if map_hit.strand == -1:
+            start = len(self.seq) - map_hit.q_en
+            end = len(self.seq) - map_hit.q_st
+        else:
+            start = map_hit.q_st
+            end = map_hit.q_en
+
+        return start < self.allele_start and self.allele_end < end
 
     def allele_match_counts(self, map_hit):
         """Given a mappy minimap2 hit, works out how many positions in the
@@ -63,4 +75,78 @@ class Probe:
                 raise RuntimeError(
                     f"Unexpected cigar operator number {operator} with length {length} from cigar"
                 )
+
+        if map_hit.strand == -1:
+            map_hit.cigar.reverse()
+
         return matches, total_positions
+
+    def padded_probe_or_ref_seq(self, map_hit, ref_seq=None):
+        # Cigar operators:
+        # 1  I  Insertion in query (pad in ref)
+        # 2  D  Deletion in query (pad in query)
+        # 7  =  Match
+        # 8  X  Mismatch
+        if map_hit.strand == -1:
+            q_st = len(self.seq) - map_hit.q_en
+        else:
+            q_st = map_hit.q_st
+
+        padded_seq = []
+
+        if ref_seq is None:
+            ref_seq = self.seq
+            pad_operators = {2}
+            non_pad_operators = {1, 7, 8}
+            if map_hit.strand == -1:
+                ref_seq = pyfastaq.sequences.Fasta("probe", self.seq)
+                ref_seq.revcomp()
+            position = q_st
+        else:
+            pad_operators = {1}
+            non_pad_operators = {2, 7, 8}
+            position = map_hit.r_st
+
+        for operator_length, operator_type in map_hit.cigar:
+            if operator_type in pad_operators:
+                padded_seq.append("-" * operator_length)
+            elif operator_type in non_pad_operators:
+                padded_seq.append(ref_seq[position : position + operator_length])
+                position += operator_length
+            else:
+                raise RuntimeError(
+                    f"Unexpected cigar operator number {operator_type} with length {operator_length} from cigar"
+                )
+
+        if map_hit.strand == -1:
+            padded_seq.extend(["N"] * map_hit.q_st)
+            padded_seq = pyfastaq.sequences.Fasta("seq", "".join(padded_seq))
+            padded_seq.revcomp()
+            return padded_seq.seq
+        else:
+            return "".join(["N"] * map_hit.q_st + padded_seq)
+
+    def padded_seq_allele_start_end_coords(self, padded_seq):
+        position = 0
+        allele_start = None
+
+        for index, base in enumerate(padded_seq):
+            if base != "-":
+                if position == self.allele_start:
+                    allele_start = index
+                if position == self.allele_end:
+                    return allele_start, index
+
+                position += 1
+
+        return None, None
+
+    def edit_distance_vs_ref(self, map_hit, ref_seq):
+        padded_probe_seq = self.padded_probe_or_ref_seq(map_hit)
+        padded_ref_seq = self.padded_probe_or_ref_seq(map_hit, ref_seq=ref_seq)
+        start, end = self.padded_seq_allele_start_end_coords(padded_probe_seq)
+        if start == None:
+            return -1
+        probe_allele = padded_probe_seq[start : end + 1]
+        ref_allele = padded_ref_seq[start : end + 1]
+        return edit_distance.edit_distance_from_aln_strings(probe_allele, ref_allele)

@@ -11,7 +11,7 @@ def _needleman_wunsch(seq1, seq2, match=1, mismatch=-1, gap_open=-5, gap_extend=
     return alignments[0][0], alignments[0][1]
 
 
-def _edit_distance_from_aln_strings(str1, str2):
+def edit_distance_from_aln_strings(str1, str2):
     """Input should be seqs output by _needleman_wunsch().
     Returns the edit distance between the sequences"""
     assert len(str1) == len(str2)
@@ -37,4 +37,4 @@ def edit_distance_between_seqs(seq1, seq2):
     and the edit distance is returned. An indel of any length
     is counted as one edit"""
     aln1, aln2 = _needleman_wunsch(seq1, seq2)
-    return _edit_distance_from_aln_strings(aln1, aln2)
+    return edit_distance_from_aln_strings(aln1, aln2)

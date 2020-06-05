@@ -20,7 +20,11 @@ def _add_vfr_filter_to_record(record, want_ref_calls=False):
     genotypes = genotype.split("/")
     called_alleles = set(genotypes)
 
-    if len(called_alleles) != 1 or "." in called_alleles or (called_alleles == {"0"} and not want_ref_calls):
+    if (
+        len(called_alleles) != 1
+        or "." in called_alleles
+        or (called_alleles == {"0"} and not want_ref_calls)
+    ):
         record.set_format_key_value("VFR_FILTER", "CANNOT_USE_GT")
         return
 
@@ -76,15 +80,19 @@ def _annotate_sorted_list_of_records(records, want_ref_calls=False):
 def add_qc_to_vcf(infile, outfile, want_ref_calls=False):
     """Annotated VCF file with QC info needed for calculating precision and recall.
     Adds various tags to each record."""
-    header_lines, vcf_records = vcf_file_read.vcf_file_to_dict(infile, remove_useless_start_nucleotides=True)
+    header_lines, vcf_records = vcf_file_read.vcf_file_to_dict(
+        infile, remove_useless_start_nucleotides=True
+    )
     assert header_lines[-1].startswith("#CHROM")
 
     with open(outfile, "w") as f:
         print(*header_lines[:-1], sep="\n", file=f)
-        print('##FORMAT=<ID=VFR_FILTER,Number=1,Type=String,Description="Initial filtering of VCF record. If PASS, then it is evaluated, otherwise is skipped">', file=f)
+        print(
+            '##FORMAT=<ID=VFR_FILTER,Number=1,Type=String,Description="Initial filtering of VCF record. If PASS, then it is evaluated, otherwise is skipped">',
+            file=f,
+        )
         print(header_lines[-1], file=f)
 
         for chrom, records in sorted(vcf_records.items()):
             _annotate_sorted_list_of_records(records, want_ref_calls=want_ref_calls)
             print(*records, sep="\n", file=f)
-
