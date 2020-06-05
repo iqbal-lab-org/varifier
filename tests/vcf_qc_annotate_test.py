@@ -15,7 +15,9 @@ def test_add_vfr_filter_to_record():
     vcf_qc_annotate._add_vfr_filter_to_record(record)
     assert record.FORMAT["VFR_FILTER"] == "NO_ALTS"
 
-    record = vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tMISMAPPED_UNPLACEABLE\t.\tGT\t0/0")
+    record = vcf_record.VcfRecord(
+        "ref\t42\t.\tT\tA\t.\tMISMAPPED_UNPLACEABLE\t.\tGT\t0/0"
+    )
     vcf_qc_annotate._add_vfr_filter_to_record(record)
     assert record.FORMAT["VFR_FILTER"] == "MISMAPPED_UNPLACEABLE"
 
@@ -57,9 +59,7 @@ def test_add_vfr_filter_to_record():
 
 
 def test_fix_cluster_filter_tag():
-    cluster = [
-        vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tPASS")
-    ]
+    cluster = [vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tPASS")]
     vcf_qc_annotate._fix_cluster_filter_tag(cluster)
     assert len(cluster) == 1
     assert cluster[0].FORMAT["VFR_FILTER"] == "PASS"
@@ -73,7 +73,7 @@ def test_fix_cluster_filter_tag():
 
     cluster = [
         vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tPASS"),
-        vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tFAIL_BUT_TEST")
+        vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tFAIL_BUT_TEST"),
     ]
     vcf_qc_annotate._fix_cluster_filter_tag(cluster)
     assert len(cluster) == 2
@@ -82,7 +82,7 @@ def test_fix_cluster_filter_tag():
 
     cluster = [
         vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tFAIL_BUT_TEST"),
-        vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tFAIL_BUT_TEST")
+        vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tFAIL_BUT_TEST"),
     ]
     vcf_qc_annotate._fix_cluster_filter_tag(cluster)
     assert len(cluster) == 2
@@ -91,7 +91,7 @@ def test_fix_cluster_filter_tag():
 
     cluster = [
         vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tPASS"),
-        vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tPASS")
+        vcf_record.VcfRecord("ref\t42\t.\tT\tA\t.\tPASS\t.\tVFR_FILTER\tPASS"),
     ]
     vcf_qc_annotate._fix_cluster_filter_tag(cluster)
     assert len(cluster) == 2
@@ -111,20 +111,31 @@ def test_annotate_sorted_list_of_records():
     ]
     vcf_qc_annotate._annotate_sorted_list_of_records(records)
     expect = [
-        vcf_record.VcfRecord("ref\t1\t.\tTA\tA\t.\tPASS\t.\tGT:VFR_FILTER\t1/1:FAIL_CONFLICT"),
-        vcf_record.VcfRecord("ref\t1\t.\tT\tA\t.\tPASS\t.\tGT:VFR_FILTER\t1/1:FAIL_CONFLICT"),
+        vcf_record.VcfRecord(
+            "ref\t1\t.\tTA\tA\t.\tPASS\t.\tGT:VFR_FILTER\t1/1:FAIL_CONFLICT"
+        ),
+        vcf_record.VcfRecord(
+            "ref\t1\t.\tT\tA\t.\tPASS\t.\tGT:VFR_FILTER\t1/1:FAIL_CONFLICT"
+        ),
         vcf_record.VcfRecord("ref\t5\t.\tG\tA\t.\tPASS\t.\tGT:VFR_FILTER\t1/1:PASS"),
         vcf_record.VcfRecord("ref\t5\t.\tG\tT\t.\tPASS\t.\tFOO:VFR_FILTER\tBAR:NO_GT"),
-        vcf_record.VcfRecord("ref\t5\t.\tG\tC\t.\tPASS\t.\tGT:VFR_FILTER\t0/1:CANNOT_USE_GT"),
-        vcf_record.VcfRecord("ref\t10\t.\tTA\tA\t.\tFAIL\t.\tGT:VFR_FILTER\t1/1:FAIL_CONFLICT"),
+        vcf_record.VcfRecord(
+            "ref\t5\t.\tG\tC\t.\tPASS\t.\tGT:VFR_FILTER\t0/1:CANNOT_USE_GT"
+        ),
+        vcf_record.VcfRecord(
+            "ref\t10\t.\tTA\tA\t.\tFAIL\t.\tGT:VFR_FILTER\t1/1:FAIL_CONFLICT"
+        ),
         vcf_record.VcfRecord("ref\t11\t.\tA\tC\t.\tPASS\t.\tGT:VFR_FILTER\t1/1:PASS"),
     ]
     assert records == expect
 
+
 def test_add_qc_to_vcf():
     infile = os.path.join(data_dir, "add_qc_to_vcf.in.vcf")
     expect_want_ref = os.path.join(data_dir, "add_qc_to_vcf.expect.want_ref_calls.vcf")
-    expect_not_want_ref = os.path.join(data_dir, "add_qc_to_vcf.expect.not_want_ref_calls.vcf")
+    expect_not_want_ref = os.path.join(
+        data_dir, "add_qc_to_vcf.expect.not_want_ref_calls.vcf"
+    )
     outfile = "tmp.add_qc_to_vcf.out.vcf"
     if os.path.exists(outfile):
         os.unlink(outfile)
