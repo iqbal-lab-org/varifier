@@ -18,6 +18,16 @@ class Probe:
     def allele_seq(self):
         return self.seq[self.allele_start : self.allele_end + 1]
 
+    def map_hit_includes_allele(self, map_hit):
+        if map_hit.strand == -1:
+            start = len(self.seq) - map_hit.q_en
+            end = len(self.seq) - map_hit.q_st
+        else:
+            start = map_hit.q_st
+            end = map_hit.q_en
+
+        return start < self.allele_start and self.allele_end < end
+
     def allele_match_counts(self, map_hit):
         """Given a mappy minimap2 hit, works out how many positions in the
         alignment between the allele and the reference match.
@@ -129,14 +139,14 @@ class Probe:
 
                 position += 1
 
-        raise RuntimeError(
-            f"Error getting allele start and end position from sequence. Looked for {self.allele_start},{self.allele_end} in sequence: {padded_seq}"
-        )
+        return None, None
 
     def edit_distance_vs_ref(self, map_hit, ref_seq):
         padded_probe_seq = self.padded_probe_or_ref_seq(map_hit)
         padded_ref_seq = self.padded_probe_or_ref_seq(map_hit, ref_seq=ref_seq)
         start, end = self.padded_seq_allele_start_end_coords(padded_probe_seq)
+        if start == None:
+            return -1
         probe_allele = padded_probe_seq[start : end + 1]
         ref_allele = padded_ref_seq[start : end + 1]
         return edit_distance.edit_distance_from_aln_strings(probe_allele, ref_allele)

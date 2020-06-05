@@ -76,6 +76,20 @@ def probe_hits_to_best_allele_counts(probe, hits, debug_outfile=None):
     return best
 
 
+def hit_debug_string(hit, map_probe):
+    contain = map_probe.map_hit_includes_allele(hit)
+    return "\t".join(
+        [
+            f"contain_allele={contain}",
+            f"ctg={hit.ctg}",
+            f"strand={hit.strand}",
+            f"qstart/end={hit.q_st}/{hit.q_en}",
+            f"rstart/end={hit.r_st}/{hit.r_en}",
+            f"cigar={hit.cigar}",
+        ]
+    )
+
+
 def evaluate_vcf_record(
     mapper,
     vcf_record,
@@ -98,19 +112,22 @@ def evaluate_vcf_record(
 
     if map_outfile is not None:
         print("VCF", vcf_record, sep="\t", file=map_outfile)
-        print("PROBE", alt_probe.seq, sep="\t", file=map_outfile)
+        print(
+            "ALT_PROBE",
+            f"len={len(alt_probe.seq)}",
+            alt_probe.seq,
+            sep="\t",
+            file=map_outfile,
+        )
         for hit in alt_hits:
             print(
-                "PROBE_HIT",
-                f"ctg={hit.ctg}",
-                f"strand={hit.strand}",
-                f"qstart/end={hit.q_st}/{hit.q_en}",
-                f"rstart/end={hit.r_st}/{hit.r_en}",
-                f"cigar={hit.cigar}",
+                "ALT_PROBE_HIT",
+                hit_debug_string(hit, alt_probe),
                 sep="\t",
                 file=map_outfile,
             )
 
+    alt_hits = [x for x in alt_hits if alt_probe.map_hit_includes_allele(x)]
     alt_match, alt_allele_length, alt_best_hit = probe_hits_to_best_allele_counts(
         alt_probe, alt_hits, debug_outfile=map_outfile
     )
@@ -120,10 +137,30 @@ def evaluate_vcf_record(
         vcf_record.set_format_key_value("VFR_ED_SCORE", "0")
         return
 
+    ref_hits = list(mapper.map(ref_probe.seq, MD=True))
+    if map_outfile is not None:
+        print("VCF", vcf_record, sep="\t", file=map_outfile)
+        print(
+            "REF_PROBE",
+            f"len={len(ref_probe.seq)}",
+            ref_probe.seq,
+            sep="\t",
+            file=map_outfile,
+        )
+        for hit in ref_hits:
+            print(
+                "REF_PROBE_HIT",
+                hit_debug_string(hit, ref_probe),
+                sep="\t",
+                file=map_outfile,
+            )
+
     ref_hits = [
         x
-        for x in mapper.map(ref_probe.seq, MD=True)
-        if alt_best_hit.ctg == x.ctg and x.r_st == alt_best_hit.r_st
+        for x in ref_hits
+        if ref_probe.map_hit_includes_allele(x)
+        and alt_best_hit.ctg == x.ctg
+        and x.r_st == alt_best_hit.r_st
     ]
 
     if len(ref_hits) == 0:
@@ -154,6 +191,8 @@ def evaluate_vcf_record(
     else:
         result = "Partial_TP"
     vcf_record.set_format_key_value("VFR_RESULT", result)
+    if map_outfile is not None:
+        print("FINISH:", vcf_record, file=map_outfile)
 
 
 def fasta_to_dict(filename):
