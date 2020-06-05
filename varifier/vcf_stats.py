@@ -44,6 +44,8 @@ def per_record_stats_from_vcf_file(infile):
         "GT_CONF",
         "GT_CONF_PERCENTILE",
         "VFR_ED_RA",
+        "VFR_ED_TR",
+        "VFR_ED_TA",
         "VFR_FILTER",
         "VFR_ALLELE_LEN",
         "VFR_ALLELE_MATCH_COUNT",
@@ -57,6 +59,8 @@ def per_record_stats_from_vcf_file(infile):
         "GT_CONF_PERCENTILE": float,
         "FRS": float,
         "VFR_ED_RA": int,
+        "VFR_ED_TR": int,
+        "VFR_ED_TA": int,
         "VFR_ALLELE_MATCH_FRAC": float,
         "VFR_ALLELE_LEN": int,
         "VFR_ALLELE_MATCH_COUNT": int,
@@ -79,6 +83,23 @@ def per_record_stats_from_vcf_file(infile):
     return stats
 
 
+def format_dict_to_edit_dist_scores(stats):
+    for key in ("VFR_ED_TR", "VFR_ED_TA", "VFR_ED_RA", "VFR_RESULT"):
+        if key not in stats or stats[key] == "NA":
+            return None, None
+
+    if stats["VFR_RESULT"].startswith("FP"):
+        if stats["VFR_ED_TR"] == 0:
+            return 0, stats["VFR_ED_RA"]
+    else:
+        if stats["VFR_ED_TA"] == 0:
+            return stats["VFR_ED_RA"], stats["VFR_ED_RA"]
+        elif stats["VFR_ED_TR"] == 0:
+            return 0, stats["VFR_ED_RA"]
+
+    return stats["VFR_ED_TR"] - stats["VFR_ED_TA"], stats["VFR_ED_TR"]
+
+
 def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
     """Given a list of stats made by per_record_stats_from_vcf_file(),
     returns a dictionary of summary stats. Set for_recall to True if the
@@ -97,6 +118,7 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
             "TP": copy.copy(default_counts),
             fp_key: copy.copy(default_counts),
         }
+        stats[key]["EDIT_DIST_COUNTS"] = {"numerator": 0, "denominator": 0}
 
     for d in per_record_stats:
         if d["VFR_FILTER"] == "FAIL_CONFLICT":
@@ -112,6 +134,8 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
             if d["VFR_FILTER"] == "PASS":
                 keys_to_update.append("FILT")
 
+            ed_num, ed_den = format_dict_to_edit_dist_scores(d)
+
             for key in keys_to_update:
                 try:
                     stats[key][result]["SUM_ALLELE_MATCH_FRAC"] += d[
@@ -122,5 +146,9 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
 
                 stats[key][result]["SUM_EDIT_DIST"] += d["VFR_ED_RA"]
                 stats[key][result]["Count"] += 1
+
+                if ed_num is not None:
+                    stats[key]["EDIT_DIST_COUNTS"]["numerator"] += ed_num
+                    stats[key]["EDIT_DIST_COUNTS"]["denominator"] += ed_den
 
     return stats

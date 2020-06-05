@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 
-from varifier import probe_mapping, recall, utils, vcf_qc_annotate, vcf_stats
+from varifier import probe_mapping, recall, utils, vcf_stats
 
 
 def _add_overall_precision_and_recall_to_summary_stats(summary_stats):
@@ -26,6 +26,15 @@ def _add_overall_precision_and_recall_to_summary_stats(summary_stats):
             else:
                 d[prec_or_recall] = 0
                 d[f"{prec_or_recall}_frac"] = 0
+
+            if d["EDIT_DIST_COUNTS"]["denominator"] > 0:
+                d[f"{prec_or_recall}_edit_dist"] = round(
+                    d["EDIT_DIST_COUNTS"]["numerator"]
+                    / d["EDIT_DIST_COUNTS"]["denominator"],
+                    8,
+                )
+            else:
+                d[f"{prec_or_recall}_edit_dist"] = 0
 
 
 def evaluate_vcf(
