@@ -26,6 +26,11 @@ def test_frs_from_vcf_record():
 
 def test_format_dict_to_edit_dist_scores():
     format_dict = {
+        "VFR_RESULT": "CANNOT_USE_GT",
+    }
+    assert (None, None) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
+
+    format_dict = {
         "VFR_RESULT": "TP",
         "VFR_ED_RA": 1,
         "VFR_ED_TR": 1,
@@ -65,6 +70,22 @@ def test_format_dict_to_edit_dist_scores():
     }
     assert (1, 6) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
 
+    format_dict = {
+        "VFR_RESULT": "TP",
+        "VFR_ED_RA": 2,
+        "VFR_ED_TR": 0,
+        "VFR_ED_TA": 1,
+    }
+    assert (0, 2) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
+
+    format_dict = {
+        "VFR_RESULT": "TP",
+        "VFR_ED_RA": 1,
+        "VFR_ED_TR": "NA",
+        "VFR_ED_TA": 5,
+        "VFR_ALLELE_MATCH_FRAC": 0.75,
+    }
+    assert (0.75, 1) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
 
 def test_per_record_stats_from_vcf_file():
     infile = os.path.join(data_dir, "per_record_stats_from_vcf_file.vcf")

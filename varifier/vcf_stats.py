@@ -84,12 +84,22 @@ def per_record_stats_from_vcf_file(infile):
 
 
 def format_dict_to_edit_dist_scores(stats):
-    for key in ("VFR_ED_TR", "VFR_ED_TA", "VFR_ED_RA", "VFR_RESULT"):
-        if key not in stats or stats[key] == "NA":
-            return None, None
+    if stats["VFR_RESULT"] == "CANNOT_USE_GT":
+        return None, None
 
+    # Can have cases where VFR_ED_TR is not present. This is the edit
+    # distance between the truth and ref allele. Calculated from mapping
+    # of ref probe to the truth.
+    # Cases are:
+    #  - FP because the alt probe does not map to the truth ref. In this
+    #    case we don't map the ref probe to the truth.
+    #  - FP, alt probe mapped, but the truth probe did not map
+    #  - TP or Partial_TP, and we have VFR_ED_RA,VFR_ED_TA but not VFR_ED_TR.
+    #    This is where alt probe mapped, but ref probe did not map, or no
+    #    mapping found in same place as the alt mapping
+    #    (either way, is counted as no hit).
     if stats["VFR_RESULT"].startswith("FP"):
-        if stats["VFR_ED_TR"] == 0:
+        if stats["VFR_ED_TR"] in [0, "NA"]:
             return 0, stats["VFR_ED_RA"]
     else:
         if stats["VFR_ED_TA"] == 0:
@@ -97,7 +107,14 @@ def format_dict_to_edit_dist_scores(stats):
         elif stats["VFR_ED_TR"] == 0:
             return 0, stats["VFR_ED_RA"]
 
-    return stats["VFR_ED_TR"] - stats["VFR_ED_TA"], stats["VFR_ED_TR"]
+    # If we're here and don't know VFR_ED_TR, it's because the ref probe is very
+    # different from the truth probe. It's almost certainly a big indel.
+    # Only thing left we can do is return the proportion of the allele that
+    # matches the truth
+    if stats["VFR_ED_TR"] == "NA":
+        return stats["VFR_ALLELE_MATCH_FRAC"], 1
+    else:
+        return stats["VFR_ED_TR"] - stats["VFR_ED_TA"], stats["VFR_ED_TR"]
 
 
 def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
