@@ -28,12 +28,6 @@ class Probe:
 
         return start < self.allele_start and self.allele_end < end
 
-    def allele_is_in_mask(self, mask):
-        for i in range(self.allele_start, self.allele_end + 1):
-            if i in mask:
-                return True
-        return False
-
     def allele_match_counts(self, map_hit):
         """Given a mappy minimap2 hit, works out how many positions in the
         alignment between the allele and the reference match.
