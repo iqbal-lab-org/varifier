@@ -9,6 +9,18 @@ def test_allele_seq():
     assert p.allele_seq() == "CG"
 
 
+def test_allele_is_in_mask():
+    p = probe.Probe("ACTGACTGACTG", 3, 6)
+    assert not p.allele_is_in_mask({2})
+    assert p.allele_is_in_mask({2, 3})
+    assert p.allele_is_in_mask({3})
+    assert p.allele_is_in_mask({4})
+    assert p.allele_is_in_mask({5})
+    assert p.allele_is_in_mask({6})
+    assert p.allele_is_in_mask({6, 7})
+    assert not p.allele_is_in_mask({7})
+
+
 def test_probe_allele_match_counts():
     Hit = collections.namedtuple("Hit", ["NM", "q_st", "strand", "cigar"])
     p = probe.Probe("ACGTA", 2, 2)
