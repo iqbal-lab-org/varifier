@@ -123,12 +123,9 @@ class Probe:
                 padded_seq.append(ref_seq[position : position + operator_length])
                 if ref_mask is not None:
                     for i in range(position, position + operator_length):
-                        print("i=", i)
                         if map_hit.strand == -1:
-                            print("check coord", len(ref_seq) - i - 1)
                             padded_mask.append((len(ref_seq) - i - 1) in ref_mask)
                         else:
-                            print("check coord", i)
                             padded_mask.append(i in ref_mask)
                 position += operator_length
             else:
