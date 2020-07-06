@@ -99,6 +99,7 @@ def evaluate_vcf_record(
     truth_seqs,
     map_outfile=None,
     use_fail_conflict=False,
+    truth_mask=None,
 ):
     if vcf_record.FORMAT["VFR_FILTER"] not in _get_wanted_format(use_fail_conflict):
         return
@@ -168,19 +169,23 @@ def evaluate_vcf_record(
     else:
         ref_hits.sort(key=operator.attrgetter("NM"))
         best_ref_hit = ref_hits[0]
-        edit_dist_ref_allele = ref_probe.edit_distance_vs_ref(
-            best_ref_hit, truth_seqs[best_ref_hit.ctg]
+        mask = None if truth_mask is None else truth_mask[best_ref_hit.ctg]
+        edit_dist_ref_allele, ref_allele_in_mask = ref_probe.edit_distance_vs_ref(
+            best_ref_hit, truth_seqs[best_ref_hit.ctg], ref_mask=mask,
         )
         vcf_record.set_format_key_value("VFR_ED_TR", str(edit_dist_ref_allele))
 
-    edit_dist_alt_allele = alt_probe.edit_distance_vs_ref(
-        alt_best_hit, truth_seqs[alt_best_hit.ctg]
+    mask = None if truth_mask is None else truth_mask[alt_best_hit.ctg]
+    edit_dist_alt_allele, alt_allele_in_mask = alt_probe.edit_distance_vs_ref(
+        alt_best_hit, truth_seqs[alt_best_hit.ctg], ref_mask=mask,
     )
     vcf_record.set_format_key_value("VFR_ED_TA", str(edit_dist_alt_allele))
     vcf_record.set_format_key_value("VFR_ALLELE_LEN", str(alt_allele_length))
     vcf_record.set_format_key_value("VFR_ALLELE_MATCH_COUNT", str(alt_match))
     match_frac = round(alt_match / alt_allele_length, 5) if alt_allele_length > 0 else 0
     vcf_record.set_format_key_value("VFR_ALLELE_MATCH_FRAC", str(match_frac))
+    in_mask = "1" if ref_allele_in_mask or alt_allele_in_mask else "0"
+    vcf_record.set_format_key_value("VFR_IN_MASK", in_mask)
     if alt_match == 0 or alt_allele_length == 0:
         result = "FP"
     elif match_frac == 1:
@@ -211,6 +216,7 @@ def annotate_vcf_with_probe_mapping(
     use_fail_conflict=False,
     use_ref_calls=False,
     debug=False,
+    truth_mask=None,
 ):
     vcf_ref_seqs = fasta_to_dict(vcf_ref_fasta)
     truth_ref_seqs = fasta_to_dict(truth_ref_fasta)
@@ -219,6 +225,7 @@ def annotate_vcf_with_probe_mapping(
     probes_and_vcf_reader = get_probes_and_vcf_records(
         vcf_with_qc, vcf_ref_seqs, flank_length, use_fail_conflict=use_fail_conflict,
     )
+
 
     # Some notes on the mapper options...
     #
@@ -255,7 +262,8 @@ def annotate_vcf_with_probe_mapping(
         f_map = None
 
     new_header_lines = [
-        '##FORMAT=<ID=VFR_RESULT,Number=1,Type=String,Description="FP, TP, or Partial_TP when part of the allele matches the truth reference>"',
+        '##FORMAT=<ID=IN_MASK,Number=1,Type=String,Description="Whether or not the variant is in the truth genome mask">',
+        '##FORMAT=<ID=VFR_RESULT,Number=1,Type=String,Description="FP, TP, or Partial_TP when part of the allele matches the truth reference">',
         '##FORMAT=<ID=VFR_ALLELE_LEN,Number=1,Type=Integer,Description="Number of positions in allele that were checked if they match the truth">',
         '##FORMAT=<ID=VFR_ALLELE_MATCH_COUNT,Number=1,Type=String,Description="Number of positions in allele that match the truth">',
         '##FORMAT=<ID=VFR_ALLELE_MATCH_FRAC,Number=1,Type=String,Description="Fraction of positions in allele that match the truth">',
@@ -283,6 +291,7 @@ def annotate_vcf_with_probe_mapping(
                 truth_ref_seqs,
                 map_outfile=f_map,
                 use_fail_conflict=use_fail_conflict,
+                truth_mask=truth_mask,
             )
             print(vcf_record, file=f_vcf)
 

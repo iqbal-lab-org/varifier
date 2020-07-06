@@ -40,6 +40,7 @@ def test_annotate_vcf_with_probe_mapping():
     tmp_vcf_revcomp = f"{tmp_vcf}.revcomp"
     tmp_map = "tmp.probe_mapping.annotate_vcf_with_probe_mapping.map"
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
+    truth_mask = {"truth":{80, 81, 82}}
     probe_mapping.annotate_vcf_with_probe_mapping(
         vcf_in,
         vcf_ref_fa,
@@ -48,6 +49,7 @@ def test_annotate_vcf_with_probe_mapping():
         tmp_vcf,
         map_outfile=tmp_map,
         use_fail_conflict=True,
+        truth_mask=truth_mask,
     )
     probe_mapping.annotate_vcf_with_probe_mapping(
         vcf_in,
@@ -56,6 +58,7 @@ def test_annotate_vcf_with_probe_mapping():
         100,
         tmp_vcf_revcomp,
         use_fail_conflict=True,
+        truth_mask=truth_mask,
     )
     expect_vcf = os.path.join(data_dir, "annotate_vcf_with_probe_mapping.expect.vcf")
     expect_rev_vcf = os.path.join(
