@@ -1,0 +1,87 @@
+{
+  "Precision": {
+    "ALL": {
+      "EDIT_DIST_COUNTS": {
+        "denominator": 11,
+        "numerator": 10
+      },
+      "FP": {
+        "Count": 1,
+        "SUM_ALLELE_MATCH_FRAC": 0.0,
+        "SUM_EDIT_DIST": 1
+      },
+      "Precision": 0.90909091,
+      "Precision_edit_dist": 0.90909091,
+      "Precision_frac": 0.90909091,
+      "TP": {
+        "Count": 10,
+        "SUM_ALLELE_MATCH_FRAC": 10.0,
+        "SUM_EDIT_DIST": 10
+      }
+    },
+    "FILT": {
+      "EDIT_DIST_COUNTS": {
+        "denominator": 10,
+        "numerator": 9
+      },
+      "FP": {
+        "Count": 1,
+        "SUM_ALLELE_MATCH_FRAC": 0.0,
+        "SUM_EDIT_DIST": 1
+      },
+      "Precision": 0.9,
+      "Precision_edit_dist": 0.9,
+      "Precision_frac": 0.9,
+      "TP": {
+        "Count": 9,
+        "SUM_ALLELE_MATCH_FRAC": 9.0,
+        "SUM_EDIT_DIST": 9
+      }
+    },
+    "UNUSED": {
+      "CONFLICT": 1,
+      "MASKED": 0,
+      "OTHER": 1
+    }
+  },
+  "Recall": {
+    "ALL": {
+      "EDIT_DIST_COUNTS": {
+        "denominator": 13,
+        "numerator": 10
+      },
+      "FN": {
+        "Count": 3,
+        "SUM_ALLELE_MATCH_FRAC": 1.0,
+        "SUM_EDIT_DIST": 3
+      },
+      "Recall": 0.76923077,
+      "Recall_edit_dist": 0.76923077,
+      "Recall_frac": 0.84615385,
+      "TP": {
+        "Count": 10,
+        "SUM_ALLELE_MATCH_FRAC": 10.0,
+        "SUM_EDIT_DIST": 10
+      }
+    },
+    "FILT": {
+      "EDIT_DIST_COUNTS": {
+        "denominator": 13,
+        "numerator": 9
+      },
+      "FN": {
+        "Count": 4,
+        "SUM_ALLELE_MATCH_FRAC": 1.0,
+        "SUM_EDIT_DIST": 4
+      },
+      "Recall": 0.69230769,
+      "Recall_edit_dist": 0.69230769,
+      "Recall_frac": 0.76923077,
+      "TP": {
+        "Count": 9,
+        "SUM_ALLELE_MATCH_FRAC": 9.0,
+        "SUM_EDIT_DIST": 9
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##contig=<ID=ref,length=430>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##bcftools_normVersion=1.10.2 (pysam)+htslib-1.10.2 (pysam)
+##bcftools_normCommand=norm -c x -d any -f /home/vagrant/git/varifier/tests/data/truth_variant_finding/make_truth_vcf.ref.fa -o /tmp/tmpin4g4f2q tmp.truth_variant_finding.make_truth_ref/03.probe_filtered.vcf; Date=Mon Jul  6 15:22:12 2020
+##bcftools_normCommand=norm -c x -d any -f /home/vagrant/git/varifier/tests/data/truth_variant_finding/make_truth_vcf.ref.fa -o /tmp/tmp68jx22d3 tmp.truth_variant_finding.make_truth_ref/04.truth.vcf; Date=Mon Jul  6 15:22:12 2020
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref	40	0	A	G	.	PASS	.	GT	1/1
+ref	80	2	T	C	.	PASS	.	GT	1/1
+ref	109	3	G	C	.	PASS	.	GT	1/1
+ref	110	4	C	T	.	PASS	.	GT	1/1
+ref	111	5	A	G	.	PASS	.	GT	1/1
+ref	140	6	GT	G	.	PASS	.	GT	1/1
+ref	160	7	A	AT	.	PASS	.	GT	1/1
+ref	250	8	G	C	.	PASS	.	GT	1/1
+ref	300	9	AT	A	.	PASS	.	GT	1/1
+ref	302	10	GC	G	.	PASS	.	GT	1/1
+ref	306	11	AT	A	.	PASS	.	GT	1/1
+ref	309	12	G	GAGA	.	PASS	.	GT	1/1
