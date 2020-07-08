@@ -47,6 +47,7 @@ def evaluate_vcf(
     debug=False,
     force=False,
     ref_mask_bed_file=None,
+    truth_mask_bed_file=None,
     discard_ref_calls=True,
 ):
     if force:
@@ -66,6 +67,11 @@ def evaluate_vcf(
     else:
         map_outfile = None
 
+    if truth_mask_bed_file is None:
+        truth_mask = None
+    else:
+        truth_mask = utils.load_mask_bed_file(truth_mask_bed_file)
+
     probe_mapping.annotate_vcf_with_probe_mapping(
         vcf_to_eval,
         vcf_ref_fasta,
@@ -74,6 +80,7 @@ def evaluate_vcf(
         vcf_for_precision,
         map_outfile=map_outfile,
         use_ref_calls=not discard_ref_calls,
+        truth_mask=truth_mask,
     )
 
     recall_dir = os.path.join(outdir, "recall")
@@ -81,9 +88,11 @@ def evaluate_vcf(
         vcf_ref_fasta,
         vcf_for_precision,
         recall_dir,
+        flank_length,
         debug=debug,
         truth_fasta=truth_ref_fasta if truth_vcf is None else None,
         truth_vcf=truth_vcf,
+        truth_mask=truth_mask,
     )
     if ref_mask_bed_file is not None:
         utils.mask_vcf_file(

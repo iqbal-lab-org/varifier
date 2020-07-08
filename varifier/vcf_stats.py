@@ -43,6 +43,7 @@ def per_record_stats_from_vcf_file(infile):
         "FRS",
         "GT_CONF",
         "GT_CONF_PERCENTILE",
+        "VFR_IN_MASK",
         "VFR_ED_RA",
         "VFR_ED_TR",
         "VFR_ED_TA",
@@ -58,6 +59,7 @@ def per_record_stats_from_vcf_file(infile):
         "GT_CONF": float,
         "GT_CONF_PERCENTILE": float,
         "FRS": float,
+        "VFR_IN_MASK": int,
         "VFR_ED_RA": int,
         "VFR_ED_TR": int,
         "VFR_ED_TA": int,
@@ -122,7 +124,7 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
     returns a dictionary of summary stats. Set for_recall to True if the
     VCF was made for getting recall"""
     default_counts = {k: 0 for k in ("Count", "SUM_ALLELE_MATCH_FRAC", "SUM_EDIT_DIST")}
-    stats = {"UNUSED": {"CONFLICT": 0, "OTHER": 0}}
+    stats = {"UNUSED": {"CONFLICT": 0, "OTHER": 0, "MASKED": 0}}
 
     # By default, this is for getting the precision. Which means counting up
     # TPs and FPs. For recall, each call is an expected call from the truth.
@@ -140,6 +142,8 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
     for d in per_record_stats:
         if d["VFR_FILTER"] == "FAIL_CONFLICT":
             stats["UNUSED"]["CONFLICT"] += 1
+        elif d.get("VFR_IN_MASK", 0) == 1:
+            stats["UNUSED"]["MASKED"] += 1
         elif d["VFR_FILTER"] not in ["PASS", "FAIL_BUT_TEST"]:
             stats["UNUSED"]["OTHER"] += 1
         else:
