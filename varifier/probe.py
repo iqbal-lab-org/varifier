@@ -102,6 +102,7 @@ class Probe:
         padded_mask = []
 
         if ref_seq is None:
+            assert ref_mask is None
             ref_seq = self.seq
             pad_operators = {2}
             non_pad_operators = {1, 7, 8}
@@ -118,15 +119,12 @@ class Probe:
             if operator_type in pad_operators:
                 padded_seq.append("-" * operator_length)
                 if ref_mask is not None:
-                    padded_mask.extend(["False"] * operator_length)
+                    padded_mask.extend([False] * operator_length)
             elif operator_type in non_pad_operators:
                 padded_seq.append(ref_seq[position : position + operator_length])
                 if ref_mask is not None:
                     for i in range(position, position + operator_length):
-                        if map_hit.strand == -1:
-                            padded_mask.append((len(ref_seq) - i - 1) in ref_mask)
-                        else:
-                            padded_mask.append(i in ref_mask)
+                        padded_mask.append(i in ref_mask)
                 position += operator_length
             else:
                 raise RuntimeError(
@@ -138,13 +136,16 @@ class Probe:
             padded_seq = pyfastaq.sequences.Fasta("seq", "".join(padded_seq))
             padded_seq.revcomp()
             padded_seq = padded_seq.seq
+            if ref_mask is not None:
+                padded_mask.extend([False] * map_hit.q_st)
+                padded_mask.reverse()
         else:
             padded_seq = "".join(["N"] * map_hit.q_st + padded_seq)
+            if ref_mask is not None:
+                padded_mask = [False] * map_hit.q_st + padded_mask
 
         if ref_mask is None:
             padded_mask = [False] * len(padded_seq)
-        else:
-            padded_mask = [False] * map_hit.q_st + padded_mask
         assert len(padded_seq) == len(padded_mask)
         return padded_seq, padded_mask
 
@@ -169,6 +170,8 @@ class Probe:
             map_hit, ref_seq=ref_seq, ref_mask=ref_mask
         )
         start, end = self.padded_seq_allele_start_end_coords(padded_probe_seq)
+        x = "".join([{"N": "N", False: "0", True: "1"}[x] for x in padded_ref_mask])
+        diffs = ["|" if padded_probe_seq[i] == padded_ref_seq[i] else " " for i in range(len(padded_ref_seq))]
         if start == None:
             return -1, False
         probe_allele = padded_probe_seq[start : end + 1]
