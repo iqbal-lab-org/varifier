@@ -11,6 +11,7 @@ def run(options):
         truth_vcf=options.truth_vcf,
         debug=options.debug,
         force=options.force,
-        mask_bed_file=options.mask,
+        ref_mask_bed_file=options.ref_mask,
+        truth_mask_bed_file=options.truth_mask,
         discard_ref_calls=not options.use_ref_calls,
     )

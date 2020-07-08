@@ -36,6 +36,18 @@ def main(args=None):
     subparser_make_truth_vcf.add_argument(
         "ref_fasta", help="FASTA file of reference genome"
     )
+    subparser_make_truth_vcf.add_argument(
+        "--flank_length",
+        help="Length of sequence to add either side of variant when making probe sequences [%(default)s]",
+        type=int,
+        default=100,
+        metavar="INT",
+    )
+    subparser_make_truth_vcf.add_argument(
+        "--truth_mask",
+        help="BED file of truth genome regions to mask. Any variants in the VCF matching to the mask are flagged and will not count towards precision or recall if the output VCF is used with vcf_eval",
+        metavar="FILENAME",
+    )
 
     subparser_make_truth_vcf.add_argument("outdir", help="Name of output directory")
     subparser_make_truth_vcf.set_defaults(func=varifier.tasks.make_truth_vcf.run)
@@ -52,15 +64,20 @@ def main(args=None):
         "--flank_length",
         help="Length of sequence to add either side of variant when making probe sequences [%(default)s]",
         type=int,
-        default=500,
+        default=100,
         metavar="INT",
     )
     subparser_vcf_eval.add_argument(
         "--force", help="Replace outdir if it already exists", action="store_true"
     )
     subparser_vcf_eval.add_argument(
-        "--mask",
-        help="BED file of regions to mask. Any variants in the VCF overlapping the mask are removed at the start of the pipeline",
+        "--ref_mask",
+        help="BED file of ref regions to mask. Any variants in the VCF overlapping the mask are removed at the start of the pipeline",
+        metavar="FILENAME",
+    )
+    subparser_vcf_eval.add_argument(
+        "--truth_mask",
+        help="BED file of truth genome regions to mask. Any variants in the VCF matching to the mask are flagged and do not count towards precision or recall",
         metavar="FILENAME",
     )
     subparser_vcf_eval.add_argument(

@@ -43,41 +43,59 @@ def test_padded_probe_or_ref_seq():
     ref = "TCCGTATGG"
     ref_rev = "CCATACGGA"
     p = probe.Probe("ACGTAT", 2, 2)
+    expect_mask = [False] * 6
 
     cigar = [[5, 7]]
     hit = Hit(2, 1, 6, 1, cigar)
-    assert "NCGTAT" == p.padded_probe_or_ref_seq(hit, ref_seq=None)
-    assert "NCGTAT" == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
-    hit = Hit(2, 1, 6, -1, cigar)
-    assert "NCGTAT" == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
+    assert ("NCGTAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=None)
+    assert ("NCGTAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
+    mask = {2, 3}  # this the CG at positions 2,3 in the ref
+    expect_mask[1] = expect_mask[2] = True  # the CG are at 1,2 in the returned seq
+    assert ("NCGTAT", expect_mask) == p.padded_probe_or_ref_seq(
+        hit, ref_seq=ref, ref_mask=mask
+    )
 
+    expect_mask = [False] * 6
+    hit = Hit(2, 1, 6, -1, cigar)
+    assert ("NCGTAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
+    mask = {5, 6}  # this CG in the reverse ref is the CG at 1,2 in the ref
+    expect_mask[1] = expect_mask[2] = True  # the CG are at 1,2 in the returned seq
+    assert ("NCGTAT", expect_mask) == p.padded_probe_or_ref_seq(
+        hit, ref_seq=ref_rev, ref_mask=mask
+    )
+
+    expect_mask = [False] * 6
     cigar = [[6, 7]]
     hit = Hit(1, 0, 6, 1, cigar)
-    assert "ACGTAT" == p.padded_probe_or_ref_seq(hit, ref_seq=None)
-    assert "CCGTAT" == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
+    assert ("ACGTAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=None)
+    assert ("CCGTAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
     hit = Hit(2, 0, 5, -1, cigar)
-    assert "CCGTAT" == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
+    assert ("CCGTAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
 
     cigar = [[2, 7], [1, 1], [3, 7]]  # 1=1I4=
     hit = Hit(1, 0, 6, 1, cigar)
-    assert "ACGTAT" == p.padded_probe_or_ref_seq(hit, ref_seq=None)
-    assert "CC-GTA" == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
+    assert ("ACGTAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=None)
+    assert ("CC-GTA", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
     hit = Hit(3, 0, 6, -1, cigar)
-    assert "CCG-TA" == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
+    assert ("CCG-TA", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
 
     cigar = [[1, 7], [1, 2], [5, 7]]  # 1=1D5=
     hit = Hit(1, 0, 6, 1, cigar)
-    assert "A-CGTAT" == p.padded_probe_or_ref_seq(hit, ref_seq=None)
-    assert "CCGTATG" == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
+    expect_mask.append(False)
+    assert ("A-CGTAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=None)
+    assert ("CCGTATG", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
     hit = Hit(1, 0, 6, -1, cigar)
-    assert "CCGTATG" == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
+    assert ("CCGTATG", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
 
     cigar = [[1, 7], [1, 2], [2, 8], [2, 2], [3, 7]]  # 1=1D2X2D3=
     hit = Hit(1, 0, 7, 1, cigar)
-    assert "A-CG--TAT" == p.padded_probe_or_ref_seq(hit, ref_seq=None)
-    assert "CCGTATGG" == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
+    expect_mask = [False] * 9
+    assert ("A-CG--TAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=None)
+    expect_mask = [False] * 8
+    assert ("CCGTATGG", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref)
     hit = Hit(2, 0, 7, -1, cigar)
-    assert "TCCGTAT" == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
+    expect_mask = [False] * 7
+    assert ("TCCGTAT", expect_mask) == p.padded_probe_or_ref_seq(hit, ref_seq=ref_rev)
 
 
 def test_padded_seq_allele_start_end_coords():
@@ -97,3 +115,16 @@ def test_padded_seq_allele_start_end_coords():
     assert (2, 7) == p.padded_seq_allele_start_end_coords("ACG--T-ATC")
     assert (2, 7) == p.padded_seq_allele_start_end_coords("ACG--T-A-TC")
     assert (3, 8) == p.padded_seq_allele_start_end_coords("-ACG--T-A-TC")
+
+
+def test_edit_distance_vs_ref():
+    Hit = collections.namedtuple(
+        "Hit", ["NM", "r_st", "q_st", "q_en", "strand", "cigar"]
+    )
+    p = probe.Probe("ACGTATC", 3, 3)
+    ref = "AACGCATCC"
+    hit = Hit(1, 1, 0, 6, 1, [[6, 7]])
+    assert (1, False) == p.edit_distance_vs_ref(hit, ref)
+    assert (1, False) == p.edit_distance_vs_ref(hit, ref, ref_mask={3})
+    assert (1, False) == p.edit_distance_vs_ref(hit, ref, ref_mask={3, 5})
+    assert (1, True) == p.edit_distance_vs_ref(hit, ref, ref_mask={3, 4, 5})

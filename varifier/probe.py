@@ -81,7 +81,13 @@ class Probe:
 
         return matches, total_positions
 
-    def padded_probe_or_ref_seq(self, map_hit, ref_seq=None):
+    def padded_probe_or_ref_seq(self, map_hit, ref_seq=None, ref_mask=None):
+        """Returns a tuple: (padded seq string, mask list of bools).
+        padded seq string is the padded probe seq inferred from map_hit, or
+        if ref_seq provided then the padded ref seq matching the probe.
+        If ref_mask is given, should be a set of positions in the mask.
+        The returned mask list of bools is same length as the returned padded
+        seq string, and has True or False for whether each position is in the mask"""
         # Cigar operators:
         # 1  I  Insertion in query (pad in ref)
         # 2  D  Deletion in query (pad in query)
@@ -93,8 +99,10 @@ class Probe:
             q_st = map_hit.q_st
 
         padded_seq = []
+        padded_mask = []
 
         if ref_seq is None:
+            assert ref_mask is None
             ref_seq = self.seq
             pad_operators = {2}
             non_pad_operators = {1, 7, 8}
@@ -110,8 +118,13 @@ class Probe:
         for operator_length, operator_type in map_hit.cigar:
             if operator_type in pad_operators:
                 padded_seq.append("-" * operator_length)
+                if ref_mask is not None:
+                    padded_mask.extend([False] * operator_length)
             elif operator_type in non_pad_operators:
                 padded_seq.append(ref_seq[position : position + operator_length])
+                if ref_mask is not None:
+                    for i in range(position, position + operator_length):
+                        padded_mask.append(i in ref_mask)
                 position += operator_length
             else:
                 raise RuntimeError(
@@ -122,9 +135,19 @@ class Probe:
             padded_seq.extend(["N"] * map_hit.q_st)
             padded_seq = pyfastaq.sequences.Fasta("seq", "".join(padded_seq))
             padded_seq.revcomp()
-            return padded_seq.seq
+            padded_seq = padded_seq.seq
+            if ref_mask is not None:
+                padded_mask.extend([False] * map_hit.q_st)
+                padded_mask.reverse()
         else:
-            return "".join(["N"] * map_hit.q_st + padded_seq)
+            padded_seq = "".join(["N"] * map_hit.q_st + padded_seq)
+            if ref_mask is not None:
+                padded_mask = [False] * map_hit.q_st + padded_mask
+
+        if ref_mask is None:
+            padded_mask = [False] * len(padded_seq)
+        assert len(padded_seq) == len(padded_mask)
+        return padded_seq, padded_mask
 
     def padded_seq_allele_start_end_coords(self, padded_seq):
         position = 0
@@ -141,12 +164,23 @@ class Probe:
 
         return None, None
 
-    def edit_distance_vs_ref(self, map_hit, ref_seq):
-        padded_probe_seq = self.padded_probe_or_ref_seq(map_hit)
-        padded_ref_seq = self.padded_probe_or_ref_seq(map_hit, ref_seq=ref_seq)
+    def edit_distance_vs_ref(self, map_hit, ref_seq, ref_mask=None):
+        padded_probe_seq, _ = self.padded_probe_or_ref_seq(map_hit)
+        padded_ref_seq, padded_ref_mask = self.padded_probe_or_ref_seq(
+            map_hit, ref_seq=ref_seq, ref_mask=ref_mask
+        )
         start, end = self.padded_seq_allele_start_end_coords(padded_probe_seq)
+        x = "".join([{"N": "N", False: "0", True: "1"}[x] for x in padded_ref_mask])
+        diffs = ["|" if padded_probe_seq[i] == padded_ref_seq[i] else " " for i in range(len(padded_ref_seq))]
         if start == None:
-            return -1
+            return -1, False
         probe_allele = padded_probe_seq[start : end + 1]
         ref_allele = padded_ref_seq[start : end + 1]
-        return edit_distance.edit_distance_from_aln_strings(probe_allele, ref_allele)
+        if ref_mask is None:
+            in_mask = False
+        else:
+            in_mask = any(padded_ref_mask[start : end + 1])
+        return (
+            edit_distance.edit_distance_from_aln_strings(probe_allele, ref_allele),
+            in_mask,
+        )

@@ -3,12 +3,9 @@ import pyfastaq
 from cluster_vcf_records import vcf_file_read
 
 
-def mask_vcf_file(vcf_in, mask_bed_file, vcf_out):
-    """Removes all variants in file vcf_in where REF intersects
-    an interval in mask_bed_file. Writes new vcf file vcf_out"""
-    # This is a quick hacky implementation that is likely not very fast.
-    # Put the coords of the mask into a set, and then for each VCF record,
-    # check if the ref position(s) are in the set
+def load_mask_bed_file(mask_bed_file):
+    """Loads a BED file of ref seq names, and start and end postiions.
+    Returns a dictionary of ref seq name -> set of (0-based) coords in the mask."""
     mask = {}
     with pyfastaq.utils.open_file_read(mask_bed_file) as f:
         for line in f:
@@ -17,6 +14,16 @@ def mask_vcf_file(vcf_in, mask_bed_file, vcf_out):
                 mask[chrom] = set()
             for i in range(int(start), int(end)):
                 mask[chrom].add(i)
+    return mask
+
+
+def mask_vcf_file(vcf_in, mask_bed_file, vcf_out):
+    """Removes all variants in file vcf_in where REF intersects
+    an interval in mask_bed_file. Writes new vcf file vcf_out"""
+    # This is a quick hacky implementation that is likely not very fast.
+    # Put the coords of the mask into a set, and then for each VCF record,
+    # check if the ref position(s) are in the set
+    mask = load_mask_bed_file(mask_bed_file)
 
     with pyfastaq.utils.open_file_read(vcf_in) as f_in, open(vcf_out, "w") as f_out:
         for line in f_in:

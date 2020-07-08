@@ -85,7 +85,7 @@ def _get_only_tps_from_probe_mapped_vcf(vcf_in, vcf_out):
                 records.append(vcf_records[i])
                 i += 1
 
-            records = [x for x in records if x.FORMAT.get("VFR_RESULT", "FP") == "TP"]
+            records = [x for x in records if x.FORMAT.get("VFR_RESULT", "FP") == "TP" and x.FORMAT.get("VFR_IN_MASK", "0") != "1"]
             if len(records) > 1:
                 logging.warning(
                     "Skipping the following VCF lines. They conflict, but probe mapping thinks they are all true-positives:"
@@ -111,7 +111,7 @@ def _bcftools_norm(ref_fasta, vcf_in, vcf_out):
         print(vcf_string, end="", file=f)
 
 
-def make_truth_vcf(ref_fasta, truth_fasta, outdir, debug=False):
+def make_truth_vcf(ref_fasta, truth_fasta, outdir, flank_length, debug=False, truth_mask=None):
     _check_dependencies_in_path()
     os.mkdir(outdir)
     minimap2_vcf = os.path.join(outdir, "00.minimap2.vcf")
@@ -135,9 +135,10 @@ def make_truth_vcf(ref_fasta, truth_fasta, outdir, debug=False):
         merged_vcf,
         ref_fasta,
         truth_fasta,
-        100,
+        flank_length,
         probe_mapped_vcf,
         map_outfile=map_debug_file,
+        truth_mask=truth_mask,
     )
     _get_only_tps_from_probe_mapped_vcf(probe_mapped_vcf, probe_filtered_vcf)
     logging.info(f"Made filtered VCF file {probe_filtered_vcf}")

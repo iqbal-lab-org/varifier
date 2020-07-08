@@ -58,7 +58,14 @@ def apply_variants_to_genome(ref_fasta, vcf_file, out_fasta, pass_only=True):
 
 
 def get_recall(
-    ref_fasta, vcf_to_test, outdir, truth_fasta=None, truth_vcf=None, debug=False
+    ref_fasta,
+    vcf_to_test,
+    outdir,
+    flank_length,
+    truth_fasta=None,
+    truth_vcf=None,
+    debug=False,
+    truth_mask=None,
 ):
     os.mkdir(outdir)
 
@@ -70,7 +77,7 @@ def get_recall(
         # only need to make one truth VCF, which can be used for both cases.
         truth_outdir = os.path.join(outdir, "truth_vcf")
         truth_vcf = truth_variant_finding.make_truth_vcf(
-            ref_fasta, truth_fasta, truth_outdir, debug=debug
+            ref_fasta, truth_fasta, truth_outdir, flank_length, debug=debug, truth_mask=truth_mask,
         )
     else:
         assert truth_fasta is None
@@ -95,7 +102,7 @@ def get_recall(
             truth_vcf,
             ref_fasta,
             mutated_ref_fasta,
-            100,
+            flank_length,
             vcfs_out[all_or_filt],
             map_outfile=map_outfile,
         )

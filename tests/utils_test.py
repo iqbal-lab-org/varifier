@@ -11,6 +11,13 @@ this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "utils")
 
 
+def test_load_mask_bed_file():
+    mask_bed_file = os.path.join(data_dir, "load_mask_bed_file.bed")
+    expect = {"ref1": {42, 43, 44, 45, 47}, "ref2": {9, 10, 11}}
+    got_mask = utils.load_mask_bed_file(mask_bed_file)
+    assert got_mask == expect
+
+
 def test_mask_vcf_file():
     vcf_in = os.path.join(data_dir, "mask_vcf_file.in.vcf")
     vcf_expect = os.path.join(data_dir, "mask_vcf_file.expect.vcf")

@@ -46,7 +46,8 @@ def evaluate_vcf(
     truth_vcf=None,
     debug=False,
     force=False,
-    mask_bed_file=None,
+    ref_mask_bed_file=None,
+    truth_mask_bed_file=None,
     discard_ref_calls=True,
 ):
     if force:
@@ -54,9 +55,9 @@ def evaluate_vcf(
     os.mkdir(outdir)
 
     # Mask if needed
-    if mask_bed_file is not None:
+    if ref_mask_bed_file is not None:
         masked_vcf = os.path.join(outdir, "variants_to_eval.masked.vcf")
-        utils.mask_vcf_file(vcf_to_eval, mask_bed_file, masked_vcf)
+        utils.mask_vcf_file(vcf_to_eval, ref_mask_bed_file, masked_vcf)
         vcf_to_eval = masked_vcf
 
     # Make VCF annotated with TP/FP for precision
@@ -66,6 +67,11 @@ def evaluate_vcf(
     else:
         map_outfile = None
 
+    if truth_mask_bed_file is None:
+        truth_mask = None
+    else:
+        truth_mask = utils.load_mask_bed_file(truth_mask_bed_file)
+
     probe_mapping.annotate_vcf_with_probe_mapping(
         vcf_to_eval,
         vcf_ref_fasta,
@@ -74,6 +80,7 @@ def evaluate_vcf(
         vcf_for_precision,
         map_outfile=map_outfile,
         use_ref_calls=not discard_ref_calls,
+        truth_mask=truth_mask,
     )
 
     recall_dir = os.path.join(outdir, "recall")
@@ -81,18 +88,20 @@ def evaluate_vcf(
         vcf_ref_fasta,
         vcf_for_precision,
         recall_dir,
+        flank_length,
         debug=debug,
         truth_fasta=truth_ref_fasta if truth_vcf is None else None,
         truth_vcf=truth_vcf,
+        truth_mask=truth_mask,
     )
-    if mask_bed_file is not None:
+    if ref_mask_bed_file is not None:
         utils.mask_vcf_file(
-            vcf_for_recall_all, mask_bed_file, f"{vcf_for_recall_all}.masked.vcf"
+            vcf_for_recall_all, ref_mask_bed_file, f"{vcf_for_recall_all}.masked.vcf"
         )
         vcf_for_recall_all = f"{vcf_for_recall_all}.masked.vcf"
         utils.mask_vcf_file(
             vcf_for_recall_filtered,
-            mask_bed_file,
+            ref_mask_bed_file,
             f"{vcf_for_recall_filtered}.masked.vcf",
         )
         vcf_for_recall_filtered = f"{vcf_for_recall_filtered}.masked.vcf"

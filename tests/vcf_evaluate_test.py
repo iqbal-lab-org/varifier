@@ -56,7 +56,7 @@ def test_add_overall_precision_and_recall_to_summary_stats():
 
 
 def test_evaluate_vcf():
-    mask_bed_file = os.path.join(data_dir, "evaluate_vcf.mask.bed")
+    ref_mask_bed_file = os.path.join(data_dir, "evaluate_vcf.ref_mask.bed")
     truth_fasta = os.path.join(data_dir, "evaluate_vcf.truth.fa")
     ref_fasta = os.path.join(data_dir, "evaluate_vcf.ref.fa")
     vcf_to_eval = os.path.join(data_dir, "evaluate_vcf.to_eval.vcf")
@@ -81,7 +81,7 @@ def test_evaluate_vcf():
         tmp_out,
         debug=True,
         force=True,
-        mask_bed_file=mask_bed_file,
+        ref_mask_bed_file=ref_mask_bed_file,
     )
     summary_stats_expect_json = os.path.join(
         data_dir, "evaluate_vcf.expect.masked.summary_stats.json"
