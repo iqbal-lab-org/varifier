@@ -77,7 +77,7 @@ def get_recall(
         # only need to make one truth VCF, which can be used for both cases.
         truth_outdir = os.path.join(outdir, "truth_vcf")
         truth_vcf = truth_variant_finding.make_truth_vcf(
-            ref_fasta, truth_fasta, truth_outdir, debug=debug, truth_mask=truth_mask,
+            ref_fasta, truth_fasta, truth_outdir, flank_length, debug=debug, truth_mask=truth_mask,
         )
     else:
         assert truth_fasta is None

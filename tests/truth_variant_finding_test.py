@@ -89,13 +89,13 @@ def test_make_truth_vcf():
     truth_fasta = os.path.join(data_dir, "make_truth_vcf.truth.fa")
     tmp_out = "tmp.truth_variant_finding.make_truth_ref"
     subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
-    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out)
+    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100)
     expect_vcf = os.path.join(data_dir, "make_truth_vcf.expect.vcf")
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
     # Test same run again, but mask a position in the truth where there's a SNP
     truth_mask = {"truth": {59}}
-    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, truth_mask=truth_mask)
+    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100, truth_mask=truth_mask)
     expect_vcf = os.path.join(data_dir, "make_truth_vcf.expect.masked.vcf")
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)

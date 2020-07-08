@@ -11,6 +11,7 @@ def run(options):
         options.ref_fasta,
         options.truth_fasta,
         options.outdir,
+        options.flank_length,
         debug=options.debug,
         truth_mask=mask,
     )

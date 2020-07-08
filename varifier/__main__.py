@@ -37,6 +37,13 @@ def main(args=None):
         "ref_fasta", help="FASTA file of reference genome"
     )
     subparser_make_truth_vcf.add_argument(
+        "--flank_length",
+        help="Length of sequence to add either side of variant when making probe sequences [%(default)s]",
+        type=int,
+        default=100,
+        metavar="INT",
+    )
+    subparser_make_truth_vcf.add_argument(
         "--truth_mask",
         help="BED file of truth genome regions to mask. Any variants in the VCF matching to the mask are flagged and will not count towards precision or recall if the output VCF is used with vcf_eval",
         metavar="FILENAME",
@@ -57,7 +64,7 @@ def main(args=None):
         "--flank_length",
         help="Length of sequence to add either side of variant when making probe sequences [%(default)s]",
         type=int,
-        default=500,
+        default=100,
         metavar="INT",
     )
     subparser_vcf_eval.add_argument(

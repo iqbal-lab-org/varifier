@@ -111,7 +111,7 @@ def _bcftools_norm(ref_fasta, vcf_in, vcf_out):
         print(vcf_string, end="", file=f)
 
 
-def make_truth_vcf(ref_fasta, truth_fasta, outdir, debug=False, truth_mask=None):
+def make_truth_vcf(ref_fasta, truth_fasta, outdir, flank_length, debug=False, truth_mask=None):
     _check_dependencies_in_path()
     os.mkdir(outdir)
     minimap2_vcf = os.path.join(outdir, "00.minimap2.vcf")
@@ -135,7 +135,7 @@ def make_truth_vcf(ref_fasta, truth_fasta, outdir, debug=False, truth_mask=None)
         merged_vcf,
         ref_fasta,
         truth_fasta,
-        100,
+        flank_length,
         probe_mapped_vcf,
         map_outfile=map_debug_file,
         truth_mask=truth_mask,

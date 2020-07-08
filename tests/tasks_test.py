@@ -17,6 +17,7 @@ def test_make_truth_vcf():
     options.truth_fasta = os.path.join(data_dir, "make_truth_vcf.truth.fa")
     options.debug = False
     options.outdir = "tmp.tasks.make_truth_vcf"
+    options.flank_length = 100
     subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
     tasks.make_truth_vcf.run(options)
     got_vcf = os.path.join(options.outdir, "04.truth.vcf")
@@ -35,7 +36,7 @@ def test_vcf_eval():
     options.vcf_in = os.path.join(data_dir, "vcf_eval.to_eval.vcf")
     options.vcf_fasta = os.path.join(data_dir, "vcf_eval.ref.fa")
     options.truth_fasta = os.path.join(data_dir, "vcf_eval.truth.fa")
-    options.flank_length = 500
+    options.flank_length = 100
     options.outdir = "tmp.tasks.vcf_eval"
     options.truth_vcf = None
     options.debug = False
