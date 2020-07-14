@@ -166,6 +166,7 @@ def evaluate_vcf_record(
 
     if len(ref_hits) == 0:
         best_ref_hit = None
+        ref_allele_in_mask = False
     else:
         ref_hits.sort(key=operator.attrgetter("NM"))
         best_ref_hit = ref_hits[0]
