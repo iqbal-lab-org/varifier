@@ -37,6 +37,12 @@ def main(args=None):
         "ref_fasta", help="FASTA file of reference genome"
     )
     subparser_make_truth_vcf.add_argument(
+        "--max_recall_ref_len",
+        help="Do not include variants where REF length is more than this number. Default is no limit",
+        type=int,
+        metavar="INT",
+    )
+    subparser_make_truth_vcf.add_argument(
         "--flank_length",
         help="Length of sequence to add either side of variant when making probe sequences [%(default)s]",
         type=int,
@@ -84,6 +90,12 @@ def main(args=None):
         "--truth_vcf",
         help="VCF file of variant calls between vcf_fasta and truth_fasta, where reference of this VCF file is truth_fasta. If provided, used to calculate recall",
         metavar="FILENAME",
+    )
+    subparser_vcf_eval.add_argument(
+        "--max_recall_ref_len",
+        help="For recall, do not look for expected variants where REF length is more than this number. Default is no limit. This option will not work if you use --truth_vcf",
+        type=int,
+        metavar="INT",
     )
     subparser_vcf_eval.add_argument(
         "--use_ref_calls",

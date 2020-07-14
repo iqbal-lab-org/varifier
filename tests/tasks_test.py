@@ -18,6 +18,7 @@ def test_make_truth_vcf():
     options.debug = False
     options.outdir = "tmp.tasks.make_truth_vcf"
     options.flank_length = 100
+    options.max_recall_ref_len = None
     subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
     tasks.make_truth_vcf.run(options)
     got_vcf = os.path.join(options.outdir, "04.truth.vcf")
@@ -30,6 +31,7 @@ def test_make_truth_vcf():
     expect_vcf = os.path.join(data_dir, "make_truth_vcf.expect.masked.vcf")
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {options.outdir}", shell=True)
+
 
 def test_vcf_eval():
     options = mock.Mock()
@@ -44,6 +46,7 @@ def test_vcf_eval():
     options.ref_mask = None
     options.truth_mask = None
     options.use_ref_calls = False
+    options.max_recall_ref_len = None
     subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
     tasks.vcf_eval.run(options)
     expect_json = os.path.join(data_dir, "vcf_eval.expect.summary_stats.json")

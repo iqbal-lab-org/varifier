@@ -14,4 +14,5 @@ def run(options):
         options.flank_length,
         debug=options.debug,
         truth_mask=mask,
+        max_ref_len=options.max_recall_ref_len,
     )

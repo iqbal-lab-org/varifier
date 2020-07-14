@@ -49,6 +49,7 @@ def evaluate_vcf(
     ref_mask_bed_file=None,
     truth_mask_bed_file=None,
     discard_ref_calls=True,
+    max_recall_ref_len=None,
 ):
     if force:
         subprocess.check_output(f"rm -rf {outdir}", shell=True)
@@ -93,6 +94,7 @@ def evaluate_vcf(
         truth_fasta=truth_ref_fasta if truth_vcf is None else None,
         truth_vcf=truth_vcf,
         truth_mask=truth_mask,
+        max_ref_len=max_recall_ref_len,
     )
     if ref_mask_bed_file is not None:
         utils.mask_vcf_file(

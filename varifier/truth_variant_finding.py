@@ -62,7 +62,7 @@ def _merge_vcf_files_for_probe_mapping(list_of_vcf_files, ref_fasta, vcf_out):
                 print(new_record, file=f)
 
 
-def _get_only_tps_from_probe_mapped_vcf(vcf_in, vcf_out):
+def _filter_fps_and_long_vars_from_probe_mapped_vcf(vcf_in, vcf_out, max_ref_len):
     """vcf_in should be file made by _merge_vcf_files_for_probe_mapping, and
     then annotated using probe_mapping.annotate_vcf_with_probe_mapping().
     Outputs a new VCF file that only contains the TPs, based on probe mapping"""
@@ -85,7 +85,15 @@ def _get_only_tps_from_probe_mapped_vcf(vcf_in, vcf_out):
                 records.append(vcf_records[i])
                 i += 1
 
-            records = [x for x in records if x.FORMAT.get("VFR_RESULT", "FP") == "TP" and x.FORMAT.get("VFR_IN_MASK", "0") != "1"]
+            records = [
+                x
+                for x in records
+                if x.FORMAT.get("VFR_RESULT", "FP") == "TP"
+                and x.FORMAT.get("VFR_IN_MASK", "0") != "1"
+            ]
+            if max_ref_len is not None:
+                records = [x for x in records if len(x.REF) <= max_ref_len]
+
             if len(records) > 1:
                 logging.warning(
                     "Skipping the following VCF lines. They conflict, but probe mapping thinks they are all true-positives:"
@@ -111,7 +119,15 @@ def _bcftools_norm(ref_fasta, vcf_in, vcf_out):
         print(vcf_string, end="", file=f)
 
 
-def make_truth_vcf(ref_fasta, truth_fasta, outdir, flank_length, debug=False, truth_mask=None):
+def make_truth_vcf(
+    ref_fasta,
+    truth_fasta,
+    outdir,
+    flank_length,
+    debug=False,
+    truth_mask=None,
+    max_ref_len=None,
+):
     _check_dependencies_in_path()
     os.mkdir(outdir)
     minimap2_vcf = os.path.join(outdir, "00.minimap2.vcf")
@@ -140,7 +156,9 @@ def make_truth_vcf(ref_fasta, truth_fasta, outdir, flank_length, debug=False, tr
         map_outfile=map_debug_file,
         truth_mask=truth_mask,
     )
-    _get_only_tps_from_probe_mapped_vcf(probe_mapped_vcf, probe_filtered_vcf)
+    _filter_fps_and_long_vars_from_probe_mapped_vcf(
+        probe_mapped_vcf, probe_filtered_vcf, max_ref_len
+    )
     logging.info(f"Made filtered VCF file {probe_filtered_vcf}")
     logging.info(f"Using bcftools to normalise and remove duplicates")
     _bcftools_norm(ref_fasta, probe_filtered_vcf, truth_vcf)
