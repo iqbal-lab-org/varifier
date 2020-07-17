@@ -3,6 +3,7 @@ import os
 import pytest
 import subprocess
 
+import pyfastaq
 from cluster_vcf_records import vcf_record
 
 from varifier import utils
@@ -27,3 +28,15 @@ def test_mask_vcf_file():
     utils.mask_vcf_file(vcf_in, mask_bed_file, tmp_out)
     assert filecmp.cmp(tmp_out, vcf_expect, shallow=False)
     os.unlink(tmp_out)
+
+
+def test_file_to_dict_of_seqs():
+    infile = os.path.join(data_dir, "file_to_dict_of_seqs.fa")
+    expect = {
+        "seq1": pyfastaq.sequences.Fasta("seq1", "A"),
+        "seq2": pyfastaq.sequences.Fasta("seq2", "G"),
+    }
+    x = utils.file_to_dict_of_seqs(infile)
+    for k, v in x.items():
+        print(k, v)
+    assert utils.file_to_dict_of_seqs(infile) == expect

@@ -11,7 +11,7 @@ import pysam.bcftools
 
 from cluster_vcf_records import vcf_file_read, vcf_merge
 
-from varifier import dnadiff, probe_mapping
+from varifier import dnadiff, probe_mapping, utils
 
 
 def _check_dependencies_in_path():
@@ -37,9 +37,8 @@ def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file):
 
 
 def _merge_vcf_files_for_probe_mapping(list_of_vcf_files, ref_fasta, vcf_out):
-    ref_seqs = {}
-    pyfastaq.tasks.file_to_dict(ref_fasta, ref_seqs)
-    # This amkes a merged file, where two different ALTs at the same place
+    ref_seqs = utils.file_to_dict_of_seqs(ref_fasta)
+    # This makes a merged file, where two different ALTs at the same place
     # result in one record with a list of ALTs. For probe mapping, we want
     # a separate record for each allele. Also need genotype to be "1/1"
     vcf_merge.merge_vcf_files(list_of_vcf_files, ref_seqs, vcf_out)

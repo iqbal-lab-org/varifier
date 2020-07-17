@@ -34,8 +34,7 @@ def apply_variants_to_genome(ref_fasta, vcf_file, out_fasta, pass_only=True):
     """Takes the variants in vcf_file, and applies them to the associated
     reference genome in ref_fasta. Writes a new file out_fasta that has those
     variants applied"""
-    ref_sequences = {}
-    pyfastaq.tasks.file_to_dict(ref_fasta, ref_sequences)
+    ref_sequences = utils.file_to_dict_of_seqs(ref_fasta)
     vcf_dict = _vcf_file_to_dict(vcf_file, pass_only=pass_only)
     with open(out_fasta, "w") as f:
         for ref_name, vcf_records in sorted(vcf_dict.items()):

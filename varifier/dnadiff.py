@@ -6,6 +6,7 @@ import subprocess
 import pyfastaq
 import pymummer
 from cluster_vcf_records import vcf_record
+from varifier import utils
 
 dnadiff_output_extensions = [
     "1coords",
@@ -31,13 +32,11 @@ def _run_dnadiff(ref_fasta, query_fasta, outprefix):
 
 def _snps_file_file_to_vcf(snps_file, query_fasta, outfile):
     """Loads the .snps file made by dnadiff.
-    query_seqs = dictionary of the query sequences.
-    ref_seqs, qry_seqs = dictionaries of the genome sequences.
+    query_fasta = fasta file of query sequences.
     Writes a new VCF file unmerged records."""
     vcf_records = {}
     variants = pymummer.snp_file.get_all_variants(snps_file)
-    query_seqs = {}
-    pyfastaq.tasks.file_to_dict(query_fasta, query_seqs)
+    query_seqs = utils.file_to_dict_of_seqs(query_fasta)
 
     for variant in variants:
         # If the variant is reversed, it means that either the ref or query had to be

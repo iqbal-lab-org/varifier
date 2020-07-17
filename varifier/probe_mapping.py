@@ -5,7 +5,7 @@ import mappy
 import pyfastaq
 from cluster_vcf_records import vcf_file_read
 
-from varifier import edit_distance, probe, vcf_qc_annotate
+from varifier import edit_distance, probe, utils, vcf_qc_annotate
 
 
 def _get_wanted_format(use_fail_conflict):
@@ -201,12 +201,6 @@ def evaluate_vcf_record(
         print("FINISH:", vcf_record, file=map_outfile)
 
 
-def fasta_to_dict(filename):
-    d = {}
-    pyfastaq.tasks.file_to_dict(filename, d)
-    return {x.split()[0]: d[x] for x in d}
-
-
 def annotate_vcf_with_probe_mapping(
     vcf_in,
     vcf_ref_fasta,
@@ -219,14 +213,13 @@ def annotate_vcf_with_probe_mapping(
     debug=False,
     truth_mask=None,
 ):
-    vcf_ref_seqs = fasta_to_dict(vcf_ref_fasta)
-    truth_ref_seqs = fasta_to_dict(truth_ref_fasta)
+    vcf_ref_seqs = utils.file_to_dict_of_seqs(vcf_ref_fasta)
+    truth_ref_seqs = utils.file_to_dict_of_seqs(truth_ref_fasta)
     vcf_with_qc = vcf_out + ".debug.vcf"
     vcf_qc_annotate.add_qc_to_vcf(vcf_in, vcf_with_qc, want_ref_calls=use_ref_calls)
     probes_and_vcf_reader = get_probes_and_vcf_records(
         vcf_with_qc, vcf_ref_seqs, flank_length, use_fail_conflict=use_fail_conflict,
     )
-
 
     # Some notes on the mapper options...
     #

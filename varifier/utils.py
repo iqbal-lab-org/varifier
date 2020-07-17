@@ -49,3 +49,15 @@ def vcf_records_are_the_same(file1, file2):
     _, expect_records = vcf_file_read.vcf_file_to_list(file1)
     _, got_records = vcf_file_read.vcf_file_to_list(file2)
     return got_records == expect_records
+
+
+def file_to_dict_of_seqs(infile):
+    """Given a file of sequences, returns a dictionary of
+    sequence name -> pyfastaq.sequences.Fasta.
+    Anything after first whitespace is removed from the names"""
+    seqs = {}
+    pyfastaq.tasks.file_to_dict(infile, seqs)
+    seqs = {k.split()[0]: v for k, v in seqs.items()}
+    for seq in seqs.values():
+        seq.id = seq.id.split()[0]
+    return seqs
