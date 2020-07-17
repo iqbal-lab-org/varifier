@@ -30,7 +30,7 @@ def _run_dnadiff(ref_fasta, query_fasta, outprefix):
     logging.info(f"dnadiff command finished ({command})")
 
 
-def _snps_file_file_to_vcf(snps_file, query_fasta, outfile):
+def _snps_file_to_vcf(snps_file, query_fasta, outfile):
     """Loads the .snps file made by dnadiff.
     query_fasta = fasta file of query sequences.
     Writes a new VCF file unmerged records."""
@@ -144,7 +144,7 @@ def make_truth_vcf(ref_fasta, truth_fasta, outfile, debug=False):
     tmp_outprefix = f"{outfile}.tmp"
     _run_dnadiff(truth_fasta, ref_fasta, tmp_outprefix)
     snps_file = f"{tmp_outprefix}.snps"
-    _snps_file_file_to_vcf(snps_file, ref_fasta, outfile)
+    _snps_file_to_vcf(snps_file, ref_fasta, outfile)
     if debug:
         return
 
