@@ -29,7 +29,7 @@ def _check_dependencies_in_path():
 def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file):
     _check_dependencies_in_path()
     minimap2_cmd = f"minimap2 -c --cs {ref_fasta} {truth_fasta} | sort -k6,6 -k8,8n"
-    paftools_cmd = f"paftools.js call -l50 -L50 -f {ref_fasta} -"
+    paftools_cmd = f"k8 paftools_fixed.js call -l50 -L50 -f {ref_fasta} -"
     cmd = f"{minimap2_cmd} | {paftools_cmd} > {vcf_file}"
     logging.info(f"Running minimap2/paftools with command: {cmd}")
     subprocess.check_output(cmd, shell=True)
