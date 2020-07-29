@@ -68,49 +68,53 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile):
                 )
             )
         elif variant.var_type == pymummer.variant.DEL:
-            # The query has sequence missing, compared to the
-            # reference. We're making VCF records w.r.t. the
-            # query, so this is an insertion. So need to
-            # get the nucleotide before the insertion as well.
-            new_record = vcf_record.VcfRecord(
-                "\t".join(
-                    [
-                        variant.qry_name,
-                        str(variant.qry_start + 1),
-                        ".",
-                        query_seqs[variant.qry_name][variant.qry_start],
-                        query_seqs[variant.qry_name][variant.qry_start]
-                        + variant.ref_base,
-                        ".",
-                        ".",
-                        "SVTYPE=DNADIFF_INS",
-                        "GT",
-                        "1/1",
-                    ]
-                )
-            )
+            continue  # we dont really care for indels
+
+            # # The query has sequence missing, compared to the
+            # # reference. We're making VCF records w.r.t. the
+            # # query, so this is an insertion. So need to
+            # # get the nucleotide before the insertion as well.
+            # new_record = vcf_record.VcfRecord(
+            #     "\t".join(
+            #         [
+            #             variant.qry_name,
+            #             str(variant.qry_start + 1),
+            #             ".",
+            #             query_seqs[variant.qry_name][variant.qry_start],
+            #             query_seqs[variant.qry_name][variant.qry_start]
+            #             + variant.ref_base,
+            #             ".",
+            #             ".",
+            #             "SVTYPE=DNADIFF_INS",
+            #             "GT",
+            #             "1/1",
+            #         ]
+            #     )
+            # )
         elif variant.var_type == pymummer.variant.INS:
-            # The ref has sequence missing, compared to the
-            # query. We're making VCF records w.r.t. the
-            # query, so this is a deletion. So need to
-            # get the nucleotide before the deletion as well.
-            new_record = vcf_record.VcfRecord(
-                "\t".join(
-                    [
-                        variant.qry_name,
-                        str(variant.qry_start),
-                        ".",
-                        query_seqs[variant.qry_name][variant.qry_start - 1]
-                        + variant.qry_base,
-                        query_seqs[variant.qry_name][variant.qry_start - 1],
-                        ".",
-                        ".",
-                        "SVTYPE=DNADIFF_DEL",
-                        "GT",
-                        "1/1",
-                    ]
-                )
-            )
+            continue  # we dont really care for indels
+
+            # # The ref has sequence missing, compared to the
+            # # query. We're making VCF records w.r.t. the
+            # # query, so this is a deletion. So need to
+            # # get the nucleotide before the deletion as well.
+            # new_record = vcf_record.VcfRecord(
+            #     "\t".join(
+            #         [
+            #             variant.qry_name,
+            #             str(variant.qry_start),
+            #             ".",
+            #             query_seqs[variant.qry_name][variant.qry_start - 1]
+            #             + variant.qry_base,
+            #             query_seqs[variant.qry_name][variant.qry_start - 1],
+            #             ".",
+            #             ".",
+            #             "SVTYPE=DNADIFF_DEL",
+            #             "GT",
+            #             "1/1",
+            #         ]
+            #     )
+            # )
         else:
             raise Exception("Unknown variant type: " + str(variant))
 
