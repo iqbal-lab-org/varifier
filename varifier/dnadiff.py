@@ -148,9 +148,9 @@ def make_truth_vcf(ref_fasta, truth_fasta, outfile, debug=False):
     if debug:
         return
 
-    for extension in dnadiff_output_extensions:
-        # not all files get written, hence try except pass
-        try:
-            os.unlink(tmp_outprefix + "." + extension)
-        except:
-            pass
+    # for extension in dnadiff_output_extensions:
+    #     # not all files get written, hence try except pass
+    #     try:
+    #         os.unlink(tmp_outprefix + "." + extension)
+    #     except:
+    #         pass
