@@ -60,6 +60,30 @@ def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file, snps_only):
     fix_minimap2_vcf(f"{vcf_file}.temp", vcf_file, snps_only=snps_only)
 
 
+def _deduplicate_vcf_files(to_merge):
+    vcf_lines = set()
+    for file in to_merge:
+        with open(file) as file_handler:
+            for line in file_handler:
+                is_header = line.startswith("#")
+                if not is_header:
+                    vcf_lines.add(line)
+
+    ordered_vcf_lines = sorted(list(vcf_lines))
+    return ordered_vcf_lines
+
+def _deduplicate_vcf_files_for_probe_mapping(to_merge, ref_fasta, vcf_out):
+    ref_seqs = utils.file_to_dict_of_seqs(ref_fasta)
+    vcf_lines = _deduplicate_vcf_files(to_merge)
+
+    with open(vcf_out, "w") as f:
+        print("##fileformat=VCFv4.2", file=f)
+        for seq in ref_seqs.values():
+            print(f"##contig=<ID={seq.id},length={len(seq)}>", file=f)
+        print('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">', file=f)
+        print("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\tsample", file=f)
+        print("\n".join(vcf_lines), file=f)
+
 def _merge_vcf_files_for_probe_mapping(list_of_vcf_files, ref_fasta, vcf_out):
     ref_seqs = utils.file_to_dict_of_seqs(ref_fasta)
     # This makes a merged file, where two different ALTs at the same place
@@ -168,7 +192,11 @@ def make_truth_vcf(
     dnadiff.make_truth_vcf(ref_fasta, truth_fasta, dnadiff_vcf, snps_only=snps_only, debug=debug)
     _truth_using_minimap2_paftools(ref_fasta, truth_fasta, minimap2_vcf, snps_only=snps_only)
     to_merge = [dnadiff_vcf, minimap2_vcf]
-    _merge_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)
+
+    if snps_only:
+        _deduplicate_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)
+    else:
+        _merge_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)
     logging.info(f"Made merged VCF file {merged_vcf}")
     logging.info(f"Probe mapping to remove incorrect calls")
     probe_mapping.annotate_vcf_with_probe_mapping(
