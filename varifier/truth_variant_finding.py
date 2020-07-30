@@ -66,7 +66,8 @@ def _deduplicate_vcf_files(to_merge):
         with open(file) as file_handler:
             for line in file_handler:
                 is_header = line.startswith("#")
-                if not is_header:
+                is_empty = len(line)==0
+                if not is_header and not is_empty:
                     vcf_lines.add(line)
 
     ordered_vcf_lines = sorted(list(vcf_lines))
