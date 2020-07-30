@@ -81,8 +81,8 @@ def _deduplicate_vcf_files(to_merge, disagreement_file):
                             if not both_VCF_lines_are_identical:
                                 # here, dnadiff and minimap2 disagrees on a record, let's remove it for sanity reasons
                                 # log it first
-                                disagreement_filehandler.write(ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)])
-                                disagreement_filehandler.write(line)
+                                print(ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)], file=disagreement_filehandler)
+                                print(line, file=disagreement_filehandler)
 
                                 # and remove it
                                 del ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)]
