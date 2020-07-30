@@ -61,7 +61,7 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile):
                         variant.ref_base,
                         ".",
                         ".",
-                        f"SVTYPE=DNADIFF_SNP;QNAME={variant.ref_name};QSTART={variant.ref_start + 1};QSTRAND={'-' if variant.reverse else '+'}",
+                        f"QNAME={variant.ref_name};QSTART={variant.ref_start + 1};QSTRAND={'-' if variant.reverse else '+'}",
                         "GT",
                         "1/1",
                     ]
