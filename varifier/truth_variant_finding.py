@@ -73,6 +73,8 @@ def _deduplicate_vcf_files(to_merge, disagreement_file):
                     if not is_header and not is_empty:
                         line_split = line.split("\t")
 
+                        # change FILTER
+                        line_split[6] = "PASS"
                         # change FORMAT
                         line_split[8] = "GT:VFR_FILTER"
                         # change sample data
