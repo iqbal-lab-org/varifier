@@ -37,6 +37,7 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile, snps_only):
     vcf_records = {}
     variants = pymummer.snp_file.get_all_variants(snps_file)
     query_seqs = utils.file_to_dict_of_seqs(query_fasta)
+    discarded_variants = []
 
     for variant in variants:
         # If the variant is reversed, it means that either the ref or query had to be
@@ -69,6 +70,7 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile, snps_only):
             )
         elif variant.var_type == pymummer.variant.DEL:
             if snps_only:
+                discarded_variants.append(variant)
                 continue
 
             # The query has sequence missing, compared to the
@@ -94,6 +96,7 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile, snps_only):
             )
         elif variant.var_type == pymummer.variant.INS:
             if snps_only:
+                discarded_variants.append(variant)
                 continue
 
             # The ref has sequence missing, compared to the
@@ -145,6 +148,10 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile, snps_only):
             for record in vcf_list:
                 print(record, file=f)
 
+    if snps_only:
+        with open(f"{outfile}.discarded_not_snps.vcf", "w") as discarded_variants_fh:
+            for discarded_variant in discarded_variants:
+                print(discarded_variant, file=discarded_variants_fh)
 
 def make_truth_vcf(ref_fasta, truth_fasta, outfile, snps_only, debug=False):
     tmp_outprefix = f"{outfile}.tmp"
