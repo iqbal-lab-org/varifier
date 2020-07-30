@@ -106,9 +106,18 @@ def _deduplicate_vcf_files(to_merge, disagreement_file):
     return ordered_vcf_lines
 
 
+def identify_vcf_lines(vcf_lines):
+    identified_vcf_lines = []
+    for index, vcf_line in enumerate(vcf_lines):
+        vcf_line_split = vcf_line.strip().split("\t")
+        vcf_line_split[2] = str(index)
+        identified_vcf_lines.append("\t".join(vcf_line_split))
+    return identified_vcf_lines
+
 def _deduplicate_vcf_files_for_probe_mapping(to_merge, ref_fasta, vcf_out):
     ref_seqs = utils.file_to_dict_of_seqs(ref_fasta)
     vcf_lines = _deduplicate_vcf_files(to_merge, f"{vcf_out}.disagreements_between_dnadiff_and_minimap2")
+    vcf_lines = identify_vcf_lines(vcf_lines)
 
     with open(vcf_out, "w") as f:
         print("##fileformat=VCFv4.2", file=f)
