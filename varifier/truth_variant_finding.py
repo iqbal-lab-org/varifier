@@ -27,6 +27,7 @@ def _check_dependencies_in_path():
 
 
 def fix_minimap2_vcf(input_vcf_file, output_vcf_file, snps_only):
+    discarded_variants = []
     with open(input_vcf_file) as input_vcf_filehandler,\
          open(output_vcf_file, "w") as output_vcf_filehandler:
         for line in input_vcf_filehandler:
@@ -38,11 +39,23 @@ def fix_minimap2_vcf(input_vcf_file, output_vcf_file, snps_only):
                 # change QUAL to "." so that it is equal to dnadiff
                 line_split[5] = "."
 
+                # remake line
+                line = "\t".join(line_split)
+
                 ref = line_split[3]
                 alts = line_split[4]
                 is_snp = ref in ["A", "C", "G", "T"] and alts in ["A", "C", "G", "T"]
+
                 if not snps_only or (snps_only and is_snp):
-                    print("\t".join(line_split), file=output_vcf_filehandler)
+                    print(line, file=output_vcf_filehandler)
+                elif snps_only and not is_snp:
+                    discarded_variants.append(line)
+
+    if snps_only:
+        with open(f"{output_vcf_file}.discarded_not_snps.vcf", "w") as discarded_variants_fh:
+            for discarded_variant in discarded_variants:
+                print(discarded_variant, file=discarded_variants_fh)
+
 
 
 
@@ -52,12 +65,11 @@ def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file, snps_only):
 
     # TODO: fix /hps/nobackup2/iqbal/leandro/varifier
     paftools_cmd = f"k8 /hps/nobackup2/iqbal/leandro/varifier/paftools_fixed.js call -l50 -L50 -f {ref_fasta} -"
-    cmd = f"{minimap2_cmd} | {paftools_cmd} > {vcf_file}.temp"
+    cmd = f"{minimap2_cmd} | {paftools_cmd} > {vcf_file}.paftools_raw_output"
     logging.info(f"Running minimap2/paftools with command: {cmd}")
     subprocess.check_output(cmd, shell=True)
     logging.info(f"minimap2/paftools finished ({cmd})")
-
-    fix_minimap2_vcf(f"{vcf_file}.temp", vcf_file, snps_only=snps_only)
+    fix_minimap2_vcf(f"{vcf_file}.paftools_raw_output", vcf_file, snps_only=snps_only)
 
 
 def _deduplicate_vcf_files(to_merge, disagreement_file):
