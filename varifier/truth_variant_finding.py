@@ -72,7 +72,17 @@ def _deduplicate_vcf_files(to_merge, disagreement_file):
                     is_empty = len(line) == 0
                     if not is_header and not is_empty:
                         line_split = line.split("\t")
+
+                        # change FORMAT
+                        line_split[8] = "GT:VFR_FILTER"
+                        # change sample data
+                        line_split[9] = "1/1:PASS"
+
+                        # get some other info
                         ref_chrom, ref_pos = line_split[0], int(line_split[1])
+
+                        # update line
+                        line = "\t".join(line_split)
 
                         this_is_a_variant_present_in_both_VCFs = (ref_chrom, ref_pos) in ref_chrom_ref_pos_to_vcf_line
                         if this_is_a_variant_present_in_both_VCFs:
