@@ -60,24 +60,34 @@ def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file, snps_only):
     fix_minimap2_vcf(f"{vcf_file}.temp", vcf_file, snps_only=snps_only)
 
 
-def _deduplicate_vcf_files(to_merge):
+def _deduplicate_vcf_files(to_merge, disagreement_file):
     ref_chrom_ref_pos_to_vcf_line = {}
-    for file in to_merge:
-        with open(file) as file_handler:
-            for line in file_handler:
-                line = line.strip()
-                is_header = line.startswith("#")
-                is_empty = len(line) == 0
-                if not is_header and not is_empty:
-                    line_split = line.split("\t")
-                    ref_chrom, ref_pos = line_split[0], int(line_split[1])
 
-                    this_is_a_variant_present_in_both_VCFs = (ref_chrom, ref_pos) in ref_chrom_ref_pos_to_vcf_line
-                    if this_is_a_variant_present_in_both_VCFs:
-                        both_VCF_lines_are_identical = ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)] == line
-                        assert both_VCF_lines_are_identical, f"_deduplicate_vcf_files: these lines should be identical:\n{ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)]}\n{line}"
+    with open(disagreement_file, "w") as disagreement_filehandler:
+        for file in to_merge:
+            with open(file) as file_handler:
+                for line in file_handler:
+                    line = line.strip()
+                    is_header = line.startswith("#")
+                    is_empty = len(line) == 0
+                    if not is_header and not is_empty:
+                        line_split = line.split("\t")
+                        ref_chrom, ref_pos = line_split[0], int(line_split[1])
 
-                    ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)] = line
+                        this_is_a_variant_present_in_both_VCFs = (ref_chrom, ref_pos) in ref_chrom_ref_pos_to_vcf_line
+                        if this_is_a_variant_present_in_both_VCFs:
+                            both_VCF_lines_are_identical = ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)] == line
+
+                            if not both_VCF_lines_are_identical:
+                                # here, dnadiff and minimap2 disagrees on a record, let's remove it for sanity reasons
+                                # log it first
+                                disagreement_filehandler.write(ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)])
+                                disagreement_filehandler.write(line)
+
+                                # and remove it
+                                del ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)]
+                        else:
+                            ref_chrom_ref_pos_to_vcf_line[(ref_chrom, ref_pos)] = line
 
     ordered_ref_chrom_ref_pos = sorted(list(ref_chrom_ref_pos_to_vcf_line.keys()))
     ordered_vcf_lines = [ref_chrom_ref_pos_to_vcf_line[ref_chrom_ref_pos] for ref_chrom_ref_pos in ordered_ref_chrom_ref_pos]
@@ -86,7 +96,7 @@ def _deduplicate_vcf_files(to_merge):
 
 def _deduplicate_vcf_files_for_probe_mapping(to_merge, ref_fasta, vcf_out):
     ref_seqs = utils.file_to_dict_of_seqs(ref_fasta)
-    vcf_lines = _deduplicate_vcf_files(to_merge)
+    vcf_lines = _deduplicate_vcf_files(to_merge, f"{vcf_out}.disagreements_between_dnadiff_and_minimap2")
 
     with open(vcf_out, "w") as f:
         print("##fileformat=VCFv4.2", file=f)
