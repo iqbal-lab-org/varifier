@@ -128,6 +128,7 @@ def make_truth_vcf(
     debug=False,
     truth_mask=None,
     max_ref_len=None,
+    snps_only=False
 ):
     _check_dependencies_in_path()
     os.mkdir(outdir)
@@ -142,7 +143,7 @@ def make_truth_vcf(
     probe_filtered_vcf = os.path.join(outdir, "03.probe_filtered.vcf")
     truth_vcf = os.path.join(outdir, "04.truth.vcf")
 
-    dnadiff.make_truth_vcf(ref_fasta, truth_fasta, dnadiff_vcf, debug=debug)
+    dnadiff.make_truth_vcf(ref_fasta, truth_fasta, dnadiff_vcf, snps_only=snps_only, debug=debug)
     _truth_using_minimap2_paftools(ref_fasta, truth_fasta, minimap2_vcf)
     to_merge = [dnadiff_vcf, minimap2_vcf]
     _merge_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)

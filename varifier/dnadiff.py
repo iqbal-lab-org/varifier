@@ -30,7 +30,7 @@ def _run_dnadiff(ref_fasta, query_fasta, outprefix):
     logging.info(f"dnadiff command finished ({command})")
 
 
-def _snps_file_to_vcf(snps_file, query_fasta, outfile):
+def _snps_file_to_vcf(snps_file, query_fasta, outfile, snps_only):
     """Loads the .snps file made by dnadiff.
     query_fasta = fasta file of query sequences.
     Writes a new VCF file unmerged records."""
@@ -68,53 +68,55 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile):
                 )
             )
         elif variant.var_type == pymummer.variant.DEL:
-            continue  # we dont really care for indels
+            if snps_only:
+                continue
 
-            # # The query has sequence missing, compared to the
-            # # reference. We're making VCF records w.r.t. the
-            # # query, so this is an insertion. So need to
-            # # get the nucleotide before the insertion as well.
-            # new_record = vcf_record.VcfRecord(
-            #     "\t".join(
-            #         [
-            #             variant.qry_name,
-            #             str(variant.qry_start + 1),
-            #             ".",
-            #             query_seqs[variant.qry_name][variant.qry_start],
-            #             query_seqs[variant.qry_name][variant.qry_start]
-            #             + variant.ref_base,
-            #             ".",
-            #             ".",
-            #             "SVTYPE=DNADIFF_INS",
-            #             "GT",
-            #             "1/1",
-            #         ]
-            #     )
-            # )
+            # The query has sequence missing, compared to the
+            # reference. We're making VCF records w.r.t. the
+            # query, so this is an insertion. So need to
+            # get the nucleotide before the insertion as well.
+            new_record = vcf_record.VcfRecord(
+                "\t".join(
+                    [
+                        variant.qry_name,
+                        str(variant.qry_start + 1),
+                        ".",
+                        query_seqs[variant.qry_name][variant.qry_start],
+                        query_seqs[variant.qry_name][variant.qry_start]
+                        + variant.ref_base,
+                        ".",
+                        ".",
+                        "SVTYPE=DNADIFF_INS",
+                        "GT",
+                        "1/1",
+                    ]
+                )
+            )
         elif variant.var_type == pymummer.variant.INS:
-            continue  # we dont really care for indels
+            if snps_only:
+                continue
 
-            # # The ref has sequence missing, compared to the
-            # # query. We're making VCF records w.r.t. the
-            # # query, so this is a deletion. So need to
-            # # get the nucleotide before the deletion as well.
-            # new_record = vcf_record.VcfRecord(
-            #     "\t".join(
-            #         [
-            #             variant.qry_name,
-            #             str(variant.qry_start),
-            #             ".",
-            #             query_seqs[variant.qry_name][variant.qry_start - 1]
-            #             + variant.qry_base,
-            #             query_seqs[variant.qry_name][variant.qry_start - 1],
-            #             ".",
-            #             ".",
-            #             "SVTYPE=DNADIFF_DEL",
-            #             "GT",
-            #             "1/1",
-            #         ]
-            #     )
-            # )
+            # The ref has sequence missing, compared to the
+            # query. We're making VCF records w.r.t. the
+            # query, so this is a deletion. So need to
+            # get the nucleotide before the deletion as well.
+            new_record = vcf_record.VcfRecord(
+                "\t".join(
+                    [
+                        variant.qry_name,
+                        str(variant.qry_start),
+                        ".",
+                        query_seqs[variant.qry_name][variant.qry_start - 1]
+                        + variant.qry_base,
+                        query_seqs[variant.qry_name][variant.qry_start - 1],
+                        ".",
+                        ".",
+                        "SVTYPE=DNADIFF_DEL",
+                        "GT",
+                        "1/1",
+                    ]
+                )
+            )
         else:
             raise Exception("Unknown variant type: " + str(variant))
 
@@ -144,11 +146,11 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile):
                 print(record, file=f)
 
 
-def make_truth_vcf(ref_fasta, truth_fasta, outfile, debug=False):
+def make_truth_vcf(ref_fasta, truth_fasta, outfile, snps_only, debug=False):
     tmp_outprefix = f"{outfile}.tmp"
     _run_dnadiff(truth_fasta, ref_fasta, tmp_outprefix)
     snps_file = f"{tmp_outprefix}.snps"
-    _snps_file_to_vcf(snps_file, ref_fasta, outfile)
+    _snps_file_to_vcf(snps_file, ref_fasta, outfile, snps_only=snps_only)
     if debug:
         return
 
