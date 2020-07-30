@@ -26,16 +26,38 @@ def _check_dependencies_in_path():
         raise RuntimeError("Some required programs not found in $PATH. Cannot continue")
 
 
-def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file):
+def fix_minimap2_vcf(input_vcf_file, output_vcf_file, snps_only):
+    with open(input_vcf_file) as input_vcf_filehandler,\
+         open(output_vcf_file, "w") as output_vcf_filehandler:
+        for line in input_vcf_filehandler:
+            if line.startswith("#"):
+                output_vcf_filehandler.write(line)
+            else:
+                line_split = line.strip().split()
+
+                # change QUAL to "." so that it is equal to dnadiff
+                line_split[5] = "."
+
+                ref = line_split[3]
+                alts = line_split[4]
+                is_snp = ref in ["A", "C", "G", "T"] and alts in ["A", "C", "G", "T"]
+                if not snps_only or (snps_only and is_snp):
+                    print("\t".join(line_split), file=output_vcf_filehandler)
+
+
+
+def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file, snps_only):
     _check_dependencies_in_path()
     minimap2_cmd = f"minimap2 -c --cs {ref_fasta} {truth_fasta} | sort -k6,6 -k8,8n"
 
     # TODO: fix /hps/nobackup2/iqbal/leandro/varifier
     paftools_cmd = f"k8 /hps/nobackup2/iqbal/leandro/varifier/paftools_fixed.js call -l50 -L50 -f {ref_fasta} -"
-    cmd = f"{minimap2_cmd} | {paftools_cmd} > {vcf_file}"
+    cmd = f"{minimap2_cmd} | {paftools_cmd} > {vcf_file}.temp"
     logging.info(f"Running minimap2/paftools with command: {cmd}")
     subprocess.check_output(cmd, shell=True)
     logging.info(f"minimap2/paftools finished ({cmd})")
+
+    fix_minimap2_vcf(f"{vcf_file}.temp", vcf_file, snps_only=snps_only)
 
 
 def _merge_vcf_files_for_probe_mapping(list_of_vcf_files, ref_fasta, vcf_out):
@@ -144,7 +166,7 @@ def make_truth_vcf(
     truth_vcf = os.path.join(outdir, "04.truth.vcf")
 
     dnadiff.make_truth_vcf(ref_fasta, truth_fasta, dnadiff_vcf, snps_only=snps_only, debug=debug)
-    _truth_using_minimap2_paftools(ref_fasta, truth_fasta, minimap2_vcf)
+    _truth_using_minimap2_paftools(ref_fasta, truth_fasta, minimap2_vcf, snps_only=snps_only)
     to_merge = [dnadiff_vcf, minimap2_vcf]
     _merge_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)
     logging.info(f"Made merged VCF file {merged_vcf}")
