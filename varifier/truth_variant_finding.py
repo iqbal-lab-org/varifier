@@ -65,6 +65,7 @@ def _deduplicate_vcf_files(to_merge):
     for file in to_merge:
         with open(file) as file_handler:
             for line in file_handler:
+                line = line.strip()
                 is_header = line.startswith("#")
                 is_empty = len(line)==0
                 if not is_header and not is_empty:
