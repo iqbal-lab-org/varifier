@@ -12,4 +12,8 @@ RUN curl -L https://github.com/attractivechaos/k8/releases/download/v0.2.4/k8-0.
 # install varifier
 RUN git clone --recursive https://github.com/leoisl/varifier && cd varifier && git checkout pandora && pip3 install .
 
+# alias python -> python3
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# add minimap2 to the path
 ENV PATH="/minimap2-2.17_x64-linux:${PATH}"
