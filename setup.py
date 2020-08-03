@@ -22,6 +22,5 @@ setup(
         "Programming Language :: Python :: 3 :: Only",
         "License :: OSI Approved :: MIT License",
     ],
-    package_data={'varifier': ['varifier/paftools_fixed.js']},
     include_package_data=True,
 )
