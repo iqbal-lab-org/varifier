@@ -63,8 +63,8 @@ def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file, snps_only):
     _check_dependencies_in_path()
     minimap2_cmd = f"minimap2 -c --cs {ref_fasta} {truth_fasta} | sort -k6,6 -k8,8n"
 
-    # TODO: fix /hps/nobackup2/iqbal/leandro/varifier
-    paftools_cmd = f"k8 /hps/nobackup2/iqbal/leandro/varifier/paftools_fixed.js call -l50 -L50 -f {ref_fasta} -"
+    script_dir = utils.get_script_dir()
+    paftools_cmd = f"k8 {script_dir}/paftools_fixed.js call -l50 -L50 -f {ref_fasta} -"
     cmd = f"{minimap2_cmd} | {paftools_cmd} > {vcf_file}.paftools_raw_output"
     logging.info(f"Running minimap2/paftools with command: {cmd}")
     subprocess.check_output(cmd, shell=True)
