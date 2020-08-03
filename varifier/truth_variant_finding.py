@@ -164,7 +164,7 @@ def _merge_vcf_files_for_probe_mapping(list_of_vcf_files, ref_fasta, vcf_out):
                 print(new_record, file=f)
 
 
-def _filter_fps_and_long_vars_from_probe_mapped_vcf(vcf_in, vcf_out, max_ref_len):
+def _filter_fps_and_long_vars_from_probe_mapped_vcf(vcf_in, vcf_out, max_ref_len, detailed_VCF=False):
     """vcf_in should be file made by _merge_vcf_files_for_probe_mapping, and
     then annotated using probe_mapping.annotate_vcf_with_probe_mapping().
     Outputs a new VCF file that only contains the TPs, based on probe mapping"""
@@ -203,7 +203,8 @@ def _filter_fps_and_long_vars_from_probe_mapped_vcf(vcf_in, vcf_out, max_ref_len
                 for record in records:
                     logging.warning(f"  {record}")
             elif len(records) == 1:
-                records[0].FORMAT = {"GT": "1/1"}
+                if not detailed_VCF:
+                    records[0].FORMAT = {"GT": "1/1"}
                 print(records[0], file=f)
 
 
@@ -230,7 +231,8 @@ def make_truth_vcf(
     truth_mask=None,
     max_ref_len=None,
     snps_only=False,
-    output_probes=False
+    output_probes=False,
+    detailed_VCF=False
 ):
     _check_dependencies_in_path()
     os.mkdir(outdir)
@@ -266,7 +268,7 @@ def make_truth_vcf(
         output_probes=output_probes
     )
     _filter_fps_and_long_vars_from_probe_mapped_vcf(
-        probe_mapped_vcf, probe_filtered_vcf, max_ref_len
+        probe_mapped_vcf, probe_filtered_vcf, max_ref_len, detailed_VCF=detailed_VCF
     )
     logging.info(f"Made filtered VCF file {probe_filtered_vcf}")
     logging.info(f"Using bcftools to normalise and remove duplicates")

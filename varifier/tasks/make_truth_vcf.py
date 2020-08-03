@@ -16,5 +16,6 @@ def run(options):
         truth_mask=mask,
         max_ref_len=options.max_recall_ref_len,
         snps_only=options.snps_only,
-        output_probes=options.output_probes_in_VCF
+        output_probes=options.output_probes_in_VCF,
+        detailed_VCF=options.detailed_VCF
     )
