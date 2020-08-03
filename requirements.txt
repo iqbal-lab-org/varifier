@@ -1,7 +1,7 @@
 biopython
 cluster_vcf_records
 mappy >= 2.17
-pandas
+pandas==1.0.3
 pyfastaq >= 3.14.0
 pymummer
 pysam
