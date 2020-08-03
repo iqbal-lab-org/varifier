@@ -4,10 +4,9 @@ import os
 import shutil
 import subprocess
 
-import pyfastaq
-import pymummer
 import pysam
 import pysam.bcftools
+import re
 
 from cluster_vcf_records import vcf_file_read, vcf_merge
 
@@ -26,7 +25,12 @@ def _check_dependencies_in_path():
         raise RuntimeError("Some required programs not found in $PATH. Cannot continue")
 
 
-def fix_minimap2_vcf(input_vcf_file, output_vcf_file, snps_only):
+
+qname_matcher = re.compile("QNAME=(.+?);")
+def fix_minimap2_vcf(input_vcf_file, output_vcf_file, ref_fasta, qry_fasta, snps_only):
+    ref_seqs = utils.file_to_dict_of_seqs(ref_fasta)
+    qry_seqs = utils.file_to_dict_of_seqs(qry_fasta)
+
     discarded_variants = []
     with open(input_vcf_file) as input_vcf_filehandler,\
          open(output_vcf_file, "w") as output_vcf_filehandler:
@@ -38,6 +42,17 @@ def fix_minimap2_vcf(input_vcf_file, output_vcf_file, snps_only):
 
                 # change QUAL to "." so that it is equal to dnadiff
                 line_split[5] = "."
+
+                # get REF_LENGTH and QRY_LENGTH
+                ref_chrom = line_split[0]
+                ref_length = len(ref_seqs[ref_chrom])
+                info = line_split[7]
+                qry_chrom = qname_matcher.match(info).group(1)
+                qry_length = len(qry_seqs[qry_chrom])
+
+                # change info
+                info = f"LENGTH_QRY={qry_length};LENGTH_REF={ref_length};" + info
+                line_split[7] = info
 
                 # remake line
                 line = "\t".join(line_split)
@@ -69,7 +84,7 @@ def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file, snps_only):
     logging.info(f"Running minimap2/paftools with command: {cmd}")
     subprocess.check_output(cmd, shell=True)
     logging.info(f"minimap2/paftools finished ({cmd})")
-    fix_minimap2_vcf(f"{vcf_file}.paftools_raw_output", vcf_file, snps_only=snps_only)
+    fix_minimap2_vcf(f"{vcf_file}.paftools_raw_output", vcf_file, ref_fasta, truth_fasta, snps_only=snps_only)
 
 
 def _deduplicate_vcf_files(to_merge, disagreement_file):

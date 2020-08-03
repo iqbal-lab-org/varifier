@@ -1,6 +1,5 @@
 from operator import attrgetter
 import logging
-import os
 import subprocess
 
 import pyfastaq
@@ -62,7 +61,11 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile, snps_only):
                         variant.ref_base,
                         ".",
                         ".",
-                        f"QNAME={variant.ref_name};QSTART={variant.ref_start + 1};QSTRAND={'-' if variant.reverse else '+'}",
+                        f"QNAME={variant.ref_name};"
+                        f"QSTART={variant.ref_start + 1};"
+                        f"QSTRAND={'-' if variant.reverse else '+'};"
+                        f"LENGTH_REF={variant.qry_length};"
+                        f"LENGTH_QRY={variant.ref_length}",
                         "GT",
                         "1/1",
                     ]
