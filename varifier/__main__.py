@@ -43,6 +43,11 @@ def main(args=None):
     )
 
     subparser_make_truth_vcf.add_argument(
+        "--output_probes_in_VCF", help="If REF and ALT probes should be output in VCF",
+        action="store_true",
+    )
+
+    subparser_make_truth_vcf.add_argument(
         "--max_recall_ref_len",
         help="Do not include variants where REF length is more than this number. Default is no limit",
         type=int,

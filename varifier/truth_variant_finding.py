@@ -229,7 +229,8 @@ def make_truth_vcf(
     debug=False,
     truth_mask=None,
     max_ref_len=None,
-    snps_only=False
+    snps_only=False,
+    output_probes=False
 ):
     _check_dependencies_in_path()
     os.mkdir(outdir)
@@ -262,6 +263,7 @@ def make_truth_vcf(
         probe_mapped_vcf,
         map_outfile=map_debug_file,
         truth_mask=truth_mask,
+        output_probes=output_probes
     )
     _filter_fps_and_long_vars_from_probe_mapped_vcf(
         probe_mapped_vcf, probe_filtered_vcf, max_ref_len

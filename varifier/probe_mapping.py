@@ -100,7 +100,12 @@ def evaluate_vcf_record(
     map_outfile=None,
     use_fail_conflict=False,
     truth_mask=None,
+    output_probes=False
 ):
+    if output_probes:
+        vcf_record.set_format_key_value("VFR_REF_PROBE", ref_probe.seq)
+        vcf_record.set_format_key_value("VFR_ALT_PROBE", alt_probe.seq)
+
     if vcf_record.FORMAT["VFR_FILTER"] not in _get_wanted_format(use_fail_conflict):
         return
 
@@ -212,6 +217,7 @@ def annotate_vcf_with_probe_mapping(
     use_ref_calls=False,
     debug=False,
     truth_mask=None,
+    output_probes=False
 ):
     vcf_ref_seqs = utils.file_to_dict_of_seqs(vcf_ref_fasta)
     truth_ref_seqs = utils.file_to_dict_of_seqs(truth_ref_fasta)
@@ -286,6 +292,7 @@ def annotate_vcf_with_probe_mapping(
                 map_outfile=f_map,
                 use_fail_conflict=use_fail_conflict,
                 truth_mask=truth_mask,
+                output_probes=output_probes
             )
             print(vcf_record, file=f_vcf)
 
