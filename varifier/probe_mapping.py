@@ -104,7 +104,10 @@ def evaluate_vcf_record(
 ):
     if output_probes:
         vcf_record.set_format_key_value("VFR_REF_PROBE", ref_probe.seq)
+        vcf_record.set_format_key_value("VFR_REF_PROBE_ALLELE_INTERVAL", ref_probe.get_interval_as_str())
         vcf_record.set_format_key_value("VFR_ALT_PROBE", alt_probe.seq)
+        vcf_record.set_format_key_value("VFR_ALT_PROBE_ALLELE_INTERVAL", alt_probe.get_interval_as_str())
+
 
     if vcf_record.FORMAT["VFR_FILTER"] not in _get_wanted_format(use_fail_conflict):
         return
