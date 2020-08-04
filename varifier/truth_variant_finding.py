@@ -26,7 +26,7 @@ def _check_dependencies_in_path():
 
 
 
-qname_matcher = re.compile("QNAME=(.+?);")
+qname_matcher = re.compile(".*QNAME=(.+?);")
 def fix_minimap2_vcf(input_vcf_file, output_vcf_file, ref_fasta, qry_fasta, snps_only):
     ref_seqs = utils.file_to_dict_of_seqs(ref_fasta)
     qry_seqs = utils.file_to_dict_of_seqs(qry_fasta)
