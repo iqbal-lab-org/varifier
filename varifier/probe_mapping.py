@@ -86,6 +86,8 @@ def hit_debug_string(hit, map_probe):
             f"qstart/end={hit.q_st}/{hit.q_en}",
             f"rstart/end={hit.r_st}/{hit.r_en}",
             f"cigar={hit.cigar}",
+            f"mapq={hit.mapq}",
+            f"NM={hit.NM}",
         ]
     )
 
@@ -136,7 +138,7 @@ def evaluate_vcf_record(
                 file=map_outfile,
             )
 
-    alt_hits = [x for x in alt_hits if alt_probe.map_hit_includes_allele(x)]
+    alt_hits = [x for x in alt_hits if alt_probe.map_hit_includes_allele(x) and x.mapq > 0]
     alt_match, alt_allele_length, alt_best_hit = probe_hits_to_best_allele_counts(
         alt_probe, alt_hits, debug_outfile=map_outfile
     )
@@ -170,6 +172,7 @@ def evaluate_vcf_record(
         if ref_probe.map_hit_includes_allele(x)
         and alt_best_hit.ctg == x.ctg
         and x.r_st == alt_best_hit.r_st
+        and x.mapq > 0
     ]
 
     if len(ref_hits) == 0:
