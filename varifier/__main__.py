@@ -112,11 +112,10 @@ def main(args=None):
 
     args = parser.parse_args()
 
-    log = logging.getLogger()
-    if args.debug:
-        log.setLevel(logging.DEBUG)
-    else:
-        log.setLevel(logging.INFO)
+    log_level = logging.DEBUG if args.debug else logging.INFO
+    logging.basicConfig(
+        format="%(asctime)s [%(levelname)s]: %(message)s", level=log_level
+    )
 
     if hasattr(args, "func"):
         args.func(args)
