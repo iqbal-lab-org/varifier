@@ -1,2 +1,3 @@
 include requirements.txt
 include varifier/paftools_fixed.js
+include LICENSE
