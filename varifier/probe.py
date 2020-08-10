@@ -184,3 +184,6 @@ class Probe:
             edit_distance.edit_distance_from_aln_strings(probe_allele, ref_allele),
             in_mask,
         )
+
+    def get_interval_as_str(self):
+        return f"[{self.allele_start},{self.allele_end+1})"

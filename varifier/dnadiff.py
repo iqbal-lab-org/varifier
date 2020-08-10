@@ -1,8 +1,7 @@
 from operator import attrgetter
 import logging
-import os
 import subprocess
-
+import os
 import pyfastaq
 import pymummer
 from cluster_vcf_records import vcf_record
@@ -30,13 +29,14 @@ def _run_dnadiff(ref_fasta, query_fasta, outprefix):
     logging.info(f"dnadiff command finished ({command})")
 
 
-def _snps_file_to_vcf(snps_file, query_fasta, outfile):
+def _snps_file_to_vcf(snps_file, query_fasta, outfile, snps_only):
     """Loads the .snps file made by dnadiff.
     query_fasta = fasta file of query sequences.
     Writes a new VCF file unmerged records."""
     vcf_records = {}
     variants = pymummer.snp_file.get_all_variants(snps_file)
     query_seqs = utils.file_to_dict_of_seqs(query_fasta)
+    discarded_variants = []
 
     for variant in variants:
         # If the variant is reversed, it means that either the ref or query had to be
@@ -61,13 +61,21 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile):
                         variant.ref_base,
                         ".",
                         ".",
-                        "SVTYPE=DNADIFF_SNP",
+                        f"QNAME={variant.ref_name};"
+                        f"QSTART={variant.ref_start + 1};"
+                        f"QSTRAND={'-' if variant.reverse else '+'};"
+                        f"LENGTH_REF={variant.qry_length};"
+                        f"LENGTH_QRY={variant.ref_length}",
                         "GT",
                         "1/1",
                     ]
                 )
             )
         elif variant.var_type == pymummer.variant.DEL:
+            if snps_only:
+                discarded_variants.append(variant)
+                continue
+
             # The query has sequence missing, compared to the
             # reference. We're making VCF records w.r.t. the
             # query, so this is an insertion. So need to
@@ -90,6 +98,10 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile):
                 )
             )
         elif variant.var_type == pymummer.variant.INS:
+            if snps_only:
+                discarded_variants.append(variant)
+                continue
+
             # The ref has sequence missing, compared to the
             # query. We're making VCF records w.r.t. the
             # query, so this is a deletion. So need to
@@ -139,12 +151,16 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile):
             for record in vcf_list:
                 print(record, file=f)
 
+    if snps_only:
+        with open(f"{outfile}.discarded_not_snps.vcf", "w") as discarded_variants_fh:
+            for discarded_variant in discarded_variants:
+                print(discarded_variant, file=discarded_variants_fh)
 
-def make_truth_vcf(ref_fasta, truth_fasta, outfile, debug=False):
+def make_truth_vcf(ref_fasta, truth_fasta, outfile, snps_only, debug=False):
     tmp_outprefix = f"{outfile}.tmp"
     _run_dnadiff(truth_fasta, ref_fasta, tmp_outprefix)
     snps_file = f"{tmp_outprefix}.snps"
-    _snps_file_to_vcf(snps_file, ref_fasta, outfile)
+    _snps_file_to_vcf(snps_file, ref_fasta, outfile, snps_only=snps_only)
     if debug:
         return
 

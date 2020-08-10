@@ -86,6 +86,8 @@ def hit_debug_string(hit, map_probe):
             f"qstart/end={hit.q_st}/{hit.q_en}",
             f"rstart/end={hit.r_st}/{hit.r_en}",
             f"cigar={hit.cigar}",
+            f"mapq={hit.mapq}",
+            f"NM={hit.NM}",
         ]
     )
 
@@ -100,7 +102,15 @@ def evaluate_vcf_record(
     map_outfile=None,
     use_fail_conflict=False,
     truth_mask=None,
+    output_probes=False
 ):
+    if output_probes:
+        vcf_record.set_format_key_value("VFR_REF_PROBE", ref_probe.seq)
+        vcf_record.set_format_key_value("VFR_REF_PROBE_ALLELE_INTERVAL", ref_probe.get_interval_as_str())
+        vcf_record.set_format_key_value("VFR_ALT_PROBE", alt_probe.seq)
+        vcf_record.set_format_key_value("VFR_ALT_PROBE_ALLELE_INTERVAL", alt_probe.get_interval_as_str())
+
+
     if vcf_record.FORMAT["VFR_FILTER"] not in _get_wanted_format(use_fail_conflict):
         return
 
@@ -128,7 +138,7 @@ def evaluate_vcf_record(
                 file=map_outfile,
             )
 
-    alt_hits = [x for x in alt_hits if alt_probe.map_hit_includes_allele(x)]
+    alt_hits = [x for x in alt_hits if alt_probe.map_hit_includes_allele(x) and x.mapq > 0]
     alt_match, alt_allele_length, alt_best_hit = probe_hits_to_best_allele_counts(
         alt_probe, alt_hits, debug_outfile=map_outfile
     )
@@ -162,6 +172,7 @@ def evaluate_vcf_record(
         if ref_probe.map_hit_includes_allele(x)
         and alt_best_hit.ctg == x.ctg
         and x.r_st == alt_best_hit.r_st
+        and x.mapq > 0
     ]
 
     if len(ref_hits) == 0:
@@ -212,6 +223,7 @@ def annotate_vcf_with_probe_mapping(
     use_ref_calls=False,
     debug=False,
     truth_mask=None,
+    output_probes=False
 ):
     vcf_ref_seqs = utils.file_to_dict_of_seqs(vcf_ref_fasta)
     truth_ref_seqs = utils.file_to_dict_of_seqs(truth_ref_fasta)
@@ -286,6 +298,7 @@ def annotate_vcf_with_probe_mapping(
                 map_outfile=f_map,
                 use_fail_conflict=use_fail_conflict,
                 truth_mask=truth_mask,
+                output_probes=output_probes
             )
             print(vcf_record, file=f_vcf)
 

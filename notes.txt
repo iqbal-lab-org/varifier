@@ -1,0 +1,8 @@
+* QNAME AND QSTART DEFINE EXACTLY WHERE THE SNP IS IN THE GENOME
+        * IF QSTRAND IS "-", THEN ALL WE NEED TO DO IS RC IT
+        * I THINK IF QSTRAND IS "-", THEN THE CORRECT POSITION IS TOTAL_LENGTH - POS
+            * THE IDEA IS THAT THE ALLELE = REVCOMP(SEQ)[TOTAL_LENGTH-POS]
+
+* TODO: add truth and ref probe to varifier VCF (file extra_04)
+
+* TODO: do the position translation (file extra_05)
