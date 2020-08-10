@@ -6,3 +6,4 @@ pyfastaq >= 3.14.0
 pymummer
 pysam
 seaborn
+tox

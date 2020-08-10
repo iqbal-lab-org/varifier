@@ -15,4 +15,4 @@ ENV PATH="/minimap2-2.17_x64-linux:${PATH}"
 # install varifier
 ARG varifier_repo_URL
 ARG commit_id_or_branch
-RUN git clone --recursive $varifier_repo_URL && cd varifier && git checkout $commit_id_or_branch && pip3 install .
+RUN git clone --recursive $varifier_repo_URL && cd varifier && git checkout $commit_id_or_branch && pip3 install . && tox
