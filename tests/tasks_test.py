@@ -19,6 +19,9 @@ def test_make_truth_vcf():
     options.outdir = "tmp.tasks.make_truth_vcf"
     options.flank_length = 100
     options.max_recall_ref_len = None
+    options.snps_only = False
+    options.output_probes = False
+    options.detailed_VCF = False
     subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
     tasks.make_truth_vcf.run(options)
     got_vcf = os.path.join(options.outdir, "04.truth.vcf")

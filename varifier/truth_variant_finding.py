@@ -85,6 +85,7 @@ def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file, snps_only):
     subprocess.check_output(cmd, shell=True)
     logging.info(f"minimap2/paftools finished ({cmd})")
     fix_minimap2_vcf(f"{vcf_file}.paftools_raw_output", vcf_file, ref_fasta, truth_fasta, snps_only=snps_only)
+    os.unlink(f"{vcf_file}.paftools_raw_output")
 
 
 def _deduplicate_vcf_files(to_merge, disagreement_file):
@@ -133,7 +134,7 @@ def _deduplicate_vcf_files(to_merge, disagreement_file):
     return ordered_vcf_lines
 
 
-def identify_vcf_lines(vcf_lines):
+def _identify_vcf_lines(vcf_lines):
     identified_vcf_lines = []
     for index, vcf_line in enumerate(vcf_lines):
         vcf_line_split = vcf_line.strip().split("\t")
@@ -144,7 +145,7 @@ def identify_vcf_lines(vcf_lines):
 def _deduplicate_vcf_files_for_probe_mapping(to_merge, ref_fasta, vcf_out):
     ref_seqs = utils.file_to_dict_of_seqs(ref_fasta)
     vcf_lines = _deduplicate_vcf_files(to_merge, f"{vcf_out}.disagreements_between_dnadiff_and_minimap2")
-    vcf_lines = identify_vcf_lines(vcf_lines)
+    vcf_lines = _identify_vcf_lines(vcf_lines)
 
     with open(vcf_out, "w") as f:
         print("##fileformat=VCFv4.2", file=f)

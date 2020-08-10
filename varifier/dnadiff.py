@@ -1,7 +1,7 @@
 from operator import attrgetter
 import logging
 import subprocess
-
+import os
 import pyfastaq
 import pymummer
 from cluster_vcf_records import vcf_record
@@ -164,9 +164,9 @@ def make_truth_vcf(ref_fasta, truth_fasta, outfile, snps_only, debug=False):
     if debug:
         return
 
-    # for extension in dnadiff_output_extensions:
-    #     # not all files get written, hence try except pass
-    #     try:
-    #         os.unlink(tmp_outprefix + "." + extension)
-    #     except:
-    #         pass
+    for extension in dnadiff_output_extensions:
+        # not all files get written, hence try except pass
+        try:
+            os.unlink(tmp_outprefix + "." + extension)
+        except:
+            pass
