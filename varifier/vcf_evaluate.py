@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import subprocess
 
@@ -57,22 +58,26 @@ def evaluate_vcf(
 
     # Mask if needed
     if ref_mask_bed_file is not None:
+        logging.info("Masking VCF...")
         masked_vcf = os.path.join(outdir, "variants_to_eval.masked.vcf")
         utils.mask_vcf_file(vcf_to_eval, ref_mask_bed_file, masked_vcf)
         vcf_to_eval = masked_vcf
+        logging.info(f"Masked VCF")
 
-    # Make VCF annotated with TP/FP for precision
+    logging.info("Annotate VCF with TP/FP for precision...")
     vcf_for_precision = os.path.join(outdir, "precision.vcf")
     if debug:
         map_outfile = f"{vcf_for_precision}.debug.map"
     else:
         map_outfile = None
+    logging.info("Annotation for precision done")
 
     if truth_mask_bed_file is None:
         truth_mask = None
     else:
         truth_mask = utils.load_mask_bed_file(truth_mask_bed_file)
 
+    logging.info("Annotating VCF with probe mapping...")
     probe_mapping.annotate_vcf_with_probe_mapping(
         vcf_to_eval,
         vcf_ref_fasta,
@@ -83,7 +88,9 @@ def evaluate_vcf(
         use_ref_calls=not discard_ref_calls,
         truth_mask=truth_mask,
     )
+    logging.info("Annotation of probe mapping done")
 
+    logging.info("Calculating recall...")
     recall_dir = os.path.join(outdir, "recall")
     vcf_for_recall_all, vcf_for_recall_filtered = recall.get_recall(
         vcf_ref_fasta,
@@ -97,6 +104,7 @@ def evaluate_vcf(
         max_ref_len=max_recall_ref_len,
     )
     if ref_mask_bed_file is not None:
+        logging.info("Masking recall VCF...")
         utils.mask_vcf_file(
             vcf_for_recall_all, ref_mask_bed_file, f"{vcf_for_recall_all}.masked.vcf"
         )
@@ -108,8 +116,10 @@ def evaluate_vcf(
         )
         vcf_for_recall_filtered = f"{vcf_for_recall_filtered}.masked.vcf"
         os.unlink(masked_vcf)
+    logging.info("Recall calculation done")
 
     # Gather stats and make plots
+    logging.info("Gathering stats and making plots...")
     per_record_recall_all = vcf_stats.per_record_stats_from_vcf_file(vcf_for_recall_all)
     per_record_recall_filtered = vcf_stats.per_record_stats_from_vcf_file(
         vcf_for_recall_filtered
@@ -136,3 +146,5 @@ def evaluate_vcf(
     summary_stats_json = os.path.join(outdir, "summary_stats.json")
     with open(summary_stats_json, "w") as f:
         json.dump(summary_stats, f, indent=2, sort_keys=True)
+
+    logging.info(f"Done. Results written to {summary_stats_json}")
