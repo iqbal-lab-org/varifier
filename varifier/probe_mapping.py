@@ -259,7 +259,7 @@ def annotate_vcf_with_probe_mapping(
         f_map = None
 
     new_header_lines = [
-        '##FORMAT=<ID=IN_MASK,Number=1,Type=String,Description="Whether or not the variant is in the truth genome mask">',
+        '##FORMAT=<ID=VFR_IN_MASK,Number=1,Type=String,Description="Whether or not the variant is in the truth genome mask">',
         '##FORMAT=<ID=VFR_RESULT,Number=1,Type=String,Description="FP, TP, or Partial_TP when part of the allele matches the truth reference">',
         '##FORMAT=<ID=VFR_ALLELE_LEN,Number=1,Type=Integer,Description="Number of positions in allele that were checked if they match the truth">',
         '##FORMAT=<ID=VFR_ALLELE_MATCH_COUNT,Number=1,Type=String,Description="Number of positions in allele that match the truth">',
