@@ -8,6 +8,7 @@
 ##FORMAT=<ID=VFR_ED_RA,Number=1,Type=String,Description="Edit distance between ref and alt allele (using the called allele where more than one alt)">
 ##FORMAT=<ID=VFR_ED_TR,Number=1,Type=String,Description="Edit distance between truth and ref allele">
 ##FORMAT=<ID=VFR_ED_TA,Number=1,Type=String,Description="Edit distance between truth and alt allele">
+##FORMAT=<ID=VFR_ED_SCORE,Number=1,Type=String,Description="Edit distance score">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
 ref	37	1	T	A	.	PASS	.	GT:EXPECT:VFR_FILTER:VFR_ED_RA:VFR_ED_TR:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:FP:FAIL_CONFLICT:1:0:1:1:0:0.0:0:FP
 ref	37	2	T	C	.	PASS	.	GT:EXPECT:VFR_FILTER:VFR_ED_RA:VFR_ED_TR:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:FP:FAIL_CONFLICT:1:0:1:1:0:0.0:0:FP

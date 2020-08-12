@@ -267,6 +267,7 @@ def annotate_vcf_with_probe_mapping(
         '##FORMAT=<ID=VFR_ED_RA,Number=1,Type=String,Description="Edit distance between ref and alt allele (using the called allele where more than one alt)">',
         '##FORMAT=<ID=VFR_ED_TR,Number=1,Type=String,Description="Edit distance between truth and ref allele">',
         '##FORMAT=<ID=VFR_ED_TA,Number=1,Type=String,Description="Edit distance between truth and alt allele">',
+        '##FORMAT=<ID=VFR_ED_SCORE,Number=1,Type=String,Description="Edit distance score">',
     ]
 
     with open(vcf_out, "w") as f_vcf:
