@@ -1,6 +1,9 @@
 # varifier
 
-Note: full documentation is under construction
+This is the repository used to retrieve the the truth variants from a set of genomes to get pangenome variations in the pandora paper.
+
+To build the container for the paper:
+`cd containers && ./build_container_for_paper.sh`
 
 ## Installation
 
