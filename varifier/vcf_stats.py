@@ -47,7 +47,6 @@ def per_record_stats_from_vcf_file(infile):
         "VFR_ED_RA",
         "VFR_ED_TR",
         "VFR_ED_TA",
-        "VFR_FILTER",
         "VFR_ALLELE_LEN",
         "VFR_ALLELE_MATCH_COUNT",
         "VFR_ALLELE_MATCH_FRAC",
@@ -124,7 +123,6 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
     returns a dictionary of summary stats. Set for_recall to True if the
     VCF was made for getting recall"""
     default_counts = {k: 0 for k in ("Count", "SUM_ALLELE_MATCH_FRAC", "SUM_EDIT_DIST")}
-    stats = {"UNUSED": {"CONFLICT": 0, "OTHER": 0, "MASKED": 0}}
 
     # By default, this is for getting the precision. Which means counting up
     # TPs and FPs. For recall, each call is an expected call from the truth.
@@ -132,44 +130,36 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
     # a FN. We expected to find the variant, but didn't.
     fp_key = "FN" if for_recall else "FP"
 
-    for key in "ALL", "FILT":
-        stats[key] = {
-            "TP": copy.copy(default_counts),
-            fp_key: copy.copy(default_counts),
-        }
-        stats[key]["EDIT_DIST_COUNTS"] = {"numerator": 0, "denominator": 0}
+    stats = {
+        "UNUSED": {"CONFLICT": 0, "OTHER": 0, "MASKED": 0},
+        "TP": copy.copy(default_counts),
+        fp_key: copy.copy(default_counts),
+        "EDIT_DIST_COUNTS": {"numerator": 0, "denominator": 0},
+    }
 
     for d in per_record_stats:
-        if d["VFR_FILTER"] == "FAIL_CONFLICT":
-            stats["UNUSED"]["CONFLICT"] += 1
-        elif d.get("VFR_IN_MASK", 0) == 1:
+        if d.get("VFR_IN_MASK", 0) == 1:
             stats["UNUSED"]["MASKED"] += 1
-        elif d["VFR_FILTER"] not in ["PASS", "FAIL_BUT_TEST"]:
-            stats["UNUSED"]["OTHER"] += 1
         else:
             if d["VFR_RESULT"] == "TP":
                 result = "TP"
             else:
                 result = fp_key
-            keys_to_update = ["ALL"]
-            if d["VFR_FILTER"] == "PASS":
-                keys_to_update.append("FILT")
 
             ed_num, ed_den = format_dict_to_edit_dist_scores(d)
 
-            for key in keys_to_update:
-                try:
-                    stats[key][result]["SUM_ALLELE_MATCH_FRAC"] += d[
-                        "VFR_ALLELE_MATCH_FRAC"
-                    ]
-                except TypeError:  # the value could be "NA"
-                    pass
+            try:
+                stats[result]["SUM_ALLELE_MATCH_FRAC"] += d[
+                    "VFR_ALLELE_MATCH_FRAC"
+                ]
+            except TypeError:  # the value could be "NA"
+               pass
 
-                stats[key][result]["SUM_EDIT_DIST"] += d["VFR_ED_RA"]
-                stats[key][result]["Count"] += 1
+            stats[result]["SUM_EDIT_DIST"] += d["VFR_ED_RA"]
+            stats[result]["Count"] += 1
 
-                if ed_num is not None:
-                    stats[key]["EDIT_DIST_COUNTS"]["numerator"] += ed_num
-                    stats[key]["EDIT_DIST_COUNTS"]["denominator"] += ed_den
+            if ed_num is not None:
+                stats["EDIT_DIST_COUNTS"]["numerator"] += ed_num
+                stats["EDIT_DIST_COUNTS"]["denominator"] += ed_den
 
     return stats

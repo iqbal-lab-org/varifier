@@ -1,3 +1,4 @@
+import logging
 import operator
 import os
 
@@ -11,14 +12,14 @@ def _vcf_file_to_dict(vcf_file, pass_only=True):
     """Loads VCF file. Returns a dictionary of sequence name -> sorted list
     by position of variants"""
     records = {}
-    wanted_format = {"PASS"}
-    if not pass_only:
-        wanted_format.add("FAIL_BUT_TEST")
+    #wanted_format = {"PASS"}
+    #if not pass_only:
+    #    wanted_format.add("FAIL_BUT_TEST")
 
     header_lines, vcf_records = vcf_file_read.vcf_file_to_list(vcf_file)
     for record in vcf_records:
-        if record.FORMAT["VFR_FILTER"] not in wanted_format:
-            continue
+        #if record.FORMAT["VFR_FILTER"] not in wanted_format:
+        #    continue
 
         if record.CHROM not in records:
             records[record.CHROM] = []
@@ -40,6 +41,7 @@ def apply_variants_to_genome(ref_fasta, vcf_file, out_fasta, pass_only=True):
         for ref_name, vcf_records in sorted(vcf_dict.items()):
             old_seq = ref_sequences[ref_name]
             new_seq = list(old_seq.seq)
+            previous_ref_start = None
             # Applying indels messes up the coords of any subsequent variant,
             # so start at the end and work backwards
             for vcf_record in reversed(vcf_records):
@@ -48,6 +50,18 @@ def apply_variants_to_genome(ref_fasta, vcf_file, out_fasta, pass_only=True):
                 allele_index = int(genotype.pop())
                 if allele_index == 0:
                     continue
+
+                # Some tools report two (or more) variants that overlap.
+                # No clear "right" option here.
+                # If the current record overlaps the previous one, ignore it.
+                # We could try to be cleverer about this (take best records
+                # based on likelihoods or whatever else), but every tool is
+                # different so no sane consistent way of doing this across tools
+                if previous_ref_start is not None and vcf_record.ref_end_pos() >= previous_ref_start:
+                    logging.warn(f"Skipping this record when calculating recall because it overlaps another record: {vcf_record}")
+                    continue
+
+                previous_ref_start = vcf_record.POS
                 allele = vcf_record.ALT[allele_index - 1]
                 start, end = vcf_record.POS, vcf_record.ref_end_pos() + 1
                 assert old_seq[start:end] == "".join(new_seq[start:end])
@@ -71,10 +85,6 @@ def get_recall(
 
     if truth_vcf is None:
         assert truth_fasta is not None
-        # Make truth VCF. This only depends on ref_fasta and truth_fasta, not
-        # on VCF to test. In particular, is independent of whether or not
-        # were using all records in vcf_to_test, or PASS records only. This means
-        # only need to make one truth VCF, which can be used for both cases.
         truth_outdir = os.path.join(outdir, "truth_vcf")
         truth_vcf = truth_variant_finding.make_truth_vcf(
             ref_fasta,
@@ -88,28 +98,21 @@ def get_recall(
     else:
         assert truth_fasta is None
 
-    vcfs_out = {}
-    for all_or_filt in "ALL", "FILT":
-        run_outdir = os.path.join(outdir, all_or_filt)
-        os.mkdir(run_outdir)
-        mutated_ref_fasta = os.path.join(run_outdir, "00.ref_with_mutations_added.fa")
-        apply_variants_to_genome(
-            ref_fasta, vcf_to_test, mutated_ref_fasta, pass_only=all_or_filt == "FILT"
-        )
+    mutated_ref_fasta = os.path.join(outdir, "ref_with_mutations_added.fa")
+    apply_variants_to_genome(
+        ref_fasta, vcf_to_test, mutated_ref_fasta, pass_only=False,
+    )
 
-        # For each record in the truth VCF, make a probe and map to the mutated genome
-        vcfs_out[all_or_filt] = os.path.join(
-            run_outdir, "02.truth.probe_mapped_to_mutated_genome.vcf"
-        )
-        map_outfile = (
-            os.path.join(run_outdir, "02.probe_map_debug.txt") if debug else None
-        )
-        probe_mapping.annotate_vcf_with_probe_mapping(
-            truth_vcf,
-            ref_fasta,
-            mutated_ref_fasta,
-            flank_length,
-            vcfs_out[all_or_filt],
-            map_outfile=map_outfile,
-        )
-    return vcfs_out["ALL"], vcfs_out["FILT"]
+    vcf_out = os.path.join(outdir, "recall.vcf")
+    map_outfile = (
+        os.path.join(outdir, "probe_map_debug.txt") if debug else None
+    )
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        truth_vcf,
+        ref_fasta,
+        mutated_ref_fasta,
+        flank_length,
+        vcf_out,
+        map_outfile=map_outfile,
+    )
+    return vcf_out
