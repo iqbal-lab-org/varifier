@@ -17,9 +17,7 @@ def _add_overall_precision_and_recall_to_summary_stats(summary_stats):
         fp_key = "FP" if prec_or_recall == "Precision" else "FN"
         d = summary_stats[prec_or_recall]
         tp = d["TP"]["Count"]
-        tp_frac = (
-            d["TP"]["SUM_ALLELE_MATCH_FRAC"] + d[fp_key]["SUM_ALLELE_MATCH_FRAC"]
-        )
+        tp_frac = d["TP"]["SUM_ALLELE_MATCH_FRAC"] + d[fp_key]["SUM_ALLELE_MATCH_FRAC"]
         fp = d[fp_key]["Count"]
         total_calls = tp + fp
         if total_calls > 0:
@@ -39,9 +37,24 @@ def _add_overall_precision_and_recall_to_summary_stats(summary_stats):
             d[f"{prec_or_recall}_edit_dist"] = 0
 
 
-def _filter_vcf(infile, outfile_keep, outfile_exclude, ref_seqs, filter_pass=None, keep_ref_calls=False):
-    counts = {"filter_fail": 0, "heterozygous": 0, "no_genotype": 0, "ref_call": 0, "other": 0}
-    with vcf_file_read.open_vcf_file_for_reading(infile) as f_in, open(outfile_keep, "w") as f_out_keep, open(outfile_exclude, "w") as f_out_exclude:
+def _filter_vcf(
+    infile,
+    outfile_keep,
+    outfile_exclude,
+    ref_seqs,
+    filter_pass=None,
+    keep_ref_calls=False,
+):
+    counts = {
+        "filter_fail": 0,
+        "heterozygous": 0,
+        "no_genotype": 0,
+        "ref_call": 0,
+        "other": 0,
+    }
+    with vcf_file_read.open_vcf_file_for_reading(infile) as f_in, open(
+        outfile_keep, "w"
+    ) as f_out_keep, open(outfile_exclude, "w") as f_out_exclude:
         for line in f_in:
             if line.startswith("#"):
                 print(line, end="", file=f_out_keep)
@@ -51,7 +64,19 @@ def _filter_vcf(infile, outfile_keep, outfile_exclude, ref_seqs, filter_pass=Non
             record = vcf_record.VcfRecord(line)
             exclude_reason = None
 
-            if "MISMAPPED_UNPLACEABLE" in record.FILTER or (filter_pass is not None and not record.FILTER.issubset(filter_pass)):
+            filter_is_dot_and_fails = (
+                filter_pass is not None
+                and len(record.FILTER) == 0
+                and "." not in filter_pass
+            )
+            filter_not_dot_and_fails = (
+                filter_pass is not None
+                and len(record.FILTER) > 0
+                and record.FILTER.isdisjoint(filter_pass)
+            )
+            filter_fails = filter_is_dot_and_fails or filter_not_dot_and_fails
+
+            if "MISMAPPED_UNPLACEABLE" in record.FILTER or filter_fails:
                 exclude_reason = "filter_fail"
             elif len(record.ALT) == 0 or record.ALT == ["."]:
                 exclude_reason = "other"
@@ -59,7 +84,10 @@ def _filter_vcf(infile, outfile_keep, outfile_exclude, ref_seqs, filter_pass=Non
                 exclude_reason = "no_genotype"
             elif record.REF in [".", ""]:
                 exclude_reason = "other"
-            if ref_seqs[record.CHROM][record.POS : record.POS + len(record.REF)] != record.REF:
+            if (
+                ref_seqs[record.CHROM][record.POS : record.POS + len(record.REF)]
+                != record.REF
+            ):
                 exclude_reason = "other"
 
             if exclude_reason is None:
@@ -108,14 +136,21 @@ def evaluate_vcf(
         masked_vcf = os.path.join(outdir, "variants_to_eval.masked.vcf")
         utils.mask_vcf_file(vcf_to_eval, ref_mask_bed_file, masked_vcf)
         vcf_to_filter = masked_vcf
-        logging.info(f"Masked VCF")
+        logging.info("Masked VCF")
 
     filter_pass = {"PASS"}
     vcf_ref_seqs = utils.file_to_dict_of_seqs(vcf_ref_fasta)
     filtered_vcf = os.path.join(outdir, "variants_to_eval.filtered.vcf")
     excluded_vcf = os.path.join(outdir, "variants_to_eval.excluded.vcf")
     logging.info("Filtering VCF...")
-    filtered_counts = _filter_vcf(vcf_to_filter, filtered_vcf, excluded_vcf, vcf_ref_seqs, filter_pass=filter_pass, keep_ref_calls=not discard_ref_calls)
+    filtered_counts = _filter_vcf(
+        vcf_to_filter,
+        filtered_vcf,
+        excluded_vcf,
+        vcf_ref_seqs,
+        filter_pass=filter_pass,
+        keep_ref_calls=not discard_ref_calls,
+    )
     logging.info("Filtering VCF done")
 
     vcf_for_precision = os.path.join(outdir, "precision.vcf")
@@ -140,7 +175,6 @@ def evaluate_vcf(
 
     logging.info("Calculating recall...")
     recall_dir = os.path.join(outdir, "recall")
-    #vcf_for_recall_all, vcf_for_recall_filtered = recall.get_recall(
     vcf_for_recall = recall.get_recall(
         vcf_ref_fasta,
         filtered_vcf,
@@ -158,7 +192,6 @@ def evaluate_vcf(
             vcf_for_recall, ref_mask_bed_file, f"{vcf_for_recall}.masked.vcf"
         )
         vcf_for_recall = f"{vcf_for_recall}.masked.vcf"
-        #os.unlink(masked_vcf)
         logging.info("Masking recall VCF done")
     logging.info("Recall calculation done")
 

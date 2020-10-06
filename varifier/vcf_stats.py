@@ -149,11 +149,9 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
             ed_num, ed_den = format_dict_to_edit_dist_scores(d)
 
             try:
-                stats[result]["SUM_ALLELE_MATCH_FRAC"] += d[
-                    "VFR_ALLELE_MATCH_FRAC"
-                ]
+                stats[result]["SUM_ALLELE_MATCH_FRAC"] += d["VFR_ALLELE_MATCH_FRAC"]
             except TypeError:  # the value could be "NA"
-               pass
+                pass
 
             stats[result]["SUM_EDIT_DIST"] += d["VFR_ED_RA"]
             stats[result]["Count"] += 1

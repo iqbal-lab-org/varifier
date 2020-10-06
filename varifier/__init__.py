@@ -16,7 +16,6 @@ __all__ = [
     "truth_variant_finding",
     "utils",
     "vcf_evaluate",
-    "vcf_qc_annotate",
     "vcf_stats",
 ]
 

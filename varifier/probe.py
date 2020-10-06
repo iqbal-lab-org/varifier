@@ -170,8 +170,6 @@ class Probe:
             map_hit, ref_seq=ref_seq, ref_mask=ref_mask
         )
         start, end = self.padded_seq_allele_start_end_coords(padded_probe_seq)
-        x = "".join([{"N": "N", False: "0", True: "1"}[x] for x in padded_ref_mask])
-        diffs = ["|" if padded_probe_seq[i] == padded_ref_seq[i] else " " for i in range(len(padded_ref_seq))]
         if start == None:
             return -1, False
         probe_allele = padded_probe_seq[start : end + 1]

@@ -1,0 +1,8 @@
+##fileformat=VCFv4.2
+##contig=<ID=ref,length=30>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=NOTES,Number=1,Type=String,Description="Notes for what we expect the test to do with the record">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref	2	.	T	G	.	PASS	.	GT:NOTES	1:Good alt call
+ref	9	.	C	G	.	.	.	GT:NOTES	1/1:Removal depends on filter_pass option
+ref	11	.	G	G	.	FILTER_1;FILTER_2	.	GT:NOTES	1/1:Removal depends on filter_pass option

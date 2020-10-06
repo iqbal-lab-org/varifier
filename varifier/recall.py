@@ -8,19 +8,13 @@ from cluster_vcf_records import vcf_file_read
 from varifier import probe_mapping, truth_variant_finding, utils
 
 
-def _vcf_file_to_dict(vcf_file, pass_only=True):
+def _vcf_file_to_dict(vcf_file):
     """Loads VCF file. Returns a dictionary of sequence name -> sorted list
     by position of variants"""
     records = {}
-    #wanted_format = {"PASS"}
-    #if not pass_only:
-    #    wanted_format.add("FAIL_BUT_TEST")
 
     header_lines, vcf_records = vcf_file_read.vcf_file_to_list(vcf_file)
     for record in vcf_records:
-        #if record.FORMAT["VFR_FILTER"] not in wanted_format:
-        #    continue
-
         if record.CHROM not in records:
             records[record.CHROM] = []
         records[record.CHROM].append(record)
@@ -31,12 +25,12 @@ def _vcf_file_to_dict(vcf_file, pass_only=True):
     return records
 
 
-def apply_variants_to_genome(ref_fasta, vcf_file, out_fasta, pass_only=True):
+def apply_variants_to_genome(ref_fasta, vcf_file, out_fasta):
     """Takes the variants in vcf_file, and applies them to the associated
     reference genome in ref_fasta. Writes a new file out_fasta that has those
     variants applied"""
     ref_sequences = utils.file_to_dict_of_seqs(ref_fasta)
-    vcf_dict = _vcf_file_to_dict(vcf_file, pass_only=pass_only)
+    vcf_dict = _vcf_file_to_dict(vcf_file)
     with open(out_fasta, "w") as f:
         for ref_name, vcf_records in sorted(vcf_dict.items()):
             old_seq = ref_sequences[ref_name]
@@ -57,8 +51,13 @@ def apply_variants_to_genome(ref_fasta, vcf_file, out_fasta, pass_only=True):
                 # We could try to be cleverer about this (take best records
                 # based on likelihoods or whatever else), but every tool is
                 # different so no sane consistent way of doing this across tools
-                if previous_ref_start is not None and vcf_record.ref_end_pos() >= previous_ref_start:
-                    logging.warn(f"Skipping this record when calculating recall because it overlaps another record: {vcf_record}")
+                if (
+                    previous_ref_start is not None
+                    and vcf_record.ref_end_pos() >= previous_ref_start
+                ):
+                    logging.warn(
+                        f"Skipping this record when calculating recall because it overlaps another record: {vcf_record}"
+                    )
                     continue
 
                 previous_ref_start = vcf_record.POS
@@ -99,14 +98,10 @@ def get_recall(
         assert truth_fasta is None
 
     mutated_ref_fasta = os.path.join(outdir, "ref_with_mutations_added.fa")
-    apply_variants_to_genome(
-        ref_fasta, vcf_to_test, mutated_ref_fasta, pass_only=False,
-    )
+    apply_variants_to_genome(ref_fasta, vcf_to_test, mutated_ref_fasta)
 
     vcf_out = os.path.join(outdir, "recall.vcf")
-    map_outfile = (
-        os.path.join(outdir, "probe_map_debug.txt") if debug else None
-    )
+    map_outfile = os.path.join(outdir, "probe_map_debug.txt") if debug else None
     probe_mapping.annotate_vcf_with_probe_mapping(
         truth_vcf,
         ref_fasta,
