@@ -122,7 +122,14 @@ def test_evaluate_vcf():
     subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
 
     vcf_evaluate.evaluate_vcf(
-        vcf_to_eval, ref_fasta, truth_fasta, 100, tmp_out, debug=True, force=True
+        vcf_to_eval,
+        ref_fasta,
+        truth_fasta,
+        100,
+        tmp_out,
+        debug=True,
+        force=True,
+        filter_pass={"PASS"},
     )
     summary_stats_expect_json = os.path.join(
         data_dir, "evaluate_vcf.expect.summary_stats.json"
@@ -141,6 +148,7 @@ def test_evaluate_vcf():
         tmp_out,
         debug=True,
         force=True,
+        filter_pass={"PASS"},
         ref_mask_bed_file=ref_mask_bed_file,
         truth_mask_bed_file=truth_mask_bed_file,
     )

@@ -138,7 +138,6 @@ def evaluate_vcf(
         vcf_to_filter = masked_vcf
         logging.info("Masked VCF")
 
-    filter_pass = {"PASS"}
     vcf_ref_seqs = utils.file_to_dict_of_seqs(vcf_ref_fasta)
     filtered_vcf = os.path.join(outdir, "variants_to_eval.filtered.vcf")
     excluded_vcf = os.path.join(outdir, "variants_to_eval.excluded.vcf")

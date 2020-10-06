@@ -77,6 +77,11 @@ def main(args=None):
         "--force", help="Replace outdir if it already exists", action="store_true"
     )
     subparser_vcf_eval.add_argument(
+        "--filter_pass",
+        help="Defines how to handle FILTER column of input VCF file. Comma-separated list of filter names. A VCF line is kept if any of its FILTER entries are in the provided list. Put '.' in the list to keep records where the filter column is '.'. Default behaviour is to ignore the filter column and use all records",
+        metavar="FILTER1[,FILTER2[,...]]",
+    )
+    subparser_vcf_eval.add_argument(
         "--ref_mask",
         help="BED file of ref regions to mask. Any variants in the VCF overlapping the mask are removed at the start of the pipeline",
         metavar="FILENAME",
