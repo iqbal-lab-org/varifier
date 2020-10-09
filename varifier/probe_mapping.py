@@ -1,70 +1,110 @@
 import operator
-import os
 
 import mappy
-import pyfastaq
 from cluster_vcf_records import vcf_file_read
 
-from varifier import edit_distance, probe, utils, vcf_qc_annotate
+from varifier import edit_distance, probe, utils
 
 
-def _get_wanted_format(use_fail_conflict):
-    wanted_format = {"PASS", "FAIL_BUT_TEST"}
-    if use_fail_conflict:
-        wanted_format.add("FAIL_CONFLICT")
-    return wanted_format
+def get_flanking_variants(vcf_records, record_index, end_pos, left=True):
+    centre_record = vcf_records[record_index]
+    used_ref_positions = {centre_record.POS}
+    wanted_variants = []
+    i = record_index - 1 if left else record_index + 1
+    i_add = -1 if left else 1
+
+    while 0 <= i < len(vcf_records):
+        if (
+            vcf_records[i].CHROM != centre_record.CHROM
+            or (left and vcf_records[i].POS < end_pos)
+            or (not left and vcf_records[i].ref_end_pos() > end_pos)
+        ):
+            break
+
+        if not used_ref_positions.isdisjoint(
+            range(vcf_records[i].POS, vcf_records[i].ref_end_pos() + 1)
+        ):
+            i += i_add
+            continue
+        genotype = set(vcf_records[i].FORMAT["GT"].split("/"))
+        assert len(genotype) == 1
+        genotype = genotype.pop()
+        if genotype != "0":
+            used_ref_positions.update(
+                range(vcf_records[i].POS, vcf_records[i].ref_end_pos() + 1)
+            )
+            allele = vcf_records[i].ALT[int(genotype) - 1]
+            wanted_variants.append(
+                (vcf_records[i].POS, vcf_records[i].ref_end_pos(), allele)
+            )
+        i += i_add
+
+    wanted_variants.sort(key=operator.itemgetter(0))
+    return wanted_variants
+
+
+def apply_variants_to_seq(seq, seq_start_in_ref, variants):
+    for ref_start, ref_end, allele in reversed(variants):
+        seq_start = ref_start - seq_start_in_ref
+        seq_end = ref_end - seq_start_in_ref
+        seq[seq_start : seq_end + 1] = [allele]
+
+
+def make_probes(ref_seqs, vcf_records, record_index, flank_length):
+    record = vcf_records[record_index]
+    ref_seq = ref_seqs[record.CHROM]
+    left_flank_start = max(0, record.POS - flank_length)
+    right_flank_start = record.ref_end_pos() + 1
+    right_flank_end = min(len(ref_seq) - 1, record.ref_end_pos() + flank_length)
+    left_variants = get_flanking_variants(
+        vcf_records, record_index, left_flank_start, left=True
+    )
+    right_variants = get_flanking_variants(
+        vcf_records, record_index, right_flank_end, left=False
+    )
+    left_flank = list(ref_seq[left_flank_start : record.POS])
+    right_flank = list(ref_seq[record.ref_end_pos() + 1 : right_flank_end + 1])
+    apply_variants_to_seq(left_flank, left_flank_start, left_variants)
+    apply_variants_to_seq(right_flank, right_flank_start, right_variants)
+    left_flank = "".join(left_flank)[-flank_length:]
+    right_flank = "".join(right_flank)[:flank_length]
+    # We should not ever see a VCF record without a GT entry at this point in
+    # the code, because the VCF file to be evaluated is filtered at the start,
+    # removing records without GT.
+    try:
+        alt_index = int(record.FORMAT["GT"].split("/")[0])
+    except KeyError:
+        raise KeyError(
+            f"GT not found in the following VCF record. Cannot continue\n{record}"
+        )
+    alt_allele = record.REF if alt_index == 0 else record.ALT[alt_index - 1]
+    ref_probe_seq = left_flank + record.REF + right_flank
+    alt_probe_seq = left_flank + alt_allele + right_flank
+    ref_probe = probe.Probe(
+        ref_probe_seq, len(left_flank), len(left_flank) + len(record.REF) - 1
+    )
+    alt_probe = probe.Probe(
+        alt_probe_seq, len(left_flank), len(left_flank) + len(alt_allele) - 1
+    )
+    assert ref_probe.allele_seq() == record.REF
+    assert alt_probe.allele_seq() == alt_allele
+    return ref_probe, alt_probe
 
 
 def get_probes_and_vcf_records(
     vcf_file, ref_seqs, flank_length, use_fail_conflict=False
 ):
-    """Input vcf_file is assumed to have been made by vcf_qc_annotate.add_qc_to_vcf(),
-    so that each record has the FORMAT tag VFR_FILTER.
-    For each line of the input VCF file, yields a
+    """For each line of the input VCF file, yields a
     tuple (vcf_record, alt probe sequence).
     vcf_file = name of VCF file.
     ref_seqs = dictionary of sequence name -> sequence.
     flank_length = number of nucleotides to add either side of variant sequence."""
     header_lines, vcf_records = vcf_file_read.vcf_file_to_list(vcf_file)
     yield header_lines
-    wanted_format = _get_wanted_format(use_fail_conflict)
 
-    for record in vcf_records:
-        if record.FORMAT["VFR_FILTER"] not in wanted_format:
-            yield record, None, None
-            continue
-
-        flank_start = max(0, record.POS - flank_length)
-        ref_seq = ref_seqs[record.CHROM]
-        if ref_seq[record.POS : record.POS + len(record.REF)] != record.REF:
-            record.set_format_key_value("VFR_FILTER", "REF_STRING_MISMATCH")
-            yield record, None, None
-            continue
-
-        flank_end = min(len(ref_seq) - 1, record.ref_end_pos() + flank_length)
-        probe_allele_start = record.POS - flank_start
-
-        alt_index = int(record.FORMAT["GT"].split("/")[0])
-        alt_allele = record.REF if alt_index == 0 else record.ALT[alt_index - 1]
-        alt_probe_allele_end = probe_allele_start + len(alt_allele) - 1
-        alt_probe_seq = (
-            ref_seq[flank_start : record.POS]
-            + alt_allele
-            + ref_seq[record.ref_end_pos() + 1 : flank_end + 1]
-        )
-        alt_probe = probe.Probe(alt_probe_seq, probe_allele_start, alt_probe_allele_end)
-        assert alt_probe.allele_seq() == alt_allele
-
-        ref_probe_allele_end = probe_allele_start + len(record.REF) - 1
-        ref_probe_seq = (
-            ref_seq[flank_start : record.POS]
-            + record.REF
-            + ref_seq[record.ref_end_pos() + 1 : flank_end + 1]
-        )
-        ref_probe = probe.Probe(ref_probe_seq, probe_allele_start, ref_probe_allele_end)
-        assert ref_probe.allele_seq() == record.REF
-
-        yield record, ref_probe, alt_probe
+    for i, vcf_record in enumerate(vcf_records):
+        ref_probe, alt_probe = make_probes(ref_seqs, vcf_records, i, flank_length)
+        yield vcf_record, ref_probe, alt_probe
 
 
 def probe_hits_to_best_allele_counts(probe, hits, debug_outfile=None):
@@ -103,9 +143,6 @@ def evaluate_vcf_record(
     use_fail_conflict=False,
     truth_mask=None,
 ):
-    if vcf_record.FORMAT["VFR_FILTER"] not in _get_wanted_format(use_fail_conflict):
-        return
-
     edit_dist_allele_v_ref = edit_distance.edit_distance_between_seqs(
         ref_probe.allele_seq(), alt_probe.allele_seq()
     )
@@ -130,7 +167,9 @@ def evaluate_vcf_record(
                 file=map_outfile,
             )
 
-    alt_hits = [x for x in alt_hits if alt_probe.map_hit_includes_allele(x) and x.mapq > 0]
+    alt_hits = [
+        x for x in alt_hits if alt_probe.map_hit_includes_allele(x) and x.mapq > 0
+    ]
     alt_match, alt_allele_length, alt_best_hit = probe_hits_to_best_allele_counts(
         alt_probe, alt_hits, debug_outfile=map_outfile
     )
@@ -218,10 +257,8 @@ def annotate_vcf_with_probe_mapping(
 ):
     vcf_ref_seqs = utils.file_to_dict_of_seqs(vcf_ref_fasta)
     truth_ref_seqs = utils.file_to_dict_of_seqs(truth_ref_fasta)
-    vcf_with_qc = vcf_out + ".debug.vcf"
-    vcf_qc_annotate.add_qc_to_vcf(vcf_in, vcf_with_qc, want_ref_calls=use_ref_calls)
     probes_and_vcf_reader = get_probes_and_vcf_records(
-        vcf_with_qc, vcf_ref_seqs, flank_length, use_fail_conflict=use_fail_conflict,
+        vcf_in, vcf_ref_seqs, flank_length, use_fail_conflict=use_fail_conflict,
     )
 
     # Some notes on the mapper options...
@@ -295,6 +332,3 @@ def annotate_vcf_with_probe_mapping(
 
     if map_outfile is not None:
         f_map.close()
-
-    if not debug:
-        os.unlink(vcf_with_qc)

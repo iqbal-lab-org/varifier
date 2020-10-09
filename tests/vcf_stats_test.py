@@ -87,6 +87,7 @@ def test_format_dict_to_edit_dist_scores():
     }
     assert (0.75, 1) == vcf_stats.format_dict_to_edit_dist_scores(format_dict)
 
+
 def test_per_record_stats_from_vcf_file():
     infile = os.path.join(data_dir, "per_record_stats_from_vcf_file.vcf")
     expect = [
@@ -105,7 +106,6 @@ def test_per_record_stats_from_vcf_file():
             "VFR_ALLELE_LEN": 1,
             "VFR_ALLELE_MATCH_COUNT": 0,
             "VFR_ALLELE_MATCH_FRAC": 0.0,
-            "VFR_FILTER": "PASS",
             "VFR_RESULT": "FP",
         },
         {
@@ -123,19 +123,16 @@ def test_per_record_stats_from_vcf_file():
             "VFR_ALLELE_LEN": 1,
             "VFR_ALLELE_MATCH_COUNT": 0,
             "VFR_ALLELE_MATCH_FRAC": 0.0,
-            "VFR_FILTER": "PASS",
             "VFR_RESULT": "FP",
         },
     ]
     got = vcf_stats.per_record_stats_from_vcf_file(infile)
-    print(got)
     assert got == expect
 
 
 def test_summary_stats_from_per_record_stats():
     record_stats = [
         {
-            "VFR_FILTER": "PASS",
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.1,
             "VFR_ED_RA": 1,
@@ -143,7 +140,6 @@ def test_summary_stats_from_per_record_stats():
             "VFR_ED_TA": 0,
         },
         {
-            "VFR_FILTER": "PASS",
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.12,
             "VFR_ED_RA": 1,
@@ -151,7 +147,6 @@ def test_summary_stats_from_per_record_stats():
             "VFR_ED_TA": 0,
         },
         {
-            "VFR_FILTER": "PASS",
             "VFR_RESULT": "FP",
             "VFR_ALLELE_MATCH_FRAC": 0.2,
             "VFR_ED_RA": 1,
@@ -159,7 +154,6 @@ def test_summary_stats_from_per_record_stats():
             "VFR_ED_TA": 1,
         },
         {
-            "VFR_FILTER": "PASS",
             "VFR_RESULT": "Partial_TP",
             "VFR_ALLELE_MATCH_FRAC": 0.25,
             "VFR_ED_RA": 1,
@@ -167,7 +161,6 @@ def test_summary_stats_from_per_record_stats():
             "VFR_ED_TA": 1,
         },
         {
-            "VFR_FILTER": "PASS",
             "VFR_RESULT": "FP",
             "VFR_ALLELE_MATCH_FRAC": 0.3,
             "VFR_ED_RA": 1,
@@ -175,7 +168,6 @@ def test_summary_stats_from_per_record_stats():
             "VFR_ED_TA": 1,
         },
         {
-            "VFR_FILTER": "FAIL",
             "VFR_RESULT": "FP",
             "VFR_ALLELE_MATCH_FRAC": 0.4,
             "VFR_ED_RA": 1,
@@ -183,7 +175,6 @@ def test_summary_stats_from_per_record_stats():
             "VFR_ED_TA": 1,
         },
         {
-            "VFR_FILTER": "FAIL_BUT_TEST",
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.5,
             "VFR_ED_RA": 1,
@@ -191,7 +182,6 @@ def test_summary_stats_from_per_record_stats():
             "VFR_ED_TA": 0,
         },
         {
-            "VFR_FILTER": "PASS",
             "VFR_IN_MASK": 1,
             "VFR_RESULT": "TP",
             "VFR_ALLELE_MATCH_FRAC": 0.1,
@@ -201,23 +191,15 @@ def test_summary_stats_from_per_record_stats():
         },
     ]
     expect = {
-        "UNUSED": {"CONFLICT": 0, "OTHER": 1, "MASKED": 1},
-        "ALL": {
-            "TP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.72, "SUM_EDIT_DIST": 3},
-            "FP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.75, "SUM_EDIT_DIST": 3},
-            "EDIT_DIST_COUNTS": {"numerator": 4, "denominator": 7},
-        },
-        "FILT": {
-            "TP": {"Count": 2, "SUM_ALLELE_MATCH_FRAC": 0.22, "SUM_EDIT_DIST": 2},
-            "FP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.75, "SUM_EDIT_DIST": 3},
-            "EDIT_DIST_COUNTS": {"numerator": 3, "denominator": 6},
-        },
+        "TP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.72, "SUM_EDIT_DIST": 3},
+        "FP": {"Count": 4, "SUM_ALLELE_MATCH_FRAC": 1.15, "SUM_EDIT_DIST": 4},
+        "EDIT_DIST_COUNTS": {"numerator": 6, "denominator": 10},
+        "UNUSED": {"CONFLICT": 0, "MASKED": 1, "OTHER": 0},
     }
     got = vcf_stats.summary_stats_from_per_record_stats(record_stats)
     assert got == expect
 
-    for all_or_filt in "ALL", "FILT":
-        expect[all_or_filt]["FN"] = expect[all_or_filt]["FP"]
-        del expect[all_or_filt]["FP"]
     got = vcf_stats.summary_stats_from_per_record_stats(record_stats, for_recall=True)
+    expect["FN"] = expect["FP"]
+    del expect["FP"]
     assert got == expect

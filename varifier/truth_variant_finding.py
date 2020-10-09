@@ -4,8 +4,6 @@ import os
 import shutil
 import subprocess
 
-import pyfastaq
-import pymummer
 import pysam
 import pysam.bcftools
 
@@ -57,7 +55,7 @@ def _merge_vcf_files_for_probe_mapping(list_of_vcf_files, ref_fasta, vcf_out):
                 new_record.ALT = [alt]
                 new_record.INFO = {}
                 new_record.FILTER = set(["PASS"])
-                new_record.FORMAT = {"GT": "1/1", "VFR_FILTER": "PASS"}
+                new_record.FORMAT = {"GT": "1/1"}
                 print(new_record, file=f)
 
 
@@ -145,7 +143,7 @@ def make_truth_vcf(
     to_merge = [dnadiff_vcf, minimap2_vcf]
     _merge_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)
     logging.info(f"Made merged VCF file {merged_vcf}")
-    logging.info(f"Probe mapping to remove incorrect calls")
+    logging.info("Probe mapping to remove incorrect calls")
     probe_mapping.annotate_vcf_with_probe_mapping(
         merged_vcf,
         ref_fasta,
@@ -159,7 +157,7 @@ def make_truth_vcf(
         probe_mapped_vcf, probe_filtered_vcf, max_ref_len
     )
     logging.info(f"Made filtered VCF file {probe_filtered_vcf}")
-    logging.info(f"Using bcftools to normalise and remove duplicates")
+    logging.info("Using bcftools to normalise and remove duplicates")
     _bcftools_norm(ref_fasta, probe_filtered_vcf, truth_vcf)
     logging.info(f"Finished making truth VCF file {truth_vcf}")
     return truth_vcf

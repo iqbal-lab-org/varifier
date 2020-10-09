@@ -3,8 +3,6 @@ import os
 import pytest
 import subprocess
 
-from cluster_vcf_records import vcf_file_read
-
 from varifier import truth_variant_finding, utils
 
 this_dir = os.path.dirname(os.path.abspath(__file__))

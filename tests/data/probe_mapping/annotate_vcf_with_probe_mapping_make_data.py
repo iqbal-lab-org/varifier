@@ -97,9 +97,11 @@ vcf_lines.append(["ref", 160, ".", ref_seq[159], "AG", ".", "PASS", ".", "GT:EXP
 
 # These two make sure we hit lines in the code where the cigar string has I or D
 # while the probe position that is tracked is inside the allele of interest.
-# The other variants in this test file don't fo that.
-vcf_lines.append(["ref", 161, ".", "".join(ref_seq[160:163]), "ACGTACGGGTGGTGTGTTTGAAAGATAG", ".", "PASS", ".", "GT:EXPECT", "1/1:Partial_TP"])
-vcf_lines.append(["ref", 161, ".", "".join(ref_seq[160:175]), "ACG", ".", "PASS", ".", "GT:EXPECT", "1/1:Partial_TP"])
+# The other variants in this test file don't do that.
+# EDIT: have to remove these because they mess up the previous variants at position 160.
+# Added this case into the cluster_snp_indel test instead
+#vcf_lines.append(["ref", 161, ".", "".join(ref_seq[160:163]), "ACGTACGGGTGGTGTGTTTGAAAGATAG", ".", "PASS", ".", "GT:EXPECT", "1/1:Partial_TP"])
+#vcf_lines.append(["ref", 161, ".", "".join(ref_seq[160:175]), "ACG", ".", "PASS", ".", "GT:EXPECT", "1/1:Partial_TP"])
 
 fp_positions.extend(range(159, 164))
 assert len(ref_seq) == len(truth_seq) == 299
@@ -131,24 +133,17 @@ ref_seq[229] = truth_seq[229] = "T"
 ref_seq[230] = truth_seq[230] = "G"
 vcf_lines.append(["ref", 230, ".", "TG", "T", ".", "PASS", ".", "GT:EXPECT", "1/1:FP"])
 
-
 # SNP so near the end that probe won't map
 vcf_lines.append(["ref", 400, ".", ref_seq[399], "AAAAA", ".", "PASS", ".", "GT:EXPECT", "1/1:FP_PROBE_UNMAPPED"])
 
-# Add in records that can't be evaluated for various reasons
-ref_seq[249] = "G"
-truth_seq[249] = "C"
-vcf_lines.append(["ref", 250, ".", "G", "C", ".", "FILTER_X", ".", "GT:EXPECT", "1/1:TP"])
-vcf_lines.append(["ref", 250, ".", "G", "C", ".", "MISMAPPED_UNPLACEABLE", ".", "GT:EXPECT", "1/1:TP"])
-vcf_lines.append(["ref", 250, ".", "G", "C", ".", "PASS", ".", "GT:EXPECT", "0/1:VFR_FILTER_CANNOT_USE_GT"])
-vcf_lines.append(["ref", 250, ".", "G", "C", ".", "PASS", ".", "GT:EXPECT", "./.:VFR_FILTER_CANNOT_USE_GT"])
-vcf_lines.append(["ref", 250, ".", "C", "G", ".", "PASS", ".", "GT:EXPECT", "1/1:VFR_FILTER_REF_STRING_MISMATCH"])
-vcf_lines.append(["ref", 250, ".", "G", "C", ".", "PASS", ".", "EXPECT", "VFR_FILTER_NO_GT"])
-vcf_lines.append(["ref", 250, ".", "G", ".", ".", "PASS", ".", "GT:EXPECT", "1/1:VFR_FILTER_NO_ALTS"])
-vcf_lines.append(["ref", 250, ".", ".", "G", ".", "PASS", ".", "GT:EXPECT", "1/1:VFR_FILTER_NO_REF_SEQ"])
-
-
-add_fp_snps(fp_positions, vcf_lines, ref_seq, truth_seq)
+# We now have an underlying assumption that the input VCF does not contain a
+# large number of errors, allowing us to apply called variants in the flanks
+# of probes. This is to correctly call clusters of variants. This means that
+# we can no longer add in all these FP SNPs at every position in this test -
+# it results in flanks having junk and messing up the TP/FP call that
+# we're testing. So don't do it for now (but leave here commented out in case
+# we change the method again the future).
+#add_fp_snps(fp_positions, vcf_lines, ref_seq, truth_seq)
 
 
 with open("annotate_vcf_with_probe_mapping.in.vcf", "w") as f:

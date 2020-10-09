@@ -4,7 +4,6 @@ import pytest
 import subprocess
 
 import pyfastaq
-from cluster_vcf_records import vcf_record
 
 from varifier import utils
 

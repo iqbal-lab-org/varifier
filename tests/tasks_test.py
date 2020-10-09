@@ -47,6 +47,7 @@ def test_vcf_eval():
     options.truth_mask = None
     options.use_ref_calls = False
     options.max_recall_ref_len = None
+    options.filter_pass = "PASS,."
     subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
     tasks.vcf_eval.run(options)
     expect_json = os.path.join(data_dir, "vcf_eval.expect.summary_stats.json")

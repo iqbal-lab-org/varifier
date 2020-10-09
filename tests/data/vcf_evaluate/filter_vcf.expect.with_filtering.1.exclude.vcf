@@ -1,0 +1,15 @@
+##fileformat=VCFv4.2
+##contig=<ID=ref,length=30>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##FORMAT=<ID=NOTES,Number=1,Type=String,Description="Notes for what we expect the test to do with the record">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref	1	.	A	G	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	0:Good ref call:ref_call
+ref	3	.	G	C	.	MISMAPPED_UNPLACEABLE	.	GT:NOTES:VFR_EXCLUDE_REASON	0:Should always get removed because of FILTER column:filter_fail
+ref	4	.	T	A	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	1:Should always get removed because REF does not match ref genome:other
+ref	5	.	A	.	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	1:Should always get removed because ALT is .:other
+ref	6	.	T	C	.	PASS	.	NOTES:VFR_EXCLUDE_REASON	Should always get removed because no GT:no_genotype
+ref	7	.	.	A	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	1:Should always get removed because REF is .:other
+ref	8	.	A	T	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	0/1:Should always get removed because heterozygous:heterozygous
+ref	9	.	C	G	.	.	.	GT:NOTES:VFR_EXCLUDE_REASON	1/1:Removal depends on filter_pass option:filter_fail
+ref	10	.	T	G	.	FILTER_1	.	GT:NOTES:VFR_EXCLUDE_REASON	1/1:Removal depends on filter_pass option:filter_fail
+ref	11	.	G	G	.	FILTER_1;FILTER_2	.	GT:NOTES:VFR_EXCLUDE_REASON	1/1:Removal depends on filter_pass option:filter_fail

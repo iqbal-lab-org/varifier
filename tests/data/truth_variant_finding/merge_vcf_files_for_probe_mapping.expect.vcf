@@ -2,8 +2,8 @@
 ##contig=<ID=ref,length=430>
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
-ref	40	0	A	C	.	PASS	.	GT:VFR_FILTER	1/1:PASS
-ref	40	0	A	G	.	PASS	.	GT:VFR_FILTER	1/1:PASS
-ref	41	1	C	G	.	PASS	.	GT:VFR_FILTER	1/1:PASS
-ref	60	2	A	G	.	PASS	.	GT:VFR_FILTER	1/1:PASS
-ref	80	3	T	C	.	PASS	.	GT:VFR_FILTER	1/1:PASS
+ref	40	0	A	C	.	PASS	.	GT	1/1
+ref	40	0	A	G	.	PASS	.	GT	1/1
+ref	41	1	C	G	.	PASS	.	GT	1/1
+ref	60	2	A	G	.	PASS	.	GT	1/1
+ref	80	3	T	C	.	PASS	.	GT	1/1
