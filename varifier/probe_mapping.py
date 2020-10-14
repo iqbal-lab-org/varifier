@@ -212,13 +212,13 @@ def evaluate_vcf_record(
     else:
         ref_hits.sort(key=operator.attrgetter("NM"))
         best_ref_hit = ref_hits[0]
-        mask = None if truth_mask is None else truth_mask[best_ref_hit.ctg]
+        mask = None if truth_mask is None else truth_mask.get(best_ref_hit.ctg, None)
         edit_dist_ref_allele, ref_allele_in_mask = ref_probe.edit_distance_vs_ref(
             best_ref_hit, truth_seqs[best_ref_hit.ctg], ref_mask=mask,
         )
         vcf_record.set_format_key_value("VFR_ED_TR", str(edit_dist_ref_allele))
 
-    mask = None if truth_mask is None else truth_mask[alt_best_hit.ctg]
+    mask = None if truth_mask is None else truth_mask.get(alt_best_hit.ctg, None)
     edit_dist_alt_allele, alt_allele_in_mask = alt_probe.edit_distance_vs_ref(
         alt_best_hit, truth_seqs[alt_best_hit.ctg], ref_mask=mask,
     )
