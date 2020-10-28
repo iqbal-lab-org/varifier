@@ -1,6 +1,7 @@
 from operator import attrgetter
 import logging
 import os
+import shutil
 import subprocess
 
 import pyfastaq
@@ -8,26 +9,59 @@ import pymummer
 from cluster_vcf_records import vcf_record
 from varifier import utils
 
-dnadiff_output_extensions = [
-    "1coords",
-    "1delta",
-    "delta",
-    "mcoords",
-    "mdelta",
-    "qdiff",
-    "rdiff",
-    "report",
-    "snps",
-    "unqry",
-    "unref",
-]
+
+# We only want the .snps file from the dnadiff script from MUMmer. From reading
+# the docs inspecting that script, we need to run these commands:
+#
+# nucmer --maxmatch --delta out.delta ref.fasta query.fasta
+# delta-filter -1 out.delta > out.1delta
+# show-snps -rlTHC out.1delta > out.snps
+#
+# This is instead of just running show-snps, which runs several other commands
+# in addition to making the snps file.
+def _run_dnadiff_one_split(ref_fasta, query_fasta, outfile, threads=1):
+    delta = f"{outfile}.tmp.delta"
+    delta_1 = f"{outfile}.tmp.1delta"
+    subprocess.check_output(f"rm -f {delta} {delta_1}", shell=True)
+    commands = [
+        f"nucmer --threads {threads} --maxmatch --delta {delta} {ref_fasta} {query_fasta}",
+        f"delta-filter -1 {delta} > {delta_1}",
+        f"show-snps -rlTHC {delta_1} > {outfile}",
+    ]
+
+    for command in commands:
+        logging.info("Start run command: " + command)
+        subprocess.check_output(command, shell=True)
+        logging.info("Finish run command: " + command)
+
+    os.unlink(delta)
+    os.unlink(delta_1)
 
 
-def _run_dnadiff(ref_fasta, query_fasta, outprefix):
-    command = f"dnadiff -p {outprefix} {ref_fasta} {query_fasta}"
-    logging.info(f"Finding variants using dnadiff with command: {command}")
-    subprocess.check_output(command, shell=True)
-    logging.info(f"dnadiff command finished ({command})")
+def _run_dnadiff(
+    ref_fasta, query_fasta, outfile, split_query=False, debug=False, threads=1
+):
+    if not split_query:
+        _run_dnadiff_one_split(ref_fasta, query_fasta, outfile, threads=threads)
+    else:
+        tmp_snp_files = []
+        seq_reader = pyfastaq.sequences.file_reader(query_fasta)
+        for seq in seq_reader:
+            prefix = f"{outfile}.tmp.split.{len(tmp_snp_files)}"
+            tmp_fasta = f"{prefix}.fasta"
+            with open(tmp_fasta, "w") as f:
+                print(seq, file=f)
+            snp_file = f"{prefix}.snps"
+            _run_dnadiff_one_split(ref_fasta, tmp_fasta, snp_file, threads=threads)
+            os.unlink(tmp_fasta)
+            tmp_snp_files.append(snp_file)
+
+        with open(outfile, "wb") as f_out:
+            for snp_file in tmp_snp_files:
+                with open(snp_file, "rb") as f_in:
+                    shutil.copyfileobj(f_in, f_out)
+                if not debug:
+                    os.unlink(snp_file)
 
 
 def _snps_file_to_vcf(snps_file, query_fasta, outfile):
@@ -140,17 +174,18 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile):
                 print(record, file=f)
 
 
-def make_truth_vcf(ref_fasta, truth_fasta, outfile, debug=False):
-    tmp_outprefix = f"{outfile}.tmp"
-    _run_dnadiff(truth_fasta, ref_fasta, tmp_outprefix)
-    snps_file = f"{tmp_outprefix}.snps"
+def make_truth_vcf(
+    ref_fasta, truth_fasta, outfile, debug=False, split_ref=False, threads=1
+):
+    snps_file = f"{outfile}.tmp.snps"
+    _run_dnadiff(
+        truth_fasta,
+        ref_fasta,
+        snps_file,
+        split_query=split_ref,
+        debug=debug,
+        threads=threads,
+    )
     _snps_file_to_vcf(snps_file, ref_fasta, outfile)
-    if debug:
-        return
-
-    for extension in dnadiff_output_extensions:
-        # not all files get written, hence try except pass
-        try:
-            os.unlink(tmp_outprefix + "." + extension)
-        except:
-            pass
+    if not debug:
+        os.unlink(snps_file)

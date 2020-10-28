@@ -54,6 +54,18 @@ def main(args=None):
         help="BED file of truth genome regions to mask. Any variants in the VCF matching to the mask are flagged and will not count towards precision or recall if the output VCF is used with vcf_eval",
         metavar="FILENAME",
     )
+    subparser_make_truth_vcf.add_argument(
+        "--split_ref",
+        help="When using MUMmer, split the ref genome into one file per sequence, and run MUMmer on each split. Experimental - should improve run time for big genomes",
+        action="store_true",
+    )
+    subparser_make_truth_vcf.add_argument(
+        "--cpus",
+        help="Number of CPUs to use when running nucmer and minimap2 [%(default)s]",
+        type=int,
+        default=1,
+        metavar="INT",
+    )
 
     subparser_make_truth_vcf.add_argument("outdir", help="Name of output directory")
     subparser_make_truth_vcf.set_defaults(func=varifier.tasks.make_truth_vcf.run)
@@ -106,6 +118,18 @@ def main(args=None):
         "--use_ref_calls",
         help="Include 0/0 genotype calls when calculating TPs and precision. By default they are ignored",
         action="store_true",
+    )
+    subparser_vcf_eval.add_argument(
+        "--split_ref",
+        help="When using MUMmer to get expected calls for recall, split the ref genome into one file per sequence, and run MUMmer on each split. Experimental - should improve run time for big genomes",
+        action="store_true",
+    )
+    subparser_vcf_eval.add_argument(
+        "--cpus",
+        help="Number of CPUs to use when running nucmer and minimap2 to get recall, eveything else is single-core/thread. If you have a big genome, more efficient to run make_truth_vcf with >1 CPU, then use its output with --truth_vcf when running vcf_eval. [%(default)s]",
+        type=int,
+        default=1,
+        metavar="INT",
     )
     subparser_vcf_eval.add_argument("truth_fasta", help="FASTA file of truth genome")
     subparser_vcf_eval.add_argument(

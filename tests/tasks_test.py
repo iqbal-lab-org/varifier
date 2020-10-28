@@ -19,6 +19,7 @@ def test_make_truth_vcf():
     options.outdir = "tmp.tasks.make_truth_vcf"
     options.flank_length = 100
     options.max_recall_ref_len = None
+    options.cpus = 1
     subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
     tasks.make_truth_vcf.run(options)
     got_vcf = os.path.join(options.outdir, "04.truth.vcf")
@@ -48,6 +49,7 @@ def test_vcf_eval():
     options.use_ref_calls = False
     options.max_recall_ref_len = None
     options.filter_pass = "PASS,."
+    options.cpus = 1
     subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
     tasks.vcf_eval.run(options)
     expect_json = os.path.join(data_dir, "vcf_eval.expect.summary_stats.json")

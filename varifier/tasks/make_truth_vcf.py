@@ -15,4 +15,6 @@ def run(options):
         debug=options.debug,
         truth_mask=mask,
         max_ref_len=options.max_recall_ref_len,
+        split_ref=options.split_ref,
+        threads=options.cpus,
     )

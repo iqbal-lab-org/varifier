@@ -79,6 +79,8 @@ def get_recall(
     debug=False,
     truth_mask=None,
     max_ref_len=None,
+    split_ref=False,
+    threads=1,
 ):
     os.mkdir(outdir)
 
@@ -93,6 +95,8 @@ def get_recall(
             debug=debug,
             truth_mask=truth_mask,
             max_ref_len=max_ref_len,
+            split_ref=split_ref,
+            threads=threads,
         )
     else:
         assert truth_fasta is None

@@ -24,9 +24,11 @@ def _check_dependencies_in_path():
         raise RuntimeError("Some required programs not found in $PATH. Cannot continue")
 
 
-def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file):
+def _truth_using_minimap2_paftools(ref_fasta, truth_fasta, vcf_file, threads=1):
     _check_dependencies_in_path()
-    minimap2_cmd = f"minimap2 -c --cs {ref_fasta} {truth_fasta} | sort -k6,6 -k8,8n"
+    minimap2_cmd = (
+        f"minimap2 -t {threads} -c --cs {ref_fasta} {truth_fasta} | sort -k6,6 -k8,8n"
+    )
     paftools_cmd = f"paftools.js call -l50 -L50 -f {ref_fasta} -"
     cmd = f"{minimap2_cmd} | {paftools_cmd} > {vcf_file}"
     logging.info(f"Running minimap2/paftools with command: {cmd}")
@@ -124,6 +126,8 @@ def make_truth_vcf(
     debug=False,
     truth_mask=None,
     max_ref_len=None,
+    split_ref=False,
+    threads=1,
 ):
     _check_dependencies_in_path()
     os.mkdir(outdir)
@@ -138,8 +142,17 @@ def make_truth_vcf(
     probe_filtered_vcf = os.path.join(outdir, "03.probe_filtered.vcf")
     truth_vcf = os.path.join(outdir, "04.truth.vcf")
 
-    dnadiff.make_truth_vcf(ref_fasta, truth_fasta, dnadiff_vcf, debug=debug)
-    _truth_using_minimap2_paftools(ref_fasta, truth_fasta, minimap2_vcf)
+    dnadiff.make_truth_vcf(
+        ref_fasta,
+        truth_fasta,
+        dnadiff_vcf,
+        debug=debug,
+        split_ref=split_ref,
+        threads=threads,
+    )
+    _truth_using_minimap2_paftools(
+        ref_fasta, truth_fasta, minimap2_vcf, threads=threads
+    )
     to_merge = [dnadiff_vcf, minimap2_vcf]
     _merge_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)
     logging.info(f"Made merged VCF file {merged_vcf}")
