@@ -125,6 +125,7 @@ def evaluate_vcf(
     filter_pass=None,
     split_ref=False,
     threads=1,
+    maxmatch=True,
 ):
     if force:
         subprocess.check_output(f"rm -rf {outdir}", shell=True)
@@ -188,6 +189,7 @@ def evaluate_vcf(
         max_ref_len=max_recall_ref_len,
         split_ref=split_ref,
         threads=threads,
+        maxmatch=maxmatch,
     )
     if ref_mask_bed_file is not None:
         logging.info("Masking recall VCF...")

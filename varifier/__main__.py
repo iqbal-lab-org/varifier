@@ -60,6 +60,11 @@ def main(args=None):
         action="store_true",
     )
     subparser_make_truth_vcf.add_argument(
+        "--no_maxmatch",
+        help="When using nucmer to get expected calls for recall, do not use the --maxmatch option. May reduce sensitivity to finding all variants",
+        action="store_true",
+    )
+    subparser_make_truth_vcf.add_argument(
         "--cpus",
         help="Number of CPUs to use when running nucmer and minimap2 [%(default)s]",
         type=int,
@@ -122,6 +127,11 @@ def main(args=None):
     subparser_vcf_eval.add_argument(
         "--split_ref",
         help="When using MUMmer to get expected calls for recall, split the ref genome into one file per sequence, and run MUMmer on each split. Experimental - should improve run time for big genomes",
+        action="store_true",
+    )
+    subparser_vcf_eval.add_argument(
+        "--no_maxmatch",
+        help="When using nucmer to get expected calls for recall, do not use the --maxmatch option. May reduce sensitivity to finding all variants",
         action="store_true",
     )
     subparser_vcf_eval.add_argument(

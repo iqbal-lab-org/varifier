@@ -17,4 +17,5 @@ def run(options):
         max_ref_len=options.max_recall_ref_len,
         split_ref=options.split_ref,
         threads=options.cpus,
+        maxmatch=not options.no_maxmatch,
     )

@@ -128,6 +128,7 @@ def make_truth_vcf(
     max_ref_len=None,
     split_ref=False,
     threads=1,
+    maxmatch=True,
 ):
     _check_dependencies_in_path()
     os.mkdir(outdir)
@@ -149,6 +150,7 @@ def make_truth_vcf(
         debug=debug,
         split_ref=split_ref,
         threads=threads,
+        maxmatch=maxmatch,
     )
     _truth_using_minimap2_paftools(
         ref_fasta, truth_fasta, minimap2_vcf, threads=threads

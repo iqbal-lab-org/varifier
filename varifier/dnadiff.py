@@ -19,12 +19,13 @@ from varifier import utils
 #
 # This is instead of just running show-snps, which runs several other commands
 # in addition to making the snps file.
-def _run_dnadiff_one_split(ref_fasta, query_fasta, outfile, threads=1):
+def _run_dnadiff_one_split(ref_fasta, query_fasta, outfile, threads=1, maxmatch=True):
     delta = f"{outfile}.tmp.delta"
     delta_1 = f"{outfile}.tmp.1delta"
     subprocess.check_output(f"rm -f {delta} {delta_1}", shell=True)
+    maxmatch_opt = "--maxmatch" if maxmatch else ""
     commands = [
-        f"nucmer --threads {threads} --maxmatch --delta {delta} {ref_fasta} {query_fasta}",
+        f"nucmer --threads {threads} {maxmatch_opt} --delta {delta} {ref_fasta} {query_fasta}",
         f"delta-filter -1 {delta} > {delta_1}",
         f"show-snps -rlTHC {delta_1} > {outfile}",
     ]
@@ -39,10 +40,18 @@ def _run_dnadiff_one_split(ref_fasta, query_fasta, outfile, threads=1):
 
 
 def _run_dnadiff(
-    ref_fasta, query_fasta, outfile, split_query=False, debug=False, threads=1
+    ref_fasta,
+    query_fasta,
+    outfile,
+    split_query=False,
+    debug=False,
+    threads=1,
+    maxmatch=True,
 ):
     if not split_query:
-        _run_dnadiff_one_split(ref_fasta, query_fasta, outfile, threads=threads)
+        _run_dnadiff_one_split(
+            ref_fasta, query_fasta, outfile, threads=threads, maxmatch=maxmatch
+        )
     else:
         tmp_snp_files = []
         seq_reader = pyfastaq.sequences.file_reader(query_fasta)
@@ -52,7 +61,9 @@ def _run_dnadiff(
             with open(tmp_fasta, "w") as f:
                 print(seq, file=f)
             snp_file = f"{prefix}.snps"
-            _run_dnadiff_one_split(ref_fasta, tmp_fasta, snp_file, threads=threads)
+            _run_dnadiff_one_split(
+                ref_fasta, tmp_fasta, snp_file, threads=threads, maxmatch=maxmatch
+            )
             os.unlink(tmp_fasta)
             tmp_snp_files.append(snp_file)
 
@@ -175,7 +186,13 @@ def _snps_file_to_vcf(snps_file, query_fasta, outfile):
 
 
 def make_truth_vcf(
-    ref_fasta, truth_fasta, outfile, debug=False, split_ref=False, threads=1
+    ref_fasta,
+    truth_fasta,
+    outfile,
+    debug=False,
+    split_ref=False,
+    threads=1,
+    maxmatch=True,
 ):
     snps_file = f"{outfile}.tmp.snps"
     _run_dnadiff(
@@ -185,6 +202,7 @@ def make_truth_vcf(
         split_query=split_ref,
         debug=debug,
         threads=threads,
+        maxmatch=maxmatch,
     )
     _snps_file_to_vcf(snps_file, ref_fasta, outfile)
     if not debug:
