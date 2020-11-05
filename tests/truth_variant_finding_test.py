@@ -22,22 +22,38 @@ def test_truth_using_minimap2_paftools():
         data_dir, "truth_using_minimap2_paftools.truth.revcomp.fa"
     )
 
+    # test truth_variant_finding._truth_using_minimap2_paftools
     tmp_vcf = "tmp.truth_using_minimap2_paftools.vcf"
     subprocess.check_output(f"rm -f {tmp_vcf}", shell=True)
     truth_variant_finding._truth_using_minimap2_paftools(
-        ref_fasta, truth_fasta, tmp_vcf
+        ref_fasta, truth_fasta, tmp_vcf, snps_only=False
     )
     expect_vcf = os.path.join(data_dir, "truth_using_minimap2_paftools.expect.vcf")
     assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
     os.unlink(tmp_vcf)
 
+    # now with snps only
+    tmp_vcf = "tmp.truth_using_minimap2_paftools.vcf"
+    subprocess.check_output(f"rm -f {tmp_vcf}", shell=True)
+    truth_variant_finding._truth_using_minimap2_paftools(
+        ref_fasta, truth_fasta, tmp_vcf, snps_only=True
+    )
+    expect_vcf = os.path.join(data_dir, "truth_using_minimap2_paftools.expect.snps_only.vcf")
+    assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
+    os.unlink(tmp_vcf)
+    tmp_discarded_not_snps = "tmp.truth_using_minimap2_paftools.vcf.discarded_not_snps.vcf"
+    expect_discarded_not_snps = os.path.join(data_dir, "truth_using_minimap2_paftools.expect.discarded_not_snps.vcf")
+    assert filecmp.cmp(tmp_discarded_not_snps, expect_discarded_not_snps, shallow=False)
+    os.unlink(tmp_discarded_not_snps)
+
+    # now with rev comp
     # The result should be the same if we reverse complement the truth reference.
     # However, these tags: "QSTART=122;QSTRAND=-" mean that the VCF file is not
     # identical (although the CHROM, REF, ALT columns are). Hence we have a
-    # different expceted VCF file
+    # different expected VCF file
     tmp_vcf_revcomp = "tmp.truth_using_minimap2_paftools.revcomp.vcf"
     truth_variant_finding._truth_using_minimap2_paftools(
-        ref_fasta, truth_revcomp_fasta, tmp_vcf_revcomp
+        ref_fasta, truth_revcomp_fasta, tmp_vcf_revcomp, snps_only=False
     )
     expect_vcf_revcomp = os.path.join(
         data_dir, "truth_using_minimap2_paftools.expect.revcomp.vcf"
@@ -115,3 +131,25 @@ def test_make_truth_vcf():
     expect_vcf = os.path.join(data_dir, "make_truth_vcf.expect.masked.vcf")
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+
+
+def test_deduplicate_vcf_files():
+    vcf_files = [
+        os.path.join(data_dir, "deduplicate_vcf_files_for_probe_mapping.in.1.vcf"),
+        os.path.join(data_dir, "deduplicate_vcf_files_for_probe_mapping.in.2.vcf"),
+    ]
+    tmp_vcf = "tmp.deduplicate_vcf_files_for_probe_mapping.vcf"
+    subprocess.check_output(f"rm -f {tmp_vcf}", shell=True)
+    ref_fasta = os.path.join(data_dir, "deduplicate_vcf_files_for_probe_mapping.ref.fa")
+    truth_variant_finding._deduplicate_vcf_files_for_probe_mapping(
+        vcf_files, ref_fasta, tmp_vcf
+    )
+    expect_vcf = os.path.join(data_dir, "deduplicate_vcf_files_for_probe_mapping.expect.vcf")
+    assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
+    os.unlink(tmp_vcf)
+
+    tmp_disagreements_between_dnadiff_and_minimap2 = "tmp.deduplicate_vcf_files_for_probe_mapping.vcf.disagreements_between_dnadiff_and_minimap2"
+    expect_disagreements_between_dnadiff_and_minimap2 = os.path.join(data_dir, "deduplicate_vcf_files_for_probe_mapping.vcf.disagreements_between_dnadiff_and_minimap2")
+    assert filecmp.cmp(tmp_disagreements_between_dnadiff_and_minimap2, expect_disagreements_between_dnadiff_and_minimap2, shallow=False)
+    os.unlink(tmp_disagreements_between_dnadiff_and_minimap2)

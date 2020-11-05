@@ -1,4 +1,5 @@
 import pyfastaq
+import os
 
 from cluster_vcf_records import vcf_file_read
 
@@ -61,3 +62,8 @@ def file_to_dict_of_seqs(infile):
     for seq in seqs.values():
         seq.id = seq.id.split()[0]
     return seqs
+
+
+def get_script_dir():
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    return script_dir
