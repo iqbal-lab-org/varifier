@@ -60,4 +60,5 @@ def file_to_dict_of_seqs(infile):
     seqs = {k.split()[0]: v for k, v in seqs.items()}
     for seq in seqs.values():
         seq.id = seq.id.split()[0]
+        seq.seq = seq.seq.upper()
     return seqs

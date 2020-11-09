@@ -34,6 +34,7 @@ def test_file_to_dict_of_seqs():
     expect = {
         "seq1": pyfastaq.sequences.Fasta("seq1", "A"),
         "seq2": pyfastaq.sequences.Fasta("seq2", "G"),
+        "seq3": pyfastaq.sequences.Fasta("seq3", "ACGT"),
     }
     x = utils.file_to_dict_of_seqs(infile)
     for k, v in x.items():
