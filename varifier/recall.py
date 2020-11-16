@@ -68,6 +68,10 @@ def apply_variants_to_genome(ref_fasta, vcf_file, out_fasta):
             new_seq = pyfastaq.sequences.Fasta(f"{ref_name}.mutated", "".join(new_seq))
             print(new_seq, file=f)
 
+        for ref_name in ref_sequences:
+            if ref_name not in vcf_dict:
+                print(ref_sequences[ref_name], file=f)
+
 
 def get_recall(
     ref_fasta,
