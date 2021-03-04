@@ -50,14 +50,14 @@ def test_merge_vcf_files_for_probe_mapping():
         os.path.join(data_dir, "merge_vcf_files_for_probe_mapping.in.2.vcf"),
     ]
     tmp_vcf = "tmp.merge_vcf_files_for_probe_mapping.vcf"
-    subprocess.check_output(f"rm -f {tmp_vcf}", shell=True)
+    subprocess.check_output(f"rm -rf {tmp_vcf}*", shell=True)
     ref_fasta = os.path.join(data_dir, "merge_vcf_files_for_probe_mapping.ref.fa")
     truth_variant_finding._merge_vcf_files_for_probe_mapping(
         vcf_files, ref_fasta, tmp_vcf
     )
     expect_vcf = os.path.join(data_dir, "merge_vcf_files_for_probe_mapping.expect.vcf")
     assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
-    os.unlink(tmp_vcf)
+    subprocess.check_output(f"rm -r {tmp_vcf}*", shell=True)
 
 
 def test_filter_fps_and_long_vars_from_probe_mapped_vcf():
