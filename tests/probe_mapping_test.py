@@ -78,7 +78,12 @@ def test_annotate_with_probe_mapping_clustered_snps_and_indels():
     tmp_map = "tmp.probe_mapping.clustered_snp_indel.map"
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
     probe_mapping.annotate_vcf_with_probe_mapping(
-        vcf_in, vcf_ref_fa, truth_ref_fa, 100, tmp_vcf, map_outfile=tmp_map,
+        vcf_in,
+        vcf_ref_fa,
+        truth_ref_fa,
+        100,
+        tmp_vcf,
+        map_outfile=tmp_map,
     )
     probe_mapping.annotate_vcf_with_probe_mapping(
         vcf_in,
@@ -91,4 +96,79 @@ def test_annotate_with_probe_mapping_clustered_snps_and_indels():
     expect_vcf = os.path.join(data_dir, "clustered_snp_indel.expect.vcf")
     assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
     assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf, shallow=False)
+    clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
+
+
+# This was seen in covid data. Ref allele = ACTTTACTTG, alt=A. We need to
+# check that can correctly call TP for this. But also check that
+# ref allele = ACTTTACTT, alt=A gets called as FP - this was the error seen
+# in covid data.
+def test_deletion_wrong_lengths():
+    vcf_ref_fa = os.path.join(data_dir, "deletion_wrong_lengths.ref.fa")
+    vcf_in = os.path.join(data_dir, "deletion_wrong_lengths.in.vcf")
+    truth_ref_fa = os.path.join(data_dir, "deletion_wrong_lengths.truth.fa")
+    truth_ref_revcomp_fa = os.path.join(
+        data_dir, "deletion_wrong_lengths.truth.revcomp.fa"
+    )
+    tmp_vcf = "tmp.probe_mapping.deletion_wrong_lengths.vcf"
+    tmp_vcf_revcomp = f"{tmp_vcf}.revcomp"
+    tmp_map = "tmp.probe_mapping.deletion_wrong_lengths.map"
+    clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        vcf_in,
+        vcf_ref_fa,
+        truth_ref_fa,
+        100,
+        tmp_vcf,
+        map_outfile=tmp_map,
+    )
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        vcf_in,
+        vcf_ref_fa,
+        truth_ref_revcomp_fa,
+        100,
+        tmp_vcf_revcomp,
+        map_outfile=tmp_map,
+    )
+    expect_vcf = os.path.join(data_dir, "deletion_wrong_lengths.expect.vcf")
+    assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
+    assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf, shallow=False)
+    clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
+
+
+# Same as the previous test, but this flips the truth/ref genomes around so
+# we're testing insertions instead
+def test_insertion_wrong_lengths():
+    vcf_ref_fa = os.path.join(data_dir, "insertion_wrong_lengths.ref.fa")
+    vcf_in = os.path.join(data_dir, "insertion_wrong_lengths.in.vcf")
+    truth_ref_fa = os.path.join(data_dir, "insertion_wrong_lengths.truth.fa")
+    truth_ref_revcomp_fa = os.path.join(
+        data_dir, "insertion_wrong_lengths.truth.revcomp.fa"
+    )
+    tmp_vcf = "tmp.probe_mapping.insertion_wrong_lengths.vcf"
+    tmp_vcf_revcomp = f"{tmp_vcf}.revcomp"
+    tmp_map = "tmp.probe_mapping.insertion_wrong_lengths.map"
+    clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        vcf_in,
+        vcf_ref_fa,
+        truth_ref_fa,
+        100,
+        tmp_vcf,
+        map_outfile=tmp_map,
+    )
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        vcf_in,
+        vcf_ref_fa,
+        truth_ref_revcomp_fa,
+        100,
+        tmp_vcf_revcomp,
+        map_outfile=tmp_map,
+    )
+    expect_vcf = os.path.join(data_dir, "insertion_wrong_lengths.expect.vcf")
+    expect_vcf_revcomp = os.path.join(
+        data_dir, "insertion_wrong_lengths.revcomp.expect.vcf"
+    )
+    assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
+    assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf_revcomp, shallow=False)
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))

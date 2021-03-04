@@ -7,7 +7,7 @@ import subprocess
 import pysam
 import pysam.bcftools
 
-from cluster_vcf_records import vcf_file_read, vcf_merge
+from cluster_vcf_records import variant_tracking, vcf_file_read
 
 from varifier import dnadiff, probe_mapping, utils
 
@@ -41,8 +41,12 @@ def _merge_vcf_files_for_probe_mapping(list_of_vcf_files, ref_fasta, vcf_out):
     # This makes a merged file, where two different ALTs at the same place
     # result in one record with a list of ALTs. For probe mapping, we want
     # a separate record for each allele. Also need genotype to be "1/1"
-    vcf_merge.merge_vcf_files(list_of_vcf_files, ref_seqs, vcf_out)
-    header_lines, vcf_records = vcf_file_read.vcf_file_to_list(vcf_out)
+    tmp_cluster_dir = f"{vcf_out}.tmp.cluster"
+    tracker = variant_tracking.VariantTracker(tmp_cluster_dir, ref_fasta)
+    tracker.merge_vcf_files(list_of_vcf_files)
+    cluster_out = f"{vcf_out}.tmp.cluster"
+    tracker.cluster(cluster_out, float("Inf"), max_alleles=5000)
+    header_lines, vcf_records = vcf_file_read.vcf_file_to_list(f"{cluster_out}.vcf")
     with open(vcf_out, "w") as f:
         print("##fileformat=VCFv4.2", file=f)
         for seq in ref_seqs.values():

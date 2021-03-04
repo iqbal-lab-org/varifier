@@ -213,14 +213,28 @@ def evaluate_vcf_record(
         ref_hits.sort(key=operator.attrgetter("NM"))
         best_ref_hit = ref_hits[0]
         mask = None if truth_mask is None else truth_mask.get(best_ref_hit.ctg, None)
-        edit_dist_ref_allele, ref_allele_in_mask = ref_probe.edit_distance_vs_ref(
-            best_ref_hit, truth_seqs[best_ref_hit.ctg], ref_mask=mask,
+        (
+            edit_dist_ref_allele,
+            ref_allele_in_mask,
+            ref_probe_dashes,
+            ref_probe_ref_dashes,
+        ) = ref_probe.edit_distance_vs_ref(
+            best_ref_hit,
+            truth_seqs[best_ref_hit.ctg],
+            ref_mask=mask,
         )
         vcf_record.set_format_key_value("VFR_ED_TR", str(edit_dist_ref_allele))
 
     mask = None if truth_mask is None else truth_mask.get(alt_best_hit.ctg, None)
-    edit_dist_alt_allele, alt_allele_in_mask = alt_probe.edit_distance_vs_ref(
-        alt_best_hit, truth_seqs[alt_best_hit.ctg], ref_mask=mask,
+    (
+        edit_dist_alt_allele,
+        alt_allele_in_mask,
+        alt_probe_dashes,
+        alt_probe_ref_dashes,
+    ) = alt_probe.edit_distance_vs_ref(
+        alt_best_hit,
+        truth_seqs[alt_best_hit.ctg],
+        ref_mask=mask,
     )
     vcf_record.set_format_key_value("VFR_ED_TA", str(edit_dist_alt_allele))
     vcf_record.set_format_key_value("VFR_ALLELE_LEN", str(alt_allele_length))
@@ -234,6 +248,18 @@ def evaluate_vcf_record(
     elif match_frac == 1:
         if any([x for x in ref_hits if x.NM < alt_best_hit.NM]):
             result = "FP_REF_PROBE_BETTER_MATCH"
+        elif (
+            ref_probe.allele_length() > 1
+            and alt_probe.allele_length() == 1
+            and (alt_probe_dashes != 0 or alt_probe_ref_dashes != 0)
+        ):
+            result = "FP_DELETION_ERROR"
+        elif (
+            ref_probe.allele_length() == 1
+            and alt_probe.allele_length() > 1
+            and (alt_probe_dashes != 0 or alt_probe_ref_dashes != 0)
+        ):
+            result = "FP_INSERTION_ERROR"
         else:
             result = "TP"
     else:
@@ -258,7 +284,10 @@ def annotate_vcf_with_probe_mapping(
     vcf_ref_seqs = utils.file_to_dict_of_seqs(vcf_ref_fasta)
     truth_ref_seqs = utils.file_to_dict_of_seqs(truth_ref_fasta)
     probes_and_vcf_reader = get_probes_and_vcf_records(
-        vcf_in, vcf_ref_seqs, flank_length, use_fail_conflict=use_fail_conflict,
+        vcf_in,
+        vcf_ref_seqs,
+        flank_length,
+        use_fail_conflict=use_fail_conflict,
     )
 
     # Some notes on the mapper options...

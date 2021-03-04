@@ -18,6 +18,9 @@ class Probe:
     def allele_seq(self):
         return self.seq[self.allele_start : self.allele_end + 1]
 
+    def allele_length(self):
+        return self.allele_end - self.allele_start + 1
+
     def map_hit_includes_allele(self, map_hit):
         if map_hit.strand == -1:
             start = len(self.seq) - map_hit.q_en
@@ -178,7 +181,23 @@ class Probe:
             in_mask = False
         else:
             in_mask = any(padded_ref_mask[start : end + 1])
+
+        dashes_after_ref_allele = 0
+        for i in range(end + 1, len(padded_ref_seq)):
+            if padded_ref_seq[i] == "-":
+                dashes_after_ref_allele += 1
+            else:
+                break
+        dashes_after_probe_allele = 0
+        for i in range(end + 1, len(padded_probe_seq)):
+            if padded_probe_seq[i] == "-":
+                dashes_after_probe_allele += 1
+            else:
+                break
+
         return (
             edit_distance.edit_distance_from_aln_strings(probe_allele, ref_allele),
             in_mask,
+            dashes_after_ref_allele,
+            dashes_after_probe_allele,
         )
