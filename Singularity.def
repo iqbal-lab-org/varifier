@@ -1,0 +1,26 @@
+BootStrap: debootstrap
+OSVersion: focal
+MirrorURL: http://us.archive.ubuntu.com/ubuntu/
+
+%environment
+export PATH=/bioinf-tools:$PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+
+%setup
+    mkdir $SINGULARITY_ROOTFS/varifier
+    rsync -a .ci/install_dependencies.sh MANIFEST.in varifier requirements.txt setup.py tests tox.ini $SINGULARITY_ROOTFS/varifier
+
+
+%post
+    #_____________________ setup $PATH _______________________#
+    export PATH=/bioinf-tools/:$PATH
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+    /varifier/install_dependencies.sh /bioinf-tools
+    cd /varifier
+    tox
+    pip3 install .
+
+%runscript
+    varifier "$@"
