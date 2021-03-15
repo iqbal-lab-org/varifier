@@ -1,5 +1,5 @@
 biopython
-cluster_vcf_records >= 0.13.1
+cluster_vcf_records >= 0.13.2
 mappy >= 2.17
 pandas
 pyfastaq >= 3.14.0
