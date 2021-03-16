@@ -174,7 +174,7 @@ class Probe:
         )
         start, end = self.padded_seq_allele_start_end_coords(padded_probe_seq)
         if start == None:
-            return -1, False
+            return -1, False, 0, 0
         probe_allele = padded_probe_seq[start : end + 1]
         ref_allele = padded_ref_seq[start : end + 1]
         if ref_mask is None:
