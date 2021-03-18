@@ -40,7 +40,7 @@ def test_filter_vcf():
     got_keep = "tmp.filter_vcf.keep.vcf"
     got_exclude = "tmp.filter_vcf.exclude.vcf"
     subprocess.check_output(f"rm -rf {got_keep} {got_exclude}", shell=True)
-    ref_seqs = {"ref": "ATGCATGACTGCATTACTCATCATCGAATG"}
+    ref_seqs = {"ref": "ATGCATGACTGCANNNCTCATCATCGAATG"}
     got_counts = vcf_evaluate._filter_vcf(
         infile, got_keep, got_exclude, ref_seqs, filter_pass=None, keep_ref_calls=True
     )
@@ -49,6 +49,7 @@ def test_filter_vcf():
         "heterozygous": 1,
         "no_genotype": 1,
         "ref_call": 0,
+        "non_acgt": 2,
         "other": 3,
     }
     assert got_counts == expect_counts
@@ -58,8 +59,8 @@ def test_filter_vcf():
     expect_exclude = os.path.join(
         data_dir, "filter_vcf.expect.no_filter_pass_exclude_ref_calls.exclude.vcf"
     )
-    utils.vcf_records_are_the_same(got_keep, expect_keep)
-    utils.vcf_records_are_the_same(got_exclude, expect_exclude)
+    assert utils.vcf_records_are_the_same(got_keep, expect_keep)
+    assert utils.vcf_records_are_the_same(got_exclude, expect_exclude)
     os.unlink(got_keep)
     os.unlink(got_exclude)
 
@@ -76,6 +77,7 @@ def test_filter_vcf():
         "heterozygous": 1,
         "no_genotype": 1,
         "ref_call": 1,
+        "non_acgt": 2,
         "other": 3,
     }
     assert got_counts == expect_counts
@@ -83,8 +85,8 @@ def test_filter_vcf():
     expect_exclude = os.path.join(
         data_dir, "filter_vcf.expect.with_filtering.1.exclude.vcf"
     )
-    utils.vcf_records_are_the_same(got_keep, expect_keep)
-    utils.vcf_records_are_the_same(got_exclude, expect_exclude)
+    assert utils.vcf_records_are_the_same(got_keep, expect_keep)
+    assert utils.vcf_records_are_the_same(got_exclude, expect_exclude)
     os.unlink(got_keep)
     os.unlink(got_exclude)
 
@@ -101,6 +103,7 @@ def test_filter_vcf():
         "heterozygous": 1,
         "no_genotype": 1,
         "ref_call": 1,
+        "non_acgt": 2,
         "other": 3,
     }
     assert got_counts == expect_counts
@@ -108,8 +111,8 @@ def test_filter_vcf():
     expect_exclude = os.path.join(
         data_dir, "filter_vcf.expect.with_filtering.2.exclude.vcf"
     )
-    utils.vcf_records_are_the_same(got_keep, expect_keep)
-    utils.vcf_records_are_the_same(got_exclude, expect_exclude)
+    assert utils.vcf_records_are_the_same(got_keep, expect_keep)
+    assert utils.vcf_records_are_the_same(got_exclude, expect_exclude)
     os.unlink(got_keep)
     os.unlink(got_exclude)
 

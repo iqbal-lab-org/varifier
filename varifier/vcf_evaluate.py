@@ -50,6 +50,7 @@ def _filter_vcf(
         "heterozygous": 0,
         "no_genotype": 0,
         "ref_call": 0,
+        "non_acgt": 0,
         "other": 0,
     }
     with vcf_file_read.open_vcf_file_for_reading(infile) as f_in, open(
@@ -80,6 +81,8 @@ def _filter_vcf(
                 exclude_reason = "filter_fail"
             elif len(record.ALT) == 0 or record.ALT == ["."]:
                 exclude_reason = "other"
+            elif not utils.vcf_record_is_all_acgt(record):
+                exclude_reason = "non_acgt"
             elif record.FORMAT is None:
                 exclude_reason = "no_genotype"
             elif record.REF in [".", ""]:

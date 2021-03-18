@@ -3,6 +3,7 @@
     "filter_fail": 2,
     "heterozygous": 0,
     "no_genotype": 0,
+    "non_acgt": 0,
     "other": 0,
     "ref_call": 1
   },
