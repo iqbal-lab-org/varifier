@@ -1,6 +1,19 @@
+import re
+
 import pyfastaq
 
 from cluster_vcf_records import vcf_file_read
+
+all_acgt_regex = re.compile("^[ACGT]+$", re.IGNORECASE)
+
+
+def vcf_record_is_all_acgt(record):
+    if all_acgt_regex.search(record.REF) is None:
+        return False
+    for alt in record.ALT:
+        if all_acgt_regex.search(alt) is None:
+            return False
+    return True
 
 
 def load_mask_bed_file(mask_bed_file):

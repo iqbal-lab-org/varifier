@@ -122,6 +122,15 @@ def _bcftools_norm(ref_fasta, vcf_in, vcf_out):
         print(vcf_string, end="", file=f)
 
 
+def _remove_non_acgt_records(vcf_in, vcf_out):
+    header_lines, vcf_records = vcf_file_read.vcf_file_to_list(vcf_in)
+    with open(vcf_out, "w") as f:
+        print(*header_lines, sep="\n", file=f)
+        for record in vcf_records:
+            if utils.vcf_record_is_all_acgt(record):
+                print(record, file=f)
+
+
 def make_truth_vcf(
     ref_fasta,
     truth_fasta,
@@ -159,6 +168,8 @@ def make_truth_vcf(
     _truth_using_minimap2_paftools(
         ref_fasta, truth_fasta, minimap2_vcf, threads=threads
     )
+    _remove_non_acgt_records(minimap2_vcf, minimap2_vcf)
+    _remove_non_acgt_records(dnadiff_vcf, dnadiff_vcf)
     to_merge = [dnadiff_vcf, minimap2_vcf]
     _merge_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)
     logging.info(f"Made merged VCF file {merged_vcf}")

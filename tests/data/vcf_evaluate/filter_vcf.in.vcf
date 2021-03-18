@@ -14,3 +14,5 @@ ref	8	.	A	T	.	PASS	.	GT:NOTES	0/1:Should always get removed because heterozygous
 ref	9	.	C	G	.	.	.	GT:NOTES	1/1:Removal depends on filter_pass option
 ref	10	.	T	G	.	FILTER_1	.	GT:NOTES	1/1:Removal depends on filter_pass option
 ref	11	.	G	G	.	FILTER_1;FILTER_2	.	GT:NOTES	1/1:Removal depends on filter_pass option
+ref	12	.	C	N	.	PASS	.	GT:NOTES	1/1:Should always get removed because N in alt
+ref	13	.	ANNN	A	.	PASS	.	GT:NOTES	1/1:Should always get removed because N in ref
