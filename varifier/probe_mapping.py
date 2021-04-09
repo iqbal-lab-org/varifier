@@ -132,7 +132,9 @@ def hit_debug_string(hit, map_probe):
     )
 
 
-def variant_is_deletion_of_Ns_from_truth(vcf_record, ref_probe, alt_probe, map_hit, truth_seq):
+def variant_is_deletion_of_Ns_from_truth(
+    vcf_record, ref_probe, alt_probe, map_hit, truth_seq
+):
     # If this is not a deletion
     if ref_probe.allele_length() <= alt_probe.allele_length():
         return False
@@ -258,7 +260,9 @@ def evaluate_vcf_record(
         truth_seqs[alt_best_hit.ctg],
         ref_mask=mask,
     )
-    any_allele_Ns = ref_probe_Ns + ref_probe_ref_Ns + alt_probe_Ns + alt_probe_ref_Ns > 0
+    any_allele_Ns = (
+        ref_probe_Ns + ref_probe_ref_Ns + alt_probe_Ns + alt_probe_ref_Ns > 0
+    )
     vcf_record.set_format_key_value("VFR_ED_TA", str(edit_dist_alt_allele))
     vcf_record.set_format_key_value("VFR_ALLELE_LEN", str(alt_allele_length))
     vcf_record.set_format_key_value("VFR_ALLELE_MATCH_COUNT", str(alt_match))
@@ -283,7 +287,9 @@ def evaluate_vcf_record(
             and (alt_probe_dashes != 0 or alt_probe_ref_dashes != 0)
         ):
             result = "FP_INSERTION_ERROR"
-        elif variant_is_deletion_of_Ns_from_truth(vcf_record, ref_probe, alt_probe, alt_best_hit, truth_seqs[alt_best_hit.ctg]):
+        elif variant_is_deletion_of_Ns_from_truth(
+            vcf_record, ref_probe, alt_probe, alt_best_hit, truth_seqs[alt_best_hit.ctg]
+        ):
             result = "FP_N_DELETION_ERROR"
         else:
             result = "TP"

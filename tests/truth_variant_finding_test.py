@@ -114,6 +114,7 @@ def test_make_truth_vcf():
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
 
+
 # An edge case seen in Covid data. MUMmer/dnadiff etc can still call
 # and indel, even though one of the genomes has an N. eg something like:
 # ref:    ACGTGCAACGTA...
@@ -131,23 +132,37 @@ def test_make_truth_vcf_handle_Ns():
     tmp_out = "tmp.truth_variant_finding.make_truth_ref_handle_Ns"
     subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
     got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100)
-    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns.ref_v_truth_expect.vcf")
+    expect_vcf = os.path.join(
+        data_dir, "make_truth_vcf_handle_Ns.ref_v_truth_expect.vcf"
+    )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
 
-    ref_fasta_revcomp = os.path.join(data_dir, "make_truth_vcf_handle_Ns.ref.revcomp.fa")
-    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta_revcomp, truth_fasta, tmp_out, 100)
-    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns.ref_revcomp_v_truth.expect.vcf")
+    ref_fasta_revcomp = os.path.join(
+        data_dir, "make_truth_vcf_handle_Ns.ref.revcomp.fa"
+    )
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        ref_fasta_revcomp, truth_fasta, tmp_out, 100
+    )
+    expect_vcf = os.path.join(
+        data_dir, "make_truth_vcf_handle_Ns.ref_revcomp_v_truth.expect.vcf"
+    )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
 
     got_vcf = truth_variant_finding.make_truth_vcf(truth_fasta, ref_fasta, tmp_out, 100)
-    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns.truth_v_ref.expect.vcf")
+    expect_vcf = os.path.join(
+        data_dir, "make_truth_vcf_handle_Ns.truth_v_ref.expect.vcf"
+    )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
 
-    got_vcf = truth_variant_finding.make_truth_vcf(truth_fasta, ref_fasta_revcomp, tmp_out, 100)
-    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns.truth_v_ref_revcomp.expect.vcf")
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        truth_fasta, ref_fasta_revcomp, tmp_out, 100
+    )
+    expect_vcf = os.path.join(
+        data_dir, "make_truth_vcf_handle_Ns.truth_v_ref_revcomp.expect.vcf"
+    )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
 
@@ -159,7 +174,8 @@ def test_make_truth_vcf_handle_Ns_2():
     tmp_out = "tmp.truth_variant_finding.make_truth_ref_handle_Ns_2"
     subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
     got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100)
-    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns_2.ref_v_truth_expect.vcf")
+    expect_vcf = os.path.join(
+        data_dir, "make_truth_vcf_handle_Ns_2.ref_v_truth_expect.vcf"
+    )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
-

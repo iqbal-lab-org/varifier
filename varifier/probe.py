@@ -195,7 +195,9 @@ class Probe:
             in_mask = any(padded_ref_mask[start : end + 1])
 
         dashes_after_ref_allele = Probe._count_next_chars(padded_ref_seq, end + 1, "-")
-        dashes_after_probe_allele = Probe._count_next_chars(padded_probe_seq, end + 1, "-")
+        dashes_after_probe_allele = Probe._count_next_chars(
+            padded_probe_seq, end + 1, "-"
+        )
         Ns_after_ref_allele = Probe._count_next_chars(padded_ref_seq, end + 1, "N")
         Ns_after_probe_allele = Probe._count_next_chars(padded_probe_seq, end + 1, "N")
 
