@@ -1,0 +1,48 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##contig=<ID=MN908947,length=29903>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##bcftools_normVersion=1.10.2 (pysam)+htslib-1.10.2 (pysam)
+##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/truth_variant_finding/make_truth_vcf_handle_Ns_2.ref.fa -o /tmp/tmpwlyk9pka tmp.truth_variant_finding.make_truth_ref_handle_Ns_2/03.probe_filtered.vcf; Date=Fri Apr  9 14:09:30 2021
+##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/truth_variant_finding/make_truth_vcf_handle_Ns_2.ref.fa -o /tmp/tmp1pp6nvn7 tmp.truth_variant_finding.make_truth_ref_handle_Ns_2/04.truth.vcf; Date=Fri Apr  9 14:09:30 2021
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+MN908947	174	0	G	T	.	PASS	.	GT	1/1
+MN908947	210	1	G	T	.	PASS	.	GT	1/1
+MN908947	241	2	C	T	.	PASS	.	GT	1/1
+MN908947	913	3	C	T	.	PASS	.	GT	1/1
+MN908947	2453	4	C	T	.	PASS	.	GT	1/1
+MN908947	3037	5	C	T	.	PASS	.	GT	1/1
+MN908947	3267	6	C	T	.	PASS	.	GT	1/1
+MN908947	5388	7	C	A	.	PASS	.	GT	1/1
+MN908947	5986	8	C	T	.	PASS	.	GT	1/1
+MN908947	6070	9	C	T	.	PASS	.	GT	1/1
+MN908947	6954	10	T	C	.	PASS	.	GT	1/1
+MN908947	11287	11	GTCTGGTTTT	G	.	PASS	.	GT	1/1
+MN908947	13643	12	C	T	.	PASS	.	GT	1/1
+MN908947	14408	13	C	T	.	PASS	.	GT	1/1
+MN908947	14676	14	C	T	.	PASS	.	GT	1/1
+MN908947	15279	15	C	T	.	PASS	.	GT	1/1
+MN908947	16176	16	T	C	.	PASS	.	GT	1/1
+MN908947	16586	17	C	T	.	PASS	.	GT	1/1
+MN908947	17550	18	C	T	.	PASS	.	GT	1/1
+MN908947	21764	19	ATACATG	A	.	PASS	.	GT	1/1
+MN908947	21990	20	TTTA	T	.	PASS	.	GT	1/1
+MN908947	23063	21	A	T	.	PASS	.	GT	1/1
+MN908947	23271	22	C	A	.	PASS	.	GT	1/1
+MN908947	23403	23	A	G	.	PASS	.	GT	1/1
+MN908947	23604	24	C	A	.	PASS	.	GT	1/1
+MN908947	23709	25	C	T	.	PASS	.	GT	1/1
+MN908947	24506	26	T	G	.	PASS	.	GT	1/1
+MN908947	24914	27	G	C	.	PASS	.	GT	1/1
+MN908947	26937	28	G	A	.	PASS	.	GT	1/1
+MN908947	27972	29	C	T	.	PASS	.	GT	1/1
+MN908947	28048	30	G	T	.	PASS	.	GT	1/1
+MN908947	28111	31	A	G	.	PASS	.	GT	1/1
+MN908947	28270	32	TA	T	.	PASS	.	GT	1/1
+MN908947	28280	33	G	C	.	PASS	.	GT	1/1
+MN908947	28281	34	A	T	.	PASS	.	GT	1/1
+MN908947	28282	35	T	A	.	PASS	.	GT	1/1
+MN908947	28881	36	G	A	.	PASS	.	GT	1/1
+MN908947	28882	37	G	A	.	PASS	.	GT	1/1
+MN908947	28883	38	G	C	.	PASS	.	GT	1/1
+MN908947	28977	39	C	T	.	PASS	.	GT	1/1

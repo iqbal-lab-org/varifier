@@ -167,6 +167,16 @@ class Probe:
 
         return None, None
 
+    @classmethod
+    def _count_next_chars(cls, string, start, char):
+        count = 0
+        for i in range(start, len(string)):
+            if string[i] == char:
+                count += 1
+            else:
+                break
+        return count
+
     def edit_distance_vs_ref(self, map_hit, ref_seq, ref_mask=None):
         padded_probe_seq, _ = self.padded_probe_or_ref_seq(map_hit)
         padded_ref_seq, padded_ref_mask = self.padded_probe_or_ref_seq(
@@ -174,30 +184,28 @@ class Probe:
         )
         start, end = self.padded_seq_allele_start_end_coords(padded_probe_seq)
         if start == None:
-            return -1, False, 0, 0
+            return -1, False, 0, 0, 0, 0
         probe_allele = padded_probe_seq[start : end + 1]
         ref_allele = padded_ref_seq[start : end + 1]
+        probe_allele_Ns = probe_allele.count("N")
+        ref_allele_Ns = ref_allele.count("N")
         if ref_mask is None:
             in_mask = False
         else:
             in_mask = any(padded_ref_mask[start : end + 1])
 
-        dashes_after_ref_allele = 0
-        for i in range(end + 1, len(padded_ref_seq)):
-            if padded_ref_seq[i] == "-":
-                dashes_after_ref_allele += 1
-            else:
-                break
-        dashes_after_probe_allele = 0
-        for i in range(end + 1, len(padded_probe_seq)):
-            if padded_probe_seq[i] == "-":
-                dashes_after_probe_allele += 1
-            else:
-                break
+        dashes_after_ref_allele = Probe._count_next_chars(padded_ref_seq, end + 1, "-")
+        dashes_after_probe_allele = Probe._count_next_chars(
+            padded_probe_seq, end + 1, "-"
+        )
+        Ns_after_ref_allele = Probe._count_next_chars(padded_ref_seq, end + 1, "N")
+        Ns_after_probe_allele = Probe._count_next_chars(padded_probe_seq, end + 1, "N")
 
         return (
             edit_distance.edit_distance_from_aln_strings(probe_allele, ref_allele),
             in_mask,
             dashes_after_ref_allele,
             dashes_after_probe_allele,
+            ref_allele_Ns + Ns_after_ref_allele,
+            probe_allele_Ns + Ns_after_probe_allele,
         )

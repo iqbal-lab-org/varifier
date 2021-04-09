@@ -132,6 +132,22 @@ def hit_debug_string(hit, map_probe):
     )
 
 
+def variant_is_deletion_of_Ns_from_truth(
+    vcf_record, ref_probe, alt_probe, map_hit, truth_seq
+):
+    # If this is not a deletion
+    if ref_probe.allele_length() <= alt_probe.allele_length():
+        return False
+
+    # Does the map_hit end at the end of the alt allele in the probe?
+    if map_hit.q_en - 1 == alt_probe.allele_end:
+        # Now check if there are Ns in the truth. If so, it means that
+        # the deletion is just deleting Ns
+        return len(truth_seq) > map_hit.r_en + 1 and truth_seq[map_hit.r_en + 1] == "N"
+
+    return False
+
+
 def evaluate_vcf_record(
     mapper,
     vcf_record,
@@ -209,6 +225,10 @@ def evaluate_vcf_record(
     if len(ref_hits) == 0:
         best_ref_hit = None
         ref_allele_in_mask = False
+        ref_probe_dashes = 0
+        ref_probe_ref_dashes = 0
+        ref_probe_Ns = 0
+        ref_probe_ref_Ns = 0
     else:
         ref_hits.sort(key=operator.attrgetter("NM"))
         best_ref_hit = ref_hits[0]
@@ -216,8 +236,10 @@ def evaluate_vcf_record(
         (
             edit_dist_ref_allele,
             ref_allele_in_mask,
-            ref_probe_dashes,
             ref_probe_ref_dashes,
+            ref_probe_dashes,
+            ref_probe_ref_Ns,
+            ref_probe_Ns,
         ) = ref_probe.edit_distance_vs_ref(
             best_ref_hit,
             truth_seqs[best_ref_hit.ctg],
@@ -229,12 +251,17 @@ def evaluate_vcf_record(
     (
         edit_dist_alt_allele,
         alt_allele_in_mask,
-        alt_probe_dashes,
         alt_probe_ref_dashes,
+        alt_probe_dashes,
+        alt_probe_ref_Ns,
+        alt_probe_Ns,
     ) = alt_probe.edit_distance_vs_ref(
         alt_best_hit,
         truth_seqs[alt_best_hit.ctg],
         ref_mask=mask,
+    )
+    any_allele_Ns = (
+        ref_probe_Ns + ref_probe_ref_Ns + alt_probe_Ns + alt_probe_ref_Ns > 0
     )
     vcf_record.set_format_key_value("VFR_ED_TA", str(edit_dist_alt_allele))
     vcf_record.set_format_key_value("VFR_ALLELE_LEN", str(alt_allele_length))
@@ -243,7 +270,7 @@ def evaluate_vcf_record(
     vcf_record.set_format_key_value("VFR_ALLELE_MATCH_FRAC", str(match_frac))
     in_mask = "1" if ref_allele_in_mask or alt_allele_in_mask else "0"
     vcf_record.set_format_key_value("VFR_IN_MASK", in_mask)
-    if alt_match == 0 or alt_allele_length == 0:
+    if alt_match == 0 or alt_allele_length == 0 or any_allele_Ns:
         result = "FP"
     elif match_frac == 1:
         if any([x for x in ref_hits if x.NM < alt_best_hit.NM]):
@@ -260,6 +287,10 @@ def evaluate_vcf_record(
             and (alt_probe_dashes != 0 or alt_probe_ref_dashes != 0)
         ):
             result = "FP_INSERTION_ERROR"
+        elif variant_is_deletion_of_Ns_from_truth(
+            vcf_record, ref_probe, alt_probe, alt_best_hit, truth_seqs[alt_best_hit.ctg]
+        ):
+            result = "FP_N_DELETION_ERROR"
         else:
             result = "TP"
     else:
