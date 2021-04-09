@@ -113,3 +113,53 @@ def test_make_truth_vcf():
     expect_vcf = os.path.join(data_dir, "make_truth_vcf.expect.masked.vcf")
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+# An edge case seen in Covid data. MUMmer/dnadiff etc can still call
+# and indel, even though one of the genomes has an N. eg something like:
+# ref:    ACGTGCAACGTA...
+# truth:  ACGTGCNNNNNN...
+# and it calls CAA -> C (ie delete the first two Ns!).
+# Is a special case that needs fixing, because (before writing this test and
+# fixing the code), the alt probe maps OK, in the sense that it maps to the
+# truth genome with a hit that includes the complete allele. But the ref probe
+# does not map because it has the CA in there, which can't align to the Ns
+# in the truth genome. Result is alt probe looks ok, ref probe does not, and
+# then is called as a TP.
+def test_make_truth_vcf_handle_Ns():
+    ref_fasta = os.path.join(data_dir, "make_truth_vcf_handle_Ns.ref.fa")
+    truth_fasta = os.path.join(data_dir, "make_truth_vcf_handle_Ns.truth.fa")
+    tmp_out = "tmp.truth_variant_finding.make_truth_ref_handle_Ns"
+    subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
+    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100)
+    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns.ref_v_truth_expect.vcf")
+    assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+    ref_fasta_revcomp = os.path.join(data_dir, "make_truth_vcf_handle_Ns.ref.revcomp.fa")
+    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta_revcomp, truth_fasta, tmp_out, 100)
+    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns.ref_revcomp_v_truth.expect.vcf")
+    assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+    got_vcf = truth_variant_finding.make_truth_vcf(truth_fasta, ref_fasta, tmp_out, 100)
+    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns.truth_v_ref.expect.vcf")
+    assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+    got_vcf = truth_variant_finding.make_truth_vcf(truth_fasta, ref_fasta_revcomp, tmp_out, 100)
+    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns.truth_v_ref_revcomp.expect.vcf")
+    assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+
+# Another edge case seen in covid data with Ns causing a FP indel.
+def test_make_truth_vcf_handle_Ns_2():
+    ref_fasta = os.path.join(data_dir, "make_truth_vcf_handle_Ns_2.ref.fa")
+    truth_fasta = os.path.join(data_dir, "make_truth_vcf_handle_Ns_2.truth.fa")
+    tmp_out = "tmp.truth_variant_finding.make_truth_ref_handle_Ns_2"
+    subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
+    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100)
+    expect_vcf = os.path.join(data_dir, "make_truth_vcf_handle_Ns_2.ref_v_truth_expect.vcf")
+    assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
