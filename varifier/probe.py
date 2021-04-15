@@ -184,7 +184,7 @@ class Probe:
         )
         start, end = self.padded_seq_allele_start_end_coords(padded_probe_seq)
         if start == None:
-            return -1, False, 0, 0, 0, 0
+            return -1, False, 0, 0, 0, 0, 0
         probe_allele = padded_probe_seq[start : end + 1]
         ref_allele = padded_ref_seq[start : end + 1]
         probe_allele_Ns = probe_allele.count("N")
@@ -201,6 +201,15 @@ class Probe:
         Ns_after_ref_allele = Probe._count_next_chars(padded_ref_seq, end + 1, "N")
         Ns_after_probe_allele = Probe._count_next_chars(padded_probe_seq, end + 1, "N")
 
+        if map_hit.strand == -1:
+            allele_start_in_ref = map_hit.r_en - (
+                1 + end - padded_probe_seq[0:start].count("-")
+            )
+        else:
+            allele_start_in_ref = (
+                map_hit.r_st + start - padded_probe_seq[0:start].count("-")
+            )
+
         return (
             edit_distance.edit_distance_from_aln_strings(probe_allele, ref_allele),
             in_mask,
@@ -208,4 +217,5 @@ class Probe:
             dashes_after_probe_allele,
             ref_allele_Ns + Ns_after_ref_allele,
             probe_allele_Ns + Ns_after_probe_allele,
+            allele_start_in_ref,
         )

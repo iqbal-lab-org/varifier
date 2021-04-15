@@ -1,8 +1,9 @@
 import filecmp
 import os
 import pytest
+import subprocess
 
-from varifier import probe_mapping
+from varifier import probe_mapping, utils
 
 this_dir = os.path.dirname(os.path.abspath(__file__))
 data_dir = os.path.join(this_dir, "data", "probe_mapping")
@@ -54,7 +55,10 @@ def test_annotate_vcf_with_probe_mapping():
     )
     expect_vcf = os.path.join(data_dir, "annotate_vcf_with_probe_mapping.expect.vcf")
     assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
-    assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf, shallow=False)
+    expect_vcf_rev = os.path.join(
+        data_dir, "annotate_vcf_with_probe_mapping.expect.rev.vcf"
+    )
+    assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf_rev, shallow=False)
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
 
 
@@ -95,7 +99,8 @@ def test_annotate_with_probe_mapping_clustered_snps_and_indels():
     )
     expect_vcf = os.path.join(data_dir, "clustered_snp_indel.expect.vcf")
     assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
-    assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf, shallow=False)
+    expect_vcf_rev = os.path.join(data_dir, "clustered_snp_indel.expect.rev.vcf")
+    assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf_rev, shallow=False)
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
 
 
@@ -132,7 +137,8 @@ def test_deletion_wrong_lengths():
     )
     expect_vcf = os.path.join(data_dir, "deletion_wrong_lengths.expect.vcf")
     assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
-    assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf, shallow=False)
+    expect_vcf_rev = os.path.join(data_dir, "deletion_wrong_lengths.expect.rev.vcf")
+    assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf_rev, shallow=False)
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
 
 
@@ -172,3 +178,65 @@ def test_insertion_wrong_lengths():
     assert filecmp.cmp(tmp_vcf, expect_vcf, shallow=False)
     assert filecmp.cmp(tmp_vcf_revcomp, expect_vcf_revcomp, shallow=False)
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
+
+
+def test_qry_variant_vcf_tag():
+    genome1 = os.path.join(data_dir, "qry_variant_vcf_tag.genome1.fa")
+    genome2 = os.path.join(data_dir, "qry_variant_vcf_tag.genome2.fa")
+    genome1_rev = os.path.join(data_dir, "qry_variant_vcf_tag.genome1.revcomp.fa")
+    genome2_rev = os.path.join(data_dir, "qry_variant_vcf_tag.genome2.revcomp.fa")
+    expect_1_vcf = os.path.join(data_dir, "qry_variant_vcf_tag.expect.wrt_genome1.vcf")
+    expect_1_rev_vcf = os.path.join(
+        data_dir, "qry_variant_vcf_tag.expect.wrt_genome1.rev.vcf"
+    )
+    expect_2_vcf = os.path.join(data_dir, "qry_variant_vcf_tag.expect.wrt_genome2.vcf")
+    expect_2_rev_vcf = os.path.join(
+        data_dir, "qry_variant_vcf_tag.expect.wrt_genome2.rev.vcf"
+    )
+    vcf_1_v_2 = os.path.join(data_dir, "qry_variant_vcf_tag.in.wrt_genome1.vcf")
+    vcf_2_v_1 = os.path.join(data_dir, "qry_variant_vcf_tag.in.wrt_genome2.vcf")
+    tmp_vcf = "tmp.probe_mapping.qry_variant_vcf_tag.wrt_genome1.vcf"
+    subprocess.check_output(f"rm -f {tmp_vcf}", shell=True)
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        vcf_1_v_2,
+        genome1,
+        genome2,
+        100,
+        tmp_vcf,
+    )
+    assert utils.vcf_records_are_the_same(tmp_vcf, expect_1_vcf)
+    os.unlink(tmp_vcf)
+
+    tmp_vcf = "tmp.probe_mapping.qry_variant_vcf_tag.wrt_genome1.rev.vcf"
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        vcf_1_v_2,
+        genome1,
+        genome2_rev,
+        100,
+        tmp_vcf,
+    )
+    assert utils.vcf_records_are_the_same(tmp_vcf, expect_1_rev_vcf)
+    os.unlink(tmp_vcf)
+
+    tmp_vcf = "tmp.probe_mapping.qry_variant_vcf_tag.wrt_genome2.vcf"
+    subprocess.check_output(f"rm -f {tmp_vcf}", shell=True)
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        vcf_2_v_1,
+        genome2,
+        genome1,
+        100,
+        tmp_vcf,
+    )
+    assert utils.vcf_records_are_the_same(tmp_vcf, expect_2_vcf)
+    os.unlink(tmp_vcf)
+
+    tmp_vcf = "tmp.probe_mapping.qry_variant_vcf_tag.wrt_genome2.rev.vcf"
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        vcf_2_v_1,
+        genome2,
+        genome1_rev,
+        100,
+        tmp_vcf,
+    )
+    assert utils.vcf_records_are_the_same(tmp_vcf, expect_2_rev_vcf)
+    os.unlink(tmp_vcf)

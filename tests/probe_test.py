@@ -124,11 +124,15 @@ def test_edit_distance_vs_ref():
     p = probe.Probe("ACGTATC", 3, 3)
     ref = "AACGCATCC"
     hit = Hit(1, 1, 0, 6, 1, [[6, 7]])
-    assert (1, False, 0, 0, 0, 0) == p.edit_distance_vs_ref(hit, ref)
-    assert (1, False, 0, 0, 0, 0) == p.edit_distance_vs_ref(hit, ref, ref_mask={3})
-    assert (1, False, 0, 0, 0, 0) == p.edit_distance_vs_ref(hit, ref, ref_mask={3, 5})
-    assert (1, True, 0, 0, 0, 0) == p.edit_distance_vs_ref(hit, ref, ref_mask={3, 4, 5})
+    assert (1, False, 0, 0, 0, 0, 4) == p.edit_distance_vs_ref(hit, ref)
+    assert (1, False, 0, 0, 0, 0, 4) == p.edit_distance_vs_ref(hit, ref, ref_mask={3})
+    assert (1, False, 0, 0, 0, 0, 4) == p.edit_distance_vs_ref(
+        hit, ref, ref_mask={3, 5}
+    )
+    assert (1, True, 0, 0, 0, 0, 4) == p.edit_distance_vs_ref(
+        hit, ref, ref_mask={3, 4, 5}
+    )
 
     p = probe.Probe("ACGNATC", 3, 3)
     ref = "AACGN-TCC"
-    assert (0, False, 1, 0, 1, 1) == p.edit_distance_vs_ref(hit, ref)
+    assert (0, False, 1, 0, 1, 1, 4) == p.edit_distance_vs_ref(hit, ref)

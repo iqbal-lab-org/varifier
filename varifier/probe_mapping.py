@@ -1,6 +1,7 @@
 import operator
 
 import mappy
+import pyfastaq
 from cluster_vcf_records import vcf_file_read
 
 from varifier import edit_distance, probe, utils
@@ -229,6 +230,7 @@ def evaluate_vcf_record(
         ref_probe_ref_dashes = 0
         ref_probe_Ns = 0
         ref_probe_ref_Ns = 0
+        ref_probe_allele_start_in_ref = -1
     else:
         ref_hits.sort(key=operator.attrgetter("NM"))
         best_ref_hit = ref_hits[0]
@@ -240,6 +242,7 @@ def evaluate_vcf_record(
             ref_probe_dashes,
             ref_probe_ref_Ns,
             ref_probe_Ns,
+            ref_probe_allele_start_in_ref,
         ) = ref_probe.edit_distance_vs_ref(
             best_ref_hit,
             truth_seqs[best_ref_hit.ctg],
@@ -255,6 +258,7 @@ def evaluate_vcf_record(
         alt_probe_dashes,
         alt_probe_ref_Ns,
         alt_probe_Ns,
+        alt_probe_allele_start_in_ref,
     ) = alt_probe.edit_distance_vs_ref(
         alt_best_hit,
         truth_seqs[alt_best_hit.ctg],
@@ -263,6 +267,37 @@ def evaluate_vcf_record(
     any_allele_Ns = (
         ref_probe_Ns + ref_probe_ref_Ns + alt_probe_Ns + alt_probe_ref_Ns > 0
     )
+
+    if alt_best_hit.strand == -1:
+        if ref_probe.allele_length() != alt_probe.allele_length():
+            qry_ref = pyfastaq.sequences.Fasta(
+                "x",
+                truth_seqs[alt_best_hit.ctg][
+                    alt_probe_allele_start_in_ref
+                    - 1 : alt_probe_allele_start_in_ref
+                    + alt_probe.allele_length()
+                    - 1
+                ],
+            )
+            qry_alt = pyfastaq.sequences.Fasta(
+                "x",
+                ref_seq[
+                    vcf_record.POS + 1 : vcf_record.POS + ref_probe.allele_length() + 1
+                ],
+            )
+            alt_probe_allele_start_in_ref -= 1
+
+        else:
+            qry_alt = pyfastaq.sequences.Fasta("x", vcf_record.REF)
+            qry_ref = pyfastaq.sequences.Fasta("x", alt_probe.allele_seq())
+            qry_ref.revcomp()
+        qry_alt.revcomp()
+        qry_var = f"{alt_best_hit.ctg}_{qry_ref.seq}{alt_probe_allele_start_in_ref+1}{qry_alt.seq}"
+    else:
+        qry_var = f"{alt_best_hit.ctg}_{alt_probe.allele_seq()}{alt_probe_allele_start_in_ref+1}{vcf_record.REF}"
+
+    vcf_record.set_format_key_value("VFR_QRY_VARIANT", qry_var)
+
     vcf_record.set_format_key_value("VFR_ED_TA", str(edit_dist_alt_allele))
     vcf_record.set_format_key_value("VFR_ALLELE_LEN", str(alt_allele_length))
     vcf_record.set_format_key_value("VFR_ALLELE_MATCH_COUNT", str(alt_match))
