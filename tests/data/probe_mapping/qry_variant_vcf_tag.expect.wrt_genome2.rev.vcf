@@ -1,0 +1,23 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##contig=<ID=genome2.1,length=500>
+##contig=<ID=genome2.2,length=500>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##bcftools_normVersion=1.10.2 (pysam)+htslib-1.10.2 (pysam)
+##bcftools_normCommand=norm -c x -d any -f qry_variant_vcf_tag.genome2.fa -o /tmp/tmprq9ikes0 Z/03.probe_filtered.vcf; Date=Wed Apr 14 19:46:27 2021
+##bcftools_normCommand=norm -c x -d any -f qry_variant_vcf_tag.genome2.fa -o /tmp/tmpuhh24wsf Z/04.truth.vcf; Date=Wed Apr 14 19:46:27 2021
+##FORMAT=<ID=VFR_IN_MASK,Number=1,Type=String,Description="Whether or not the variant is in the truth genome mask">
+##FORMAT=<ID=VFR_RESULT,Number=1,Type=String,Description="FP, TP, or Partial_TP when part of the allele matches the truth reference">
+##FORMAT=<ID=VFR_ALLELE_LEN,Number=1,Type=Integer,Description="Number of positions in allele that were checked if they match the truth">
+##FORMAT=<ID=VFR_ALLELE_MATCH_COUNT,Number=1,Type=String,Description="Number of positions in allele that match the truth">
+##FORMAT=<ID=VFR_ALLELE_MATCH_FRAC,Number=1,Type=String,Description="Fraction of positions in allele that match the truth">
+##FORMAT=<ID=VFR_ED_RA,Number=1,Type=String,Description="Edit distance between ref and alt allele (using the called allele where more than one alt)">
+##FORMAT=<ID=VFR_ED_TR,Number=1,Type=String,Description="Edit distance between truth and ref allele">
+##FORMAT=<ID=VFR_ED_TA,Number=1,Type=String,Description="Edit distance between truth and alt allele">
+##FORMAT=<ID=VFR_ED_SCORE,Number=1,Type=String,Description="Edit distance score">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+genome2.1	121	0	C	T	.	PASS	.	GT:VFR_ED_RA:VFR_ED_TR:VFR_QRY_VARIANT:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:1:1:genome1.1.rev_A380G:0:1:1:1.0:0:TP
+genome2.1	181	1	CT	GC	.	PASS	.	GT:VFR_ED_RA:VFR_ED_TR:VFR_QRY_VARIANT:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:2:2:genome1.1.rev_GC319AG:0:2:2:1.0:0:TP
+genome2.1	300	3	TATGG	T	.	PASS	.	GT:VFR_ED_RA:VFR_ED_TR:VFR_QRY_VARIANT:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:1:1:genome1.1.rev_G200GCCAT:0:1:1:1.0:0:TP
+genome2.1	360	4	A	AGCCC	.	PASS	.	GT:VFR_ED_RA:VFR_ED_TR:VFR_QRY_VARIANT:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:1:0:genome1.1.rev_AGGGC140A:0:5:5:1.0:0:TP
+genome2.2	241	5	G	C	.	PASS	.	GT:VFR_ED_RA:VFR_ED_TR:VFR_QRY_VARIANT:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:1:1:genome1.2.rev_G260C:0:1:1:1.0:0:TP
