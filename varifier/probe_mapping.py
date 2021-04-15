@@ -400,6 +400,7 @@ def annotate_vcf_with_probe_mapping(
         '##FORMAT=<ID=VFR_ED_TR,Number=1,Type=String,Description="Edit distance between truth and ref allele">',
         '##FORMAT=<ID=VFR_ED_TA,Number=1,Type=String,Description="Edit distance between truth and alt allele">',
         '##FORMAT=<ID=VFR_ED_SCORE,Number=1,Type=String,Description="Edit distance score">',
+        '##FORMAT=<ID=VFR_QRY_VARIANT,Number=1,Type=String,Description="Variant with respect to the query genome, in the form seqname_XNY, where X and Y are the ref and alt, and N is 1-based position in the query genome sequence called seqname">',
     ]
 
     with open(vcf_out, "w") as f_vcf:
