@@ -8,6 +8,7 @@
 ##FORMAT=<ID=VFR_ED_TR,Number=1,Type=String,Description="Edit distance between truth and ref allele">
 ##FORMAT=<ID=VFR_ED_TA,Number=1,Type=String,Description="Edit distance between truth and alt allele">
 ##FORMAT=<ID=VFR_ED_SCORE,Number=1,Type=String,Description="Edit distance score">
+##FORMAT=<ID=VFR_QRY_VARIANT,Number=1,Type=String,Description="Variant with respect to the query genome, in the form seqname_XNY, where X and Y are the ref and alt, and N is 1-based position in the query genome sequence called seqname">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
 ref	40	1	A	G	.	PASS	.	GT:EXPECT:VFR_ED_RA:VFR_ED_TR:VFR_QRY_VARIANT:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:TP:1:1:truth_C371T:0:1:1:1.0:0:TP
 ref	60	2	A	G	.	PASS	.	GT:EXPECT:VFR_ED_RA:VFR_ED_TR:VFR_QRY_VARIANT:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:TP:1:1:truth_C351T:0:1:1:1.0:0:TP

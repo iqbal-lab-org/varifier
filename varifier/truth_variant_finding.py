@@ -77,6 +77,7 @@ def _filter_fps_and_long_vars_from_probe_mapped_vcf(vcf_in, vcf_out, max_ref_len
                 or line.startswith("##fileformat")
                 or line.startswith("##contig")
                 or line.startswith("##FORMAT=<ID=GT")
+                or line.startswith("##FORMAT=<ID=VFR_QRY_VARIANT")
             ):
                 print(line, file=f)
 
@@ -104,7 +105,10 @@ def _filter_fps_and_long_vars_from_probe_mapped_vcf(vcf_in, vcf_out, max_ref_len
                 for record in records:
                     logging.warning(f"  {record}")
             elif len(records) == 1:
+                qry_variant = records[0].FORMAT.get("VFR_QRY_VARIANT", None)
                 records[0].FORMAT = {"GT": "1/1"}
+                if qry_variant is not None:
+                    records[0].set_format_key_value("VFR_QRY_VARIANT", qry_variant)
                 print(records[0], file=f)
 
 
