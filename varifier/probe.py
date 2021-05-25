@@ -207,7 +207,7 @@ class Probe:
             )
         else:
             allele_start_in_ref = (
-                map_hit.r_st + start - padded_probe_seq[0:start].count("-")
+                map_hit.r_st + start - map_hit.q_st - padded_probe_seq[0:start].count("-")
             )
 
         return (
