@@ -2,20 +2,19 @@
 ##FILTER=<ID=PASS,Description="All filters passed">
 ##contig=<ID=ref,length=430>
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-##FORMAT=<ID=VFR_QRY_VARIANT,Number=1,Type=String,Description="Variant with respect to the query genome, in the form seqname_XNY, where X and Y are the ref and alt, and N is 1-based position in the query genome sequence called seqname">
 ##bcftools_normVersion=1.10.2 (pysam)+htslib-1.10.2 (pysam)
-##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/tasks/make_truth_vcf.ref.fa -o /tmp/tmpktascjpj tmp.tasks.make_truth_vcf/03.probe_filtered.vcf; Date=Thu Apr 15 10:50:14 2021
-##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/tasks/make_truth_vcf.ref.fa -o /tmp/tmpi7729tv4 tmp.tasks.make_truth_vcf/04.truth.vcf; Date=Thu Apr 15 10:50:14 2021
+##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/tasks/make_truth_vcf.ref.fa -o /tmp/tmpgk5ft84c tmp.tasks.make_truth_vcf/03.probe_filtered.vcf; Date=Tue May 25 15:37:05 2021
+##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/tasks/make_truth_vcf.ref.fa -o /tmp/tmp67y80vkm tmp.tasks.make_truth_vcf/04.truth.vcf; Date=Tue May 25 15:37:05 2021
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
-ref	40	0	A	G	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_G60A
-ref	80	2	T	C	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_C100T
-ref	109	3	G	C	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_C109G
-ref	110	4	C	T	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_T110C
-ref	111	5	A	G	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_G111A
-ref	140	6	GT	G	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_G140GT
-ref	160	7	A	AT	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_AT159A
-ref	250	8	G	C	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_C250G
-ref	300	9	AT	A	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_A300AT
-ref	302	10	GC	G	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_G301GC
-ref	306	11	AT	A	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_A304AT
-ref	309	12	G	GAGA	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_GAGA306G
+ref	40	0	A	G	.	PASS	.	GT	1/1
+ref	80	2	T	C	.	PASS	.	GT	1/1
+ref	109	3	G	C	.	PASS	.	GT	1/1
+ref	110	4	C	T	.	PASS	.	GT	1/1
+ref	111	5	A	G	.	PASS	.	GT	1/1
+ref	140	6	GT	G	.	PASS	.	GT	1/1
+ref	160	7	A	AT	.	PASS	.	GT	1/1
+ref	250	8	G	C	.	PASS	.	GT	1/1
+ref	300	9	AT	A	.	PASS	.	GT	1/1
+ref	302	10	GC	G	.	PASS	.	GT	1/1
+ref	306	11	AT	A	.	PASS	.	GT	1/1
+ref	309	12	G	GAGA	.	PASS	.	GT	1/1

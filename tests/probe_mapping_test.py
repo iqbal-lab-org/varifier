@@ -180,7 +180,7 @@ def test_insertion_wrong_lengths():
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
 
 
-def test_qry_variant_vcf_tag():
+def _test_qry_variant_vcf_tag():
     genome1 = os.path.join(data_dir, "qry_variant_vcf_tag.genome1.fa")
     genome2 = os.path.join(data_dir, "qry_variant_vcf_tag.genome2.fa")
     genome1_rev = os.path.join(data_dir, "qry_variant_vcf_tag.genome1.revcomp.fa")

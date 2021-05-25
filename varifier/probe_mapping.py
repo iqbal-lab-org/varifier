@@ -296,7 +296,9 @@ def evaluate_vcf_record(
     else:
         qry_var = f"{alt_best_hit.ctg}_{alt_probe.allele_seq()}{alt_probe_allele_start_in_ref+1}{vcf_record.REF}"
 
-    vcf_record.set_format_key_value("VFR_QRY_VARIANT", qry_var)
+    # This is buggy and so do not add the tag. Could revisit at a later
+    # date if we really want it
+    #vcf_record.set_format_key_value("VFR_QRY_VARIANT", qry_var)
 
     vcf_record.set_format_key_value("VFR_ED_TA", str(edit_dist_alt_allele))
     vcf_record.set_format_key_value("VFR_ALLELE_LEN", str(alt_allele_length))
@@ -400,7 +402,7 @@ def annotate_vcf_with_probe_mapping(
         '##FORMAT=<ID=VFR_ED_TR,Number=1,Type=String,Description="Edit distance between truth and ref allele">',
         '##FORMAT=<ID=VFR_ED_TA,Number=1,Type=String,Description="Edit distance between truth and alt allele">',
         '##FORMAT=<ID=VFR_ED_SCORE,Number=1,Type=String,Description="Edit distance score">',
-        '##FORMAT=<ID=VFR_QRY_VARIANT,Number=1,Type=String,Description="Variant with respect to the query genome, in the form seqname_XNY, where X and Y are the ref and alt, and N is 1-based position in the query genome sequence called seqname">',
+        #'##FORMAT=<ID=VFR_QRY_VARIANT,Number=1,Type=String,Description="Variant with respect to the query genome, in the form seqname_XNY, where X and Y are the ref and alt, and N is 1-based position in the query genome sequence called seqname">',
     ]
 
     with open(vcf_out, "w") as f_vcf:

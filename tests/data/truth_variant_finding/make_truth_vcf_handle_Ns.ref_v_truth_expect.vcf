@@ -2,13 +2,12 @@
 ##FILTER=<ID=PASS,Description="All filters passed">
 ##contig=<ID=MN908947,length=4140>
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-##FORMAT=<ID=VFR_QRY_VARIANT,Number=1,Type=String,Description="Variant with respect to the query genome, in the form seqname_XNY, where X and Y are the ref and alt, and N is 1-based position in the query genome sequence called seqname">
 ##bcftools_normVersion=1.10.2 (pysam)+htslib-1.10.2 (pysam)
-##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/truth_variant_finding/make_truth_vcf_handle_Ns.ref.fa -o /tmp/tmpwhvot673 tmp.truth_variant_finding.make_truth_ref_handle_Ns/03.probe_filtered.vcf; Date=Thu Apr 15 10:47:40 2021
-##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/truth_variant_finding/make_truth_vcf_handle_Ns.ref.fa -o /tmp/tmp1pj9xftt tmp.truth_variant_finding.make_truth_ref_handle_Ns/04.truth.vcf; Date=Thu Apr 15 10:47:40 2021
+##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/truth_variant_finding/make_truth_vcf_handle_Ns.ref.fa -o /tmp/tmpixgbdum4 tmp.truth_variant_finding.make_truth_ref_handle_Ns/03.probe_filtered.vcf; Date=Tue May 25 15:34:41 2021
+##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/truth_variant_finding/make_truth_vcf_handle_Ns.ref.fa -o /tmp/tmplgy71ckp tmp.truth_variant_finding.make_truth_ref_handle_Ns/04.truth.vcf; Date=Tue May 25 15:34:41 2021
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
-MN908947	241	0	C	T	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_T241C
-MN908947	733	1	T	C	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_C733T
-MN908947	2749	2	C	T	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_T2749C
-MN908947	3037	3	C	T	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_T3037C
-MN908947	3828	8	C	T	.	PASS	.	GT:VFR_QRY_VARIANT	1/1:truth_T3869C
+MN908947	241	0	C	T	.	PASS	.	GT	1/1
+MN908947	733	1	T	C	.	PASS	.	GT	1/1
+MN908947	2749	2	C	T	.	PASS	.	GT	1/1
+MN908947	3037	3	C	T	.	PASS	.	GT	1/1
+MN908947	3828	8	C	T	.	PASS	.	GT	1/1
