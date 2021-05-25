@@ -1,0 +1,20 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##contig=<ID=truth,length=1000>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##bcftools_normVersion=1.10.2 (pysam)+htslib-1.10.2 (pysam)
+##bcftools_normCommand=norm -c x -d any -f large_indel_near_snp.truth.fa -o /tmp/tmpcqwtn7nr z/03.probe_filtered.vcf; Date=Tue May 25 15:49:46 2021
+##bcftools_normCommand=norm -c x -d any -f large_indel_near_snp.truth.fa -o /tmp/tmpkz86crq1 z/04.truth.vcf; Date=Tue May 25 15:49:46 2021
+##FORMAT=<ID=VFR_IN_MASK,Number=1,Type=String,Description="Whether or not the variant is in the truth genome mask">
+##FORMAT=<ID=VFR_RESULT,Number=1,Type=String,Description="FP, TP, or Partial_TP when part of the allele matches the truth reference">
+##FORMAT=<ID=VFR_ALLELE_LEN,Number=1,Type=Integer,Description="Number of positions in allele that were checked if they match the truth">
+##FORMAT=<ID=VFR_ALLELE_MATCH_COUNT,Number=1,Type=String,Description="Number of positions in allele that match the truth">
+##FORMAT=<ID=VFR_ALLELE_MATCH_FRAC,Number=1,Type=String,Description="Fraction of positions in allele that match the truth">
+##FORMAT=<ID=VFR_ED_RA,Number=1,Type=String,Description="Edit distance between ref and alt allele (using the called allele where more than one alt)">
+##FORMAT=<ID=VFR_ED_TR,Number=1,Type=String,Description="Edit distance between truth and ref allele">
+##FORMAT=<ID=VFR_ED_TA,Number=1,Type=String,Description="Edit distance between truth and alt allele">
+##FORMAT=<ID=VFR_ED_SCORE,Number=1,Type=String,Description="Edit distance score">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref	360	0	GGTCAGGATTGTGAAGGGATCGCATGCTCCCCGTATATGCTCGTTTCTGCTTAGTTAAATGTTTCTACCTAGGTTTTTAGGGCCTATGTAAGCATAGCTTCAGCTAAGC	G	.	PASS	.	GT:VFR_ED_RA:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:1:0:1:1:1.0:0:TP
+ref	481	1	T	C	.	PASS	.	GT:VFR_ED_RA:VFR_ED_TR:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:1:1:0:1:1:1.0:0:TP
+ref	504	2	AATCCATCTCCGTATAAAAACGAGCAGTATTTGGTTTCACGGTTAACTAGTTCTACCCCTGAAAGACCCAATGCCTAGAATACTAGCCGCGAGAAG	A	.	PASS	.	GT:VFR_ED_RA:VFR_ED_TA:VFR_ALLELE_LEN:VFR_ALLELE_MATCH_COUNT:VFR_ALLELE_MATCH_FRAC:VFR_IN_MASK:VFR_RESULT	1/1:1:0:1:1:1.0:0:TP

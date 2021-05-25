@@ -17,8 +17,8 @@ def get_flanking_variants(vcf_records, record_index, end_pos, left=True):
     while 0 <= i < len(vcf_records):
         if (
             vcf_records[i].CHROM != centre_record.CHROM
-            or (left and vcf_records[i].POS < end_pos)
-            or (not left and vcf_records[i].ref_end_pos() > end_pos)
+            or (left and vcf_records[i].ref_end_pos() < end_pos)
+            or (not left and vcf_records[i].POS > end_pos)
         ):
             break
 
@@ -38,10 +38,15 @@ def get_flanking_variants(vcf_records, record_index, end_pos, left=True):
             wanted_variants.append(
                 (vcf_records[i].POS, vcf_records[i].ref_end_pos(), allele)
             )
+            indel_len = max(0, len(vcf_records[i].REF) - len(allele))
+            if left:
+                end_pos -= indel_len
+            else:
+                end_pos += indel_len
         i += i_add
 
     wanted_variants.sort(key=operator.itemgetter(0))
-    return wanted_variants
+    return wanted_variants, end_pos
 
 
 def apply_variants_to_seq(seq, seq_start_in_ref, variants):
@@ -57,10 +62,10 @@ def make_probes(ref_seqs, vcf_records, record_index, flank_length):
     left_flank_start = max(0, record.POS - flank_length)
     right_flank_start = record.ref_end_pos() + 1
     right_flank_end = min(len(ref_seq) - 1, record.ref_end_pos() + flank_length)
-    left_variants = get_flanking_variants(
+    left_variants, left_flank_start = get_flanking_variants(
         vcf_records, record_index, left_flank_start, left=True
     )
-    right_variants = get_flanking_variants(
+    right_variants, right_flank_end = get_flanking_variants(
         vcf_records, record_index, right_flank_end, left=False
     )
     left_flank = list(ref_seq[left_flank_start : record.POS])

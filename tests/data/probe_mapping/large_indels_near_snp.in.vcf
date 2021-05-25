@@ -1,0 +1,11 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##contig=<ID=truth,length=1000>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##bcftools_normVersion=1.10.2 (pysam)+htslib-1.10.2 (pysam)
+##bcftools_normCommand=norm -c x -d any -f large_indel_near_snp.truth.fa -o /tmp/tmpcqwtn7nr z/03.probe_filtered.vcf; Date=Tue May 25 15:49:46 2021
+##bcftools_normCommand=norm -c x -d any -f large_indel_near_snp.truth.fa -o /tmp/tmpkz86crq1 z/04.truth.vcf; Date=Tue May 25 15:49:46 2021
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref	360	0	GGTCAGGATTGTGAAGGGATCGCATGCTCCCCGTATATGCTCGTTTCTGCTTAGTTAAATGTTTCTACCTAGGTTTTTAGGGCCTATGTAAGCATAGCTTCAGCTAAGC	G	.	PASS	.	GT	1/1
+ref	481	1	T	C	.	PASS	.	GT	1/1
+ref	504	2	AATCCATCTCCGTATAAAAACGAGCAGTATTTGGTTTCACGGTTAACTAGTTCTACCCCTGAAAGACCCAATGCCTAGAATACTAGCCGCGAGAAG	A	.	PASS	.	GT	1/1

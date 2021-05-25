@@ -180,6 +180,29 @@ def test_insertion_wrong_lengths():
     clean_files((tmp_vcf, tmp_vcf_revcomp, tmp_map))
 
 
+# This is to test a bug fixed, where there is a variant flanked by two
+# large deletions. The probe was ending up too short and then did not get
+# mapped. This test has a SNP flanked by a large deletion on either side.
+# The SNP should be TP, not FP_PROBE_UNMAPPED.
+def test_variant_flanked_by_deletions():
+    ref_fa = os.path.join(data_dir, "large_indels_near_snp.ref.fa")
+    truth_fa = os.path.join(data_dir, "large_indels_near_snp.truth.fa")
+    vcf_in = os.path.join(data_dir, "large_indels_near_snp.in.vcf")
+    expect_vcf = os.path.join(data_dir, "large_indels_near_snp.expect.vcf")
+    tmp_vcf = "tmp.large_indels_near_snp.vcf"
+    subprocess.check_output(f"rm -f {tmp_vcf}", shell=True)
+    probe_mapping.annotate_vcf_with_probe_mapping(
+        vcf_in,
+        ref_fa,
+        truth_fa,
+        100,
+        tmp_vcf,
+    )
+    assert utils.vcf_records_are_the_same(tmp_vcf, expect_vcf)
+    os.unlink(tmp_vcf)
+
+
+
 def _test_qry_variant_vcf_tag():
     genome1 = os.path.join(data_dir, "qry_variant_vcf_tag.genome1.fa")
     genome2 = os.path.join(data_dir, "qry_variant_vcf_tag.genome2.fa")
