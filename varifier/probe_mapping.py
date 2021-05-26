@@ -154,6 +154,12 @@ def variant_is_deletion_of_Ns_from_truth(
     return False
 
 
+def hits_are_repetitive(hits):
+    if len(hits) < 2:
+        return False
+    return not any([hit.mapq > 0 for hit in hits])
+
+
 def evaluate_vcf_record(
     mapper,
     vcf_record,
@@ -188,6 +194,11 @@ def evaluate_vcf_record(
                 sep="\t",
                 file=map_outfile,
             )
+
+    if hits_are_repetitive(alt_hits):
+        vcf_record.set_format_key_value("VFR_RESULT", "CANNOT_USE_PROBE_REPEAT_MAPPING")
+        vcf_record.set_format_key_value("VFR_ED_SCORE", "0")
+        return
 
     alt_hits = [
         x for x in alt_hits if alt_probe.map_hit_includes_allele(x) and x.mapq > 0

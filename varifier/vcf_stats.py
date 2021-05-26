@@ -85,7 +85,7 @@ def per_record_stats_from_vcf_file(infile):
 
 
 def format_dict_to_edit_dist_scores(stats):
-    if stats["VFR_RESULT"] == "CANNOT_USE_GT":
+    if stats["VFR_RESULT"].startswith("CANNOT_USE"):
         return None, None
 
     # Can have cases where VFR_ED_TR is not present. This is the edit
