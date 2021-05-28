@@ -125,6 +125,23 @@ def test_per_record_stats_from_vcf_file():
             "VFR_ALLELE_MATCH_FRAC": 0.0,
             "VFR_RESULT": "FP",
         },
+        {
+            "CHROM": "ref2",
+            "DP": 70,
+            "DPF": 0.97,
+            "FRS": 0.99,
+            "GT_CONF": 200.0,
+            "GT_CONF_PERCENTILE": 0.95,
+            "POS": 3,
+            "VFR_ALLELE_LEN": "NA",
+            "VFR_ALLELE_MATCH_COUNT": "NA",
+            "VFR_ALLELE_MATCH_FRAC": "NA",
+            "VFR_ED_RA": 1,
+            "VFR_ED_TA": "NA",
+            "VFR_ED_TR": "NA",
+            "VFR_IN_MASK": "NA",
+            "VFR_RESULT": "CANNOT_USE_FOO"
+        },
     ]
     got = vcf_stats.per_record_stats_from_vcf_file(infile)
     assert got == expect
@@ -189,12 +206,20 @@ def test_summary_stats_from_per_record_stats():
             "VFR_ED_TR": 1,
             "VFR_ED_TA": 0,
         },
+        {
+            "VFR_IN_MASK": "NA",
+            "VFR_RESULT": "CANNOT_USE_FOO",
+            "VFR_ALLELE_MATCH_FRAC": "NA",
+            "VFR_ED_RA": 1,
+            "VFR_ED_TA": "NA",
+            "VFR_ED_TR": "NA",
+        },
     ]
     expect = {
         "TP": {"Count": 3, "SUM_ALLELE_MATCH_FRAC": 0.72, "SUM_EDIT_DIST": 3},
         "FP": {"Count": 4, "SUM_ALLELE_MATCH_FRAC": 1.15, "SUM_EDIT_DIST": 4},
         "EDIT_DIST_COUNTS": {"numerator": 6, "denominator": 10},
-        "UNUSED": {"CONFLICT": 0, "MASKED": 1, "OTHER": 0},
+        "UNUSED": {"CONFLICT": 0, "MASKED": 1, "OTHER": 1},
     }
     got = vcf_stats.summary_stats_from_per_record_stats(record_stats)
     assert got == expect

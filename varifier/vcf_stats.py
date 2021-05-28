@@ -140,6 +140,8 @@ def summary_stats_from_per_record_stats(per_record_stats, for_recall=False):
     for d in per_record_stats:
         if d.get("VFR_IN_MASK", 0) == 1:
             stats["UNUSED"]["MASKED"] += 1
+        elif d["VFR_RESULT"].startswith("CANNOT_USE"):
+            stats["UNUSED"]["OTHER"] += 1
         else:
             if d["VFR_RESULT"] == "TP":
                 result = "TP"
