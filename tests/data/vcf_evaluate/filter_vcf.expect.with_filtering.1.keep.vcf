@@ -4,3 +4,4 @@
 ##FORMAT=<ID=NOTES,Number=1,Type=String,Description="Notes for what we expect the test to do with the record">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
 ref	2	.	T	G	.	PASS	.	GT:NOTES	1:Good alt call
+ref	17	.	C	A,*	.	PASS	.	GT:NOTES	1/1:Should not get removed because called allele ok

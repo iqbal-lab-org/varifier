@@ -6,3 +6,4 @@
 ref	2	.	T	G	.	PASS	.	GT:NOTES	1:Good alt call
 ref	9	.	C	G	.	.	.	GT:NOTES	1/1:Removal depends on filter_pass option
 ref	11	.	G	G	.	FILTER_1;FILTER_2	.	GT:NOTES	1/1:Removal depends on filter_pass option
+ref	17	.	C	A,*	.	PASS	.	GT:NOTES	1/1:Should not get removed because called allele ok

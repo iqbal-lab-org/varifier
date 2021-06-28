@@ -81,7 +81,7 @@ def _filter_vcf(
                 exclude_reason = "filter_fail"
             elif len(record.ALT) == 0 or record.ALT == ["."]:
                 exclude_reason = "other"
-            elif not utils.vcf_record_is_all_acgt(record):
+            elif utils.vcf_record_has_non_acgt_ref(record):
                 exclude_reason = "non_acgt"
             elif record.FORMAT is None:
                 exclude_reason = "no_genotype"
@@ -101,6 +101,8 @@ def _filter_vcf(
                     exclude_reason = "no_genotype"
                 elif not keep_ref_calls and "0" in gt:
                     exclude_reason = "ref_call"
+                elif utils.genotyped_hom_vcf_record_has_non_acgt_call(record):
+                    exclude_reason = "non_acgt"
                 else:
                     print(record, file=f_out_keep)
 

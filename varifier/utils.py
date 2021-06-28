@@ -16,6 +16,23 @@ def vcf_record_is_all_acgt(record):
     return True
 
 
+def vcf_record_has_non_acgt_ref(record):
+    return all_acgt_regex.search(record.REF) is None
+
+
+def genotyped_hom_vcf_record_has_non_acgt_call(record):
+    """Assumes the record has GT in the FORMAT, ie has been genotyped,
+    and also the genotype is one allele so homozygous, not het.
+    returns True if the called allele is ACGT characters only"""
+    gt = set(record.FORMAT.get("GT", ".").split("/"))
+    assert len(gt) == 1
+    gt = int(gt.pop())
+    if gt == 0:
+        return all_acgt_regex.search(record.REF) is None
+    else:
+        return all_acgt_regex.search(record.ALT[gt-1]) is None
+
+
 def load_mask_bed_file(mask_bed_file):
     """Loads a BED file of ref seq names, and start and end postiions.
     Returns a dictionary of ref seq name -> set of (0-based) coords in the mask."""
