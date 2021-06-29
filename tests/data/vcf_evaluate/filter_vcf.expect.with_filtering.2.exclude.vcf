@@ -11,5 +11,5 @@ ref	6	.	T	C	.	PASS	.	NOTES:VFR_EXCLUDE_REASON	Should always get removed because 
 ref	7	.	.	A	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	1:Should always get removed because REF is .:other
 ref	8	.	A	T	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	0/1:Should always get removed because heterozygous:heterozygous
 ref	10	.	T	G	.	FILTER_1	.	GT:NOTES:VFR_EXCLUDE_REASON	1/1:Removal depends on filter_pass option:filter_fail
-ref	12	.	C	N	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	1/1:Should always get removed because N in alt:non_acgt
+ref	12	.	C	N,T	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	1/1:Should always get removed because N in genotyped alt:non_acgt
 ref	13	.	ANNN	A	.	PASS	.	GT:NOTES:VFR_EXCLUDE_REASON	1/1:Should always get removed because N in ref:non_acgt
