@@ -40,3 +40,10 @@ def test_file_to_dict_of_seqs():
     for k, v in x.items():
         print(k, v)
     assert utils.file_to_dict_of_seqs(infile) == expect
+
+
+def test_load_one_seq_fasta_file():
+    infile = os.path.join(data_dir, "load_one_seq_fasta_file.fa")
+    got = utils.load_one_seq_fasta_file(infile)
+    expect = pyfastaq.sequences.Fasta("seq", "ACGT")
+    assert got == expect

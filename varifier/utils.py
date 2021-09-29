@@ -92,3 +92,12 @@ def file_to_dict_of_seqs(infile):
         seq.id = seq.id.split()[0]
         seq.seq = seq.seq.upper()
     return seqs
+
+
+def load_one_seq_fasta_file(infile):
+    """Takes a FASTA that should have one sequence in it, and returns
+    it as a pyfastaq.sequences.Fasta object"""
+    seqs = file_to_dict_of_seqs(infile)
+    assert len(seqs) == 1
+    return list(seqs.values())[0]
+
