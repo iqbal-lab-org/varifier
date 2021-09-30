@@ -86,6 +86,7 @@ def get_recall(
     split_ref=False,
     threads=1,
     maxmatch=True,
+    use_global_align=False,
 ):
     os.mkdir(outdir)
 
@@ -103,6 +104,7 @@ def get_recall(
             split_ref=split_ref,
             threads=threads,
             maxmatch=maxmatch,
+            use_global_align=use_global_align,
         )
     else:
         assert truth_fasta is None

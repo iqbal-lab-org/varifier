@@ -140,7 +140,7 @@ def test_per_record_stats_from_vcf_file():
             "VFR_ED_TA": "NA",
             "VFR_ED_TR": "NA",
             "VFR_IN_MASK": "NA",
-            "VFR_RESULT": "CANNOT_USE_FOO"
+            "VFR_RESULT": "CANNOT_USE_FOO",
         },
     ]
     got = vcf_stats.per_record_stats_from_vcf_file(infile)

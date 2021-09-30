@@ -18,4 +18,5 @@ def run(options):
         split_ref=options.split_ref,
         threads=options.cpus,
         maxmatch=not options.no_maxmatch,
+        use_global_align=options.global_align,
     )

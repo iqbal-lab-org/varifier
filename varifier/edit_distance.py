@@ -1,7 +1,7 @@
 from Bio import pairwise2
 
 
-def _needleman_wunsch(seq1, seq2, match=1, mismatch=-1, gap_open=-5, gap_extend=-3):
+def needleman_wunsch(seq1, seq2, match=1, mismatch=-1, gap_open=-5, gap_extend=-3):
     """Returns global alignment strings from NM alignment of the
     two sequences. Dashes for gaps"""
     alignments = pairwise2.align.globalms(
@@ -12,7 +12,7 @@ def _needleman_wunsch(seq1, seq2, match=1, mismatch=-1, gap_open=-5, gap_extend=
 
 
 def edit_distance_from_aln_strings(str1, str2):
-    """Input should be seqs output by _needleman_wunsch().
+    """Input should be seqs output by needleman_wunsch().
     Returns the edit distance between the sequences"""
     assert len(str1) == len(str2)
     edit_distance = 0
@@ -36,5 +36,5 @@ def edit_distance_between_seqs(seq1, seq2):
     """Input is two strings. They are globally aligned
     and the edit distance is returned. An indel of any length
     is counted as one edit"""
-    aln1, aln2 = _needleman_wunsch(seq1, seq2)
+    aln1, aln2 = needleman_wunsch(seq1, seq2)
     return edit_distance_from_aln_strings(aln1, aln2)

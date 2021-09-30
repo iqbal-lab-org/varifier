@@ -42,7 +42,12 @@ def test_get_recall():
     tmp_out = "tmp.get_recall"
     subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
     got_vcf = recall.get_recall(
-        ref_fasta, vcf_to_test, tmp_out, 100, debug=True, truth_fasta=truth_fasta,
+        ref_fasta,
+        vcf_to_test,
+        tmp_out,
+        100,
+        debug=True,
+        truth_fasta=truth_fasta,
     )
     expect_vcf = os.path.join(data_dir, "get_recall.expect.vcf")
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)

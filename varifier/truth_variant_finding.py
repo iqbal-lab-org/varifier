@@ -9,7 +9,7 @@ import pysam.bcftools
 
 from cluster_vcf_records import variant_tracking, vcf_file_read
 
-from varifier import dnadiff, probe_mapping, utils
+from varifier import global_align, dnadiff, probe_mapping, utils
 
 
 def _check_dependencies_in_path():
@@ -146,6 +146,7 @@ def make_truth_vcf(
     split_ref=False,
     threads=1,
     maxmatch=True,
+    use_global_align=False,
 ):
     _check_dependencies_in_path()
     os.mkdir(outdir)
@@ -160,23 +161,32 @@ def make_truth_vcf(
     probe_filtered_vcf = os.path.join(outdir, "03.probe_filtered.vcf")
     truth_vcf = os.path.join(outdir, "04.truth.vcf")
 
-    dnadiff.make_truth_vcf(
-        ref_fasta,
-        truth_fasta,
-        dnadiff_vcf,
-        debug=debug,
-        split_ref=split_ref,
-        threads=threads,
-        maxmatch=maxmatch,
-    )
-    _truth_using_minimap2_paftools(
-        ref_fasta, truth_fasta, minimap2_vcf, threads=threads
-    )
-    _remove_non_acgt_records(minimap2_vcf, minimap2_vcf)
-    _remove_non_acgt_records(dnadiff_vcf, dnadiff_vcf)
-    to_merge = [dnadiff_vcf, minimap2_vcf]
-    _merge_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)
-    logging.info(f"Made merged VCF file {merged_vcf}")
+    if use_global_align:
+        global_align.vcf_using_global_alignment(
+            ref_fasta, truth_fasta, merged_vcf, debug=debug
+        )
+        logging.info(
+            f"Made VCF file of variants '{merged_vcf}' by globally aligning ref/truth sequences"
+        )
+    else:
+        dnadiff.make_truth_vcf(
+            ref_fasta,
+            truth_fasta,
+            dnadiff_vcf,
+            debug=debug,
+            split_ref=split_ref,
+            threads=threads,
+            maxmatch=maxmatch,
+        )
+        _truth_using_minimap2_paftools(
+            ref_fasta, truth_fasta, minimap2_vcf, threads=threads
+        )
+        _remove_non_acgt_records(minimap2_vcf, minimap2_vcf)
+        _remove_non_acgt_records(dnadiff_vcf, dnadiff_vcf)
+        to_merge = [dnadiff_vcf, minimap2_vcf]
+        _merge_vcf_files_for_probe_mapping(to_merge, ref_fasta, merged_vcf)
+        logging.info(f"Made merged VCF file of minimap2/mummer variants {merged_vcf}")
+
     logging.info("Probe mapping to remove incorrect calls")
     probe_mapping.annotate_vcf_with_probe_mapping(
         merged_vcf,

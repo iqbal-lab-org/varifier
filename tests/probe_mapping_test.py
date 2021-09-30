@@ -202,7 +202,6 @@ def test_variant_flanked_by_deletions():
     os.unlink(tmp_vcf)
 
 
-
 def _test_qry_variant_vcf_tag():
     genome1 = os.path.join(data_dir, "qry_variant_vcf_tag.genome1.fa")
     genome2 = os.path.join(data_dir, "qry_variant_vcf_tag.genome2.fa")

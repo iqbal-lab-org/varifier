@@ -314,7 +314,7 @@ def evaluate_vcf_record(
 
     # This is buggy and so do not add the tag. Could revisit at a later
     # date if we really want it
-    #vcf_record.set_format_key_value("VFR_QRY_VARIANT", qry_var)
+    # vcf_record.set_format_key_value("VFR_QRY_VARIANT", qry_var)
 
     vcf_record.set_format_key_value("VFR_ED_TA", str(edit_dist_alt_allele))
     vcf_record.set_format_key_value("VFR_ALLELE_LEN", str(alt_allele_length))

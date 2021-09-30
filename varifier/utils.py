@@ -30,7 +30,7 @@ def genotyped_hom_vcf_record_has_non_acgt_call(record):
     if gt == 0:
         return all_acgt_regex.search(record.REF) is None
     else:
-        return all_acgt_regex.search(record.ALT[gt-1]) is None
+        return all_acgt_regex.search(record.ALT[gt - 1]) is None
 
 
 def load_mask_bed_file(mask_bed_file):
@@ -78,6 +78,10 @@ def vcf_records_are_the_same(file1, file2):
     Ignores header lines in the files. Returns False if any lines are different"""
     _, expect_records = vcf_file_read.vcf_file_to_list(file1)
     _, got_records = vcf_file_read.vcf_file_to_list(file2)
+    # We don't care about the ID column
+    for l in expect_records, got_records:
+        for record in l:
+            record.ID = None
     return got_records == expect_records
 
 
@@ -92,3 +96,11 @@ def file_to_dict_of_seqs(infile):
         seq.id = seq.id.split()[0]
         seq.seq = seq.seq.upper()
     return seqs
+
+
+def load_one_seq_fasta_file(infile):
+    """Takes a FASTA that should have one sequence in it, and returns
+    it as a pyfastaq.sequences.Fasta object"""
+    seqs = file_to_dict_of_seqs(infile)
+    assert len(seqs) == 1
+    return list(seqs.values())[0]
