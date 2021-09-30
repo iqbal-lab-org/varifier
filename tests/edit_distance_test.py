@@ -6,7 +6,7 @@ from varifier import edit_distance
 def test_needleman_wunsch():
     seq1 = "ACGTGTCACAG"
     seq2 = "AGTCTGACATG"
-    aln1, aln2 = edit_distance._needleman_wunsch(seq1, seq2)
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2)
     expect1 = "ACGTGTCACA-G"
     expect2 = "A-GTCTGACATG"
     assert aln1 == expect1
