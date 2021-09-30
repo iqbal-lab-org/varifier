@@ -1,0 +1,9 @@
+##fileformat=VCFv4.2
+##FILTER=<ID=PASS,Description="All filters passed">
+##contig=<ID=ref,length=563>
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##bcftools_normVersion=1.10.2 (pysam)+htslib-1.10.2 (pysam)
+##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/truth_variant_finding/make_truth_vcf_handle_Ns_3.ref.fa -o /tmp/tmpxqvlsgbq tmp.truth_variant_finding.make_truth_ref_handle_Ns_3/03.probe_filtered.vcf; Date=Thu Sep 30 15:42:53 2021
+##bcftools_normCommand=norm -c x -d any -f /home/mhunt/git/varifier/tests/data/truth_variant_finding/make_truth_vcf_handle_Ns_3.ref.fa -o /tmp/tmpdjid2mj8 tmp.truth_variant_finding.make_truth_ref_handle_Ns_3/04.truth.vcf; Date=Thu Sep 30 15:42:53 2021
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	sample
+ref	494	0	A	T	.	PASS	.	GT	1/1

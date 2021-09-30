@@ -198,3 +198,34 @@ def test_make_truth_vcf_handle_Ns_2():
     got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True)
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+
+# This is another edge case seen in covid data. Is a SNP near to a run of
+# Ns. This was motivation for making the use_global_align option. Can't see
+# a way to fix minimap2/nucmer method to find the SNP (they don't), but doing
+# a global alignment does find it. End of covid ref genome is:
+# GCTATCCCCATGTGATTTTAATAGCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+# End of test genome is:
+# GCTAACCNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
+#     ^
+#     | SNP here, gets missed by minimap2/nucmer
+def test_make_truth_vcf_hangle_Ns_3():
+    ref_fasta = os.path.join(data_dir, "make_truth_vcf_handle_Ns_3.ref.fa")
+    truth_fasta = os.path.join(data_dir, "make_truth_vcf_handle_Ns_3.truth.fa")
+    tmp_out = "tmp.truth_variant_finding.make_truth_ref_handle_Ns_3"
+    subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
+    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True)
+    expect_vcf = os.path.join(
+        data_dir, "make_truth_vcf_handle_Ns_3.ref_v_truth_expect.vcf"
+    )
+    assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+    # For completeness, run the same test but without using global align.
+    # We'll get a VCF file with no variants, so just header lines starting with
+    # a "#"
+    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100, use_global_align=False)
+    with open(got_vcf) as f:
+        for line in f:
+            assert line.startswith("#")
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
