@@ -86,7 +86,7 @@ def test_global_align():
 
 def test_variants_from_global_alignment():
     #          01234567--89012345
-    ref_aln = "AGCTGCGC--CTATCGAT-"
+    ref_aln = "AGCTGCGC--CNATCGAT-"
     #          |  |||||||||||   |
     qry_aln = "A-TTGCGCATCTATTACTA"
     got = global_align.variants_from_global_alignment(ref_aln, qry_aln)

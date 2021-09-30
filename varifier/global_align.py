@@ -108,7 +108,6 @@ def variants_from_global_alignment(ref_aln, qry_aln):
     assert len(ref_aln) == len(qry_aln)
     ref_coord = 0
     current_variant = None
-    acgt = set(list("acgtACGT"))
 
     for i, ref_char in enumerate(ref_aln):
         assert not ref_char == "-" == qry_aln[i]
@@ -138,7 +137,7 @@ def variants_from_global_alignment(ref_aln, qry_aln):
             variants.append(current_variant)
             current_variant = None
 
-        if ref_char in acgt:
+        if ref_char != "-":
             ref_coord += 1
 
     if current_variant is not None:
