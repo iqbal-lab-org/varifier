@@ -44,7 +44,9 @@ def test_perfect_matches_to_conservative_match_coords():
     nuc_match1.ref_length = 100
     nuc_match1.qry_length = 100
     expect_match1 = {"ref_start": 0, "ref_end": 37, "qry_start": 0, "qry_end": 37}
-    got = global_align.perfect_matches_to_conservative_match_coords([nuc_match0, nuc_match1])
+    got = global_align.perfect_matches_to_conservative_match_coords(
+        [nuc_match0, nuc_match1]
+    )
     assert got == [expect_match1]
 
     nuc_match2 = mock.Mock()
@@ -55,7 +57,9 @@ def test_perfect_matches_to_conservative_match_coords():
     nuc_match2.ref_length = 100
     nuc_match2.qry_length = 100
     expect_match2 = {"ref_start": 85, "ref_end": 99, "qry_start": 85, "qry_end": 99}
-    got = global_align.perfect_matches_to_conservative_match_coords([nuc_match1, nuc_match2])
+    got = global_align.perfect_matches_to_conservative_match_coords(
+        [nuc_match1, nuc_match2]
+    )
     assert got == [expect_match1, expect_match2]
 
     nuc_match1.ref_start = 1
@@ -91,10 +95,10 @@ def test_variants_from_global_alignment():
     qry_aln = "A-TTGCGCATCTATTACTA"
     got = global_align.variants_from_global_alignment(ref_aln, qry_aln)
     expect = [
-            {"ref_start": 0, "ref_allele": "AGC", "qry_allele": "AT"},
-            {"ref_start": 7, "ref_allele": "C", "qry_allele": "CAT"},
-            {"ref_start": 12, "ref_allele": "CGA", "qry_allele": "TAC"},
-            {"ref_start": 15, "ref_allele": "T", "qry_allele": "TA"},
+        {"ref_start": 0, "ref_allele": "AGC", "qry_allele": "AT"},
+        {"ref_start": 7, "ref_allele": "C", "qry_allele": "CAT"},
+        {"ref_start": 12, "ref_allele": "CGA", "qry_allele": "TAC"},
+        {"ref_start": 15, "ref_allele": "T", "qry_allele": "TA"},
     ]
     assert got == expect
 
@@ -106,7 +110,7 @@ def test_variants_from_global_alignment_insertion_at_start():
     qry_aln = "GCGACGTGTACGTACG"
     got = global_align.variants_from_global_alignment(ref_aln, qry_aln)
     expect = [
-            {"ref_start": 0, "ref_allele": "A", "qry_allele": "GCGA"},
+        {"ref_start": 0, "ref_allele": "A", "qry_allele": "GCGA"},
     ]
     assert got == expect
 
@@ -118,10 +122,9 @@ def test_variants_from_global_alignment_deletion_at_start():
     qry_aln = "---ACGTGTACGTACG"
     got = global_align.variants_from_global_alignment(ref_aln, qry_aln)
     expect = [
-            {"ref_start": 0, "ref_allele": "GCGA", "qry_allele": "A"},
+        {"ref_start": 0, "ref_allele": "GCGA", "qry_allele": "A"},
     ]
     assert got == expect
-
 
 
 def test_expand_combined_snps():

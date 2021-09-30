@@ -162,8 +162,12 @@ def make_truth_vcf(
     truth_vcf = os.path.join(outdir, "04.truth.vcf")
 
     if use_global_align:
-        global_align.vcf_using_global_alignment(ref_fasta, truth_fasta, merged_vcf, debug=debug)
-        logging.info(f"Made VCF file of variants '{merged_vcf}' by globally aligning ref/truth sequences")
+        global_align.vcf_using_global_alignment(
+            ref_fasta, truth_fasta, merged_vcf, debug=debug
+        )
+        logging.info(
+            f"Made VCF file of variants '{merged_vcf}' by globally aligning ref/truth sequences"
+        )
     else:
         dnadiff.make_truth_vcf(
             ref_fasta,

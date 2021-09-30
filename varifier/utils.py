@@ -30,7 +30,7 @@ def genotyped_hom_vcf_record_has_non_acgt_call(record):
     if gt == 0:
         return all_acgt_regex.search(record.REF) is None
     else:
-        return all_acgt_regex.search(record.ALT[gt-1]) is None
+        return all_acgt_regex.search(record.ALT[gt - 1]) is None
 
 
 def load_mask_bed_file(mask_bed_file):
@@ -104,4 +104,3 @@ def load_one_seq_fasta_file(infile):
     seqs = file_to_dict_of_seqs(infile)
     assert len(seqs) == 1
     return list(seqs.values())[0]
-

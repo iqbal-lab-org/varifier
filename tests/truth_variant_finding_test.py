@@ -145,7 +145,9 @@ def test_make_truth_vcf_handle_Ns():
     )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
-    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True)
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True
+    )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
 
@@ -167,7 +169,9 @@ def test_make_truth_vcf_handle_Ns():
     )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
-    got_vcf = truth_variant_finding.make_truth_vcf(truth_fasta, ref_fasta, tmp_out, 100, use_global_align=True, debug=True)
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        truth_fasta, ref_fasta, tmp_out, 100, use_global_align=True, debug=True
+    )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
 
@@ -195,7 +199,9 @@ def test_make_truth_vcf_handle_Ns_2():
     )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
-    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True)
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True
+    )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
 
@@ -214,7 +220,9 @@ def test_make_truth_vcf_hangle_Ns_3():
     truth_fasta = os.path.join(data_dir, "make_truth_vcf_handle_Ns_3.truth.fa")
     tmp_out = "tmp.truth_variant_finding.make_truth_ref_handle_Ns_3"
     subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
-    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True)
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True
+    )
     expect_vcf = os.path.join(
         data_dir, "make_truth_vcf_handle_Ns_3.ref_v_truth_expect.vcf"
     )
@@ -224,7 +232,9 @@ def test_make_truth_vcf_hangle_Ns_3():
     # For completeness, run the same test but without using global align.
     # We'll get a VCF file with no variants, so just header lines starting with
     # a "#"
-    got_vcf = truth_variant_finding.make_truth_vcf(ref_fasta, truth_fasta, tmp_out, 100, use_global_align=False)
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        ref_fasta, truth_fasta, tmp_out, 100, use_global_align=False
+    )
     with open(got_vcf) as f:
         for line in f:
             assert line.startswith("#")

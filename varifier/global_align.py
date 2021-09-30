@@ -5,11 +5,14 @@ import sys
 from varifier import edit_distance, utils
 import pymummer
 
+
 def get_perfect_matches(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
     # breaklen=1 stops nucmer from joining up matches to give longer
     # <100% matches. Instead, it reports individual shorter 100% hits, which
     # is what we need.
-    nucmer_runner = pymummer.nucmer.Runner(ref_fasta, query_fasta, tmp_nucmer_filename, breaklen=1, min_id=100)
+    nucmer_runner = pymummer.nucmer.Runner(
+        ref_fasta, query_fasta, tmp_nucmer_filename, breaklen=1, min_id=100
+    )
     nucmer_runner.run()
     file_reader = pymummer.coords_file.reader(tmp_nucmer_filename)
     matches = [x for x in file_reader if x.percent_identity == 100]
@@ -34,22 +37,31 @@ def perfect_matches_to_conservative_match_coords(matches_in, trim=5):
         if ref_end != m.ref_length - 1 or qry_end != m.qry_length - 1:
             ref_end -= trim
             qry_end -= trim
-        matches_out.append({
-            "ref_start": ref_start,
-            "ref_end": ref_end,
-            "qry_start": qry_start,
-            "qry_end": qry_end,
-        })
+        matches_out.append(
+            {
+                "ref_start": ref_start,
+                "ref_end": ref_end,
+                "qry_start": qry_start,
+                "qry_end": qry_end,
+            }
+        )
     if len(matches_out) == 0:
-        raise Exception("Error making global alignment. No matches from nucmer. Cannot continue")
+        raise Exception(
+            "Error making global alignment. No matches from nucmer. Cannot continue"
+        )
 
     matches_out.sort(key=itemgetter("ref_start"))
-    for i in range(len(matches_out)-1):
-        if matches_out[i]["qry_end"] >= matches_out[i+1]["qry_start"]:
-            print("Cannot align two genomes with rearrangements. Found these two matches:", file=sys.stderr)
+    for i in range(len(matches_out) - 1):
+        if matches_out[i]["qry_end"] >= matches_out[i + 1]["qry_start"]:
+            print(
+                "Cannot align two genomes with rearrangements. Found these two matches:",
+                file=sys.stderr,
+            )
             print(matches_out[i], file=sys.stderr)
-            print(matches_out[i+1], file=sys.stderr)
-            raise NotImplementedError("Error making global alignment because looks like a rearrangement")
+            print(matches_out[i + 1], file=sys.stderr)
+            raise NotImplementedError(
+                "Error making global alignment because looks like a rearrangement"
+            )
     return matches_out
 
 
@@ -58,14 +70,20 @@ def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
         ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
         qry_seq = utils.load_one_seq_fasta_file(query_fasta)
     except:
-        raise Exception("Can only use global align on two FASTA files that each contain one sequence")
+        raise Exception(
+            "Can only use global align on two FASTA files that each contain one sequence"
+        )
 
-    perfect_matches = get_perfect_matches(ref_fasta, query_fasta, tmp_nucmer_filename, debug=debug)
+    perfect_matches = get_perfect_matches(
+        ref_fasta, query_fasta, tmp_nucmer_filename, debug=debug
+    )
     matches = perfect_matches_to_conservative_match_coords(perfect_matches)
 
     if matches[0]["ref_start"] > 0:
         assert matches[0]["qry_start"] > 0
-        ref_aln, qry_aln = edit_distance.needleman_wunsch(ref_seq[:matches[0]["ref_start"]], qry_seq[:matches[0]["qry_start"]])
+        ref_aln, qry_aln = edit_distance.needleman_wunsch(
+            ref_seq[: matches[0]["ref_start"]], qry_seq[: matches[0]["qry_start"]]
+        )
         aln_ref_seq = [ref_aln]
         aln_qry_seq = [qry_aln]
     else:
@@ -73,11 +91,11 @@ def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
         aln_qry_seq = []
 
     for i, match in enumerate(matches):
-        aln_ref_seq.append(ref_seq[match["ref_start"]:match["ref_end"]+1])
-        aln_qry_seq.append(qry_seq[match["qry_start"]:match["qry_end"]+1])
+        aln_ref_seq.append(ref_seq[match["ref_start"] : match["ref_end"] + 1])
+        aln_qry_seq.append(qry_seq[match["qry_start"] : match["qry_end"] + 1])
         if i < len(matches) - 1:
-            ref_end = matches[i+1]["ref_start"]
-            qry_end = matches[i+1]["qry_start"]
+            ref_end = matches[i + 1]["ref_start"]
+            qry_end = matches[i + 1]["qry_start"]
         elif match["qry_end"] == len(qry_seq) - 1:
             assert match["ref_end"] == len(ref_seq) - 1
             break
@@ -86,9 +104,9 @@ def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
             ref_end = len(ref_seq)
             qry_end = len(qry_seq)
 
-        ref_aln, qry_aln =  edit_distance.needleman_wunsch(
-            ref_seq[match["ref_end"]+1:ref_end],
-            qry_seq[match["qry_end"]+1:qry_end],
+        ref_aln, qry_aln = edit_distance.needleman_wunsch(
+            ref_seq[match["ref_end"] + 1 : ref_end],
+            qry_seq[match["qry_end"] + 1 : qry_end],
         )
         aln_ref_seq.append(ref_aln)
         aln_qry_seq.append(qry_aln)
@@ -97,8 +115,14 @@ def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
     aln_qry_seq = "".join(aln_qry_seq)
     ref_len_check = len([x for x in aln_ref_seq if x != "-"])
     qry_len_check = len([x for x in aln_qry_seq if x != "-"])
-    if len(aln_ref_seq) != len(aln_qry_seq) or ref_len_check != len(ref_seq) or qry_len_check != len(qry_seq):
-        raise Exception(f"Error aligning sequences. Got unexpected length(s) after aligning sequences. Ref length={len(ref_seq)}. Query length={len(qry_seq)}. But non-gap lengths are ref={ref_len_check}, qry={qry_len_check}. Cannot continue")
+    if (
+        len(aln_ref_seq) != len(aln_qry_seq)
+        or ref_len_check != len(ref_seq)
+        or qry_len_check != len(qry_seq)
+    ):
+        raise Exception(
+            f"Error aligning sequences. Got unexpected length(s) after aligning sequences. Ref length={len(ref_seq)}. Query length={len(qry_seq)}. But non-gap lengths are ref={ref_len_check}, qry={qry_len_check}. Cannot continue"
+        )
 
     return aln_ref_seq, aln_qry_seq
 
@@ -120,8 +144,8 @@ def variants_from_global_alignment(ref_aln, qry_aln):
                 if i > 0 and (ref_char == "-" or qry_aln[i] == "-"):
                     current_variant = {
                         "ref_start": ref_coord - 1,
-                        "ref_allele": [ref_aln[i-1]],
-                        "qry_allele": [qry_aln[i-1]],
+                        "ref_allele": [ref_aln[i - 1]],
+                        "qry_allele": [qry_aln[i - 1]],
                     }
                 else:
                     current_variant = {
@@ -156,7 +180,6 @@ def variants_from_global_alignment(ref_aln, qry_aln):
             variants[0]["ref_allele"].append(new_base)
             variants[0]["qry_allele"] = [new_base]
 
-
     for d in variants:
         d["ref_allele"] = "".join(d["ref_allele"])
         d["qry_allele"] = "".join(d["qry_allele"])
@@ -169,18 +192,22 @@ def expand_combined_snps(variants_in):
     for variant in variants_in:
         if len(variant["ref_allele"]) == len(variant["qry_allele"]):
             for i in range(len(variant["ref_allele"])):
-                variants_out.append({
-                    "ref_start": i + variant["ref_start"],
-                    "ref_allele": variant["ref_allele"][i],
-                    "qry_allele": variant["qry_allele"][i],
-                })
+                variants_out.append(
+                    {
+                        "ref_start": i + variant["ref_start"],
+                        "ref_allele": variant["ref_allele"][i],
+                        "qry_allele": variant["qry_allele"][i],
+                    }
+                )
         else:
             variants_out.append(variant)
     return variants_out
 
 
 def vcf_using_global_alignment(ref_fasta, query_fasta, vcf_out, debug=False):
-    ref_aln, qry_aln = global_align(ref_fasta, query_fasta, f"{vcf_out}.tmp.nucmer", debug=debug)
+    ref_aln, qry_aln = global_align(
+        ref_fasta, query_fasta, f"{vcf_out}.tmp.nucmer", debug=debug
+    )
     variants = variants_from_global_alignment(ref_aln, qry_aln)
     variants = expand_combined_snps(variants)
     ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
@@ -190,19 +217,32 @@ def vcf_using_global_alignment(ref_fasta, query_fasta, vcf_out, debug=False):
         print('##FILTER=<ID=PASS,Description="All filters passed">', file=f)
         print(f"##contig=<ID={ref_name},length={len(ref_seq)}>", file=f)
         print('##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">', file=f)
-        print("#CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO", "FORMAT", "sample", sep="\t", file=f)
+        print(
+            "#CHROM",
+            "POS",
+            "ID",
+            "REF",
+            "ALT",
+            "QUAL",
+            "FILTER",
+            "INFO",
+            "FORMAT",
+            "sample",
+            sep="\t",
+            file=f,
+        )
         for i, variant in enumerate(variants):
             print(
                 ref_name,
                 variant["ref_start"] + 1,
-                i, # ID column
+                i,  # ID column
                 "".join(variant["ref_allele"]),
                 "".join(variant["qry_allele"]),
-                ".", # QUAL column
+                ".",  # QUAL column
                 "PASS",
-                ".", # FILTER column
+                ".",  # FILTER column
                 "GT",
                 "1/1",
-                sep="\t", file=f
+                sep="\t",
+                file=f,
             )
-
