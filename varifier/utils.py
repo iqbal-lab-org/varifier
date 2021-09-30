@@ -78,6 +78,10 @@ def vcf_records_are_the_same(file1, file2):
     Ignores header lines in the files. Returns False if any lines are different"""
     _, expect_records = vcf_file_read.vcf_file_to_list(file1)
     _, got_records = vcf_file_read.vcf_file_to_list(file2)
+    # We don't care about the ID column
+    for l in expect_records, got_records:
+        for record in l:
+            record.ID = None
     return got_records == expect_records
 
 
