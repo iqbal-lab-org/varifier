@@ -23,5 +23,4 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - various edge cases caught when there are indels and/or Ns in sequences
 
 
-[Unreleased]: https://github.com/Mykrobe-tools/mykrobe/compare/v0.10.0...HEAD
-https://github.com/iqbal-lab-org/varifier/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/iqbal-lab-org/varifier/compare/v0.3.1...HEAD
