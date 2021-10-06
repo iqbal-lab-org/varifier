@@ -22,6 +22,8 @@ def test_make_truth_vcf():
     options.cpus = 1
     options.no_maxmatch = False
     options.global_align = False
+    options.global_align_min_coord = 0
+    options.global_align_max_coord = float("inf")
     subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
     tasks.make_truth_vcf.run(options)
     got_vcf = os.path.join(options.outdir, "04.truth.vcf")

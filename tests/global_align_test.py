@@ -148,3 +148,24 @@ def test_vcf_using_global_alignment():
     global_align.vcf_using_global_alignment(ref_fasta, qry_fasta, vcf_out)
     assert utils.vcf_records_are_the_same(vcf_out, expect_vcf)
     os.unlink(vcf_out)
+
+    expect_vcf = os.path.join(data_dir, "vcf_using_global_alignment.1-100.vcf")
+    global_align.vcf_using_global_alignment(
+        ref_fasta, qry_fasta, vcf_out, min_ref_coord=0, max_ref_coord=99
+    )
+    assert utils.vcf_records_are_the_same(vcf_out, expect_vcf)
+    os.unlink(vcf_out)
+
+    expect_vcf = os.path.join(data_dir, "vcf_using_global_alignment.2-99.vcf")
+    global_align.vcf_using_global_alignment(
+        ref_fasta, qry_fasta, vcf_out, min_ref_coord=1, max_ref_coord=98
+    )
+    assert utils.vcf_records_are_the_same(vcf_out, expect_vcf)
+    os.unlink(vcf_out)
+
+    expect_vcf = os.path.join(data_dir, "vcf_using_global_alignment.3-98.vcf")
+    global_align.vcf_using_global_alignment(
+        ref_fasta, qry_fasta, vcf_out, min_ref_coord=2, max_ref_coord=97
+    )
+    assert utils.vcf_records_are_the_same(vcf_out, expect_vcf)
+    os.unlink(vcf_out)
