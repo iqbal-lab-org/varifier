@@ -204,7 +204,14 @@ def expand_combined_snps(variants_in):
     return variants_out
 
 
-def vcf_using_global_alignment(ref_fasta, query_fasta, vcf_out, debug=False):
+def vcf_using_global_alignment(
+    ref_fasta,
+    query_fasta,
+    vcf_out,
+    debug=False,
+    min_ref_coord=0,
+    max_ref_coord=float("inf"),
+):
     ref_aln, qry_aln = global_align(
         ref_fasta, query_fasta, f"{vcf_out}.tmp.nucmer", debug=debug
     )
@@ -232,6 +239,9 @@ def vcf_using_global_alignment(ref_fasta, query_fasta, vcf_out, debug=False):
             file=f,
         )
         for i, variant in enumerate(variants):
+            end_coord = variant["ref_start"] + len(variant["ref_allele"]) - 1
+            if min_ref_coord > variant["ref_start"] or end_coord > max_ref_coord:
+                continue
             print(
                 ref_name,
                 variant["ref_start"] + 1,

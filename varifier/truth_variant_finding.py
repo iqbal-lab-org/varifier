@@ -147,6 +147,8 @@ def make_truth_vcf(
     threads=1,
     maxmatch=True,
     use_global_align=False,
+    global_align_min_coord=0,
+    global_align_max_coord=float("inf"),
 ):
     _check_dependencies_in_path()
     os.mkdir(outdir)
@@ -163,7 +165,12 @@ def make_truth_vcf(
 
     if use_global_align:
         global_align.vcf_using_global_alignment(
-            ref_fasta, truth_fasta, merged_vcf, debug=debug
+            ref_fasta,
+            truth_fasta,
+            merged_vcf,
+            debug=debug,
+            min_ref_coord=global_align_min_coord,
+            max_ref_coord=global_align_max_coord,
         )
         logging.info(
             f"Made VCF file of variants '{merged_vcf}' by globally aligning ref/truth sequences"

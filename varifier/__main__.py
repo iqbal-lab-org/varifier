@@ -76,6 +76,20 @@ def main(args=None):
         help="Only use this with small genomes (ie virus) that have one sequence each, in the same orientation. Instead of using minimap2/nucmer to find variants, do a global alignment for greater accuracy",
         action="store_true",
     )
+    subparser_make_truth_vcf.add_argument(
+        "--global_align_min_coord",
+        help="Only used if also using --global_align. Do not output variants where the REF allele starts before the given (1-based) coordinate [%(default)s]",
+        type=int,
+        metavar="INT",
+        default=1,
+    )
+    subparser_make_truth_vcf.add_argument(
+        "--global_align_max_coord",
+        help="Only used if also using --global_align. Do not output variants where the REF allele ends after the given (1-based) coordinate [infinity]",
+        type=int,
+        metavar="INT",
+        default=float("inf"),
+    )
 
     subparser_make_truth_vcf.add_argument("outdir", help="Name of output directory")
     subparser_make_truth_vcf.set_defaults(func=varifier.tasks.make_truth_vcf.run)
