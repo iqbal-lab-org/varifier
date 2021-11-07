@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3
+FROM continuumio/miniconda3:4.9.2
 ENV MINIMAP_VERSION 2.17
 ENV MUMMER_VERSION "4.0.0rc1"
 ENV BIOPY_VERSION 1.77
