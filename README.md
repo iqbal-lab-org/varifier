@@ -4,6 +4,60 @@ Note: full documentation is under construction
 
 ## Installation
 
+### `conda`
+
+[![Conda (channel only)](https://img.shields.io/conda/vn/bioconda/varifier)](https://anaconda.org/bioconda/varifier)
+[![bioconda version](https://anaconda.org/bioconda/varifier/badges/platforms.svg)](https://anaconda.org/bioconda/varifier)
+
+Prerequisite: [`conda`][conda] (and bioconda channel [correctly set up][channels])
+
+```shell
+$ conda install varifier
+```
+
+[channels]: https://bioconda.github.io/user/install.html#set-up-channels
+[conda]: https://docs.conda.io/projects/conda/en/latest/user-guide/install/
+
+### Container
+
+Docker images are hosted at [quay.io].
+
+#### `singularity`
+
+Prerequisite: [`singularity`][singularity]
+
+```shell
+$ URI="docker://quay.io/iqballab/varifier"
+$ singularity exec "$URI" varifier --help
+```
+
+The above will use the latest version. If you want to specify a version/commit then use a
+[tag][quay.io] (or commit) like so.
+
+```shell
+$ TAG="3c8152a"
+$ URI="docker://quay.io/iqballab/varifier:${TAG}"
+```
+
+#### `docker`
+
+[![Docker Repository on Quay](https://quay.io/repository/iqballab/varifier/status "Docker Repository on Quay")](https://quay.io/repository/iqballab/varifier)
+
+Prerequisite: [`docker`][docker]
+
+```shhell
+$ docker pull quay.io/iqballab/varifier
+$ docker run quay.io/iqballab/varifier varifier --help
+```
+
+You can find all the available tags on the [quay.io repository][quay.io].
+
+[quay.io]: https://quay.io/repository/iqballab/varifier
+[singularity]: https://sylabs.io/guides/3.4/user-guide/quick_start.html#quick-installation-steps
+[docker]: https://docs.docker.com/v17.12/install/
+
+### Local
+
 Dependencies:
 
 * Python 3 (tested on version 3.6.9)
