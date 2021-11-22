@@ -41,8 +41,11 @@ def perfect_matches_to_conservative_match_coords(matches_in, trim=5):
         # Can have indels that result in the perfect matches overlapping
         # a little. If this happens, ignore the current match. Is fine because
         # we fill in the gaps later with a proper alignment anyway
-        if len(matches_out) > 0 and (ref_start <= matches_out[-1]["ref_end"] or  qry_start <= matches_out[-1]["qry_end"]):
-           continue
+        if len(matches_out) > 0 and (
+            ref_start <= matches_out[-1]["ref_end"]
+            or qry_start <= matches_out[-1]["qry_end"]
+        ):
+            continue
         matches_out.append(
             {
                 "ref_start": ref_start,
