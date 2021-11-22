@@ -22,5 +22,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - various edge cases caught when there are indels and/or Ns in sequences
 
+- edge case caused by indels when making VCF with `--global align`.
+
 
 [Unreleased]: https://github.com/iqbal-lab-org/varifier/compare/v0.3.1...HEAD

@@ -75,6 +75,57 @@ def test_perfect_matches_to_conservative_match_coords():
     assert got == [expect_match2]
 
 
+# this is based on a real example. It is possible to have an indel resulting in
+# perfect matches that overlap slightly. We just remove one of the overlapping
+# matches because is filled in by local alignment afterwards anyway
+def test_perfect_matches_to_conservative_match_coords_handle_qry_overlap():
+    # Test only keep only first match when ref coords overlap
+    nuc_match0 = mock.Mock()
+    nuc_match0.ref_start = 0
+    nuc_match0.ref_end = 42
+    nuc_match0.qry_start = 0
+    nuc_match0.qry_end = 42
+    nuc_match0.ref_length = 100
+    nuc_match0.qry_length = 100
+
+    nuc_match1 = mock.Mock()
+    nuc_match1.ref_start = 30
+    nuc_match1.ref_end = 60
+    nuc_match1.qry_start = 50
+    nuc_match1.qry_end = 80
+    nuc_match1.ref_length = 100
+    nuc_match1.qry_length = 100
+
+    expect_match0 = {"ref_start": 0, "ref_end": 37, "qry_start": 0, "qry_end": 37}
+    got = global_align.perfect_matches_to_conservative_match_coords(
+        [nuc_match0, nuc_match1]
+    )
+    assert got == [expect_match0]
+
+    # Test only keep only first match when qry coords overlap
+    nuc_match0 = mock.Mock()
+    nuc_match0.ref_start = 0
+    nuc_match0.ref_end = 42
+    nuc_match0.qry_start = 0
+    nuc_match0.qry_end = 42
+    nuc_match0.ref_length = 100
+    nuc_match0.qry_length = 100
+
+    nuc_match1 = mock.Mock()
+    nuc_match1.ref_start = 50
+    nuc_match1.ref_end = 80
+    nuc_match1.qry_start = 30
+    nuc_match1.qry_end = 60
+    nuc_match1.ref_length = 100
+    nuc_match1.qry_length = 100
+
+    expect_match0 = {"ref_start": 0, "ref_end": 37, "qry_start": 0, "qry_end": 37}
+    got = global_align.perfect_matches_to_conservative_match_coords(
+        [nuc_match0, nuc_match1]
+    )
+    assert got == [expect_match0]
+
+
 def test_global_align():
     ref_fasta = os.path.join(data_dir, "global_aln.ref.fa")
     qry_fasta = os.path.join(data_dir, "global_aln.qry.fa")

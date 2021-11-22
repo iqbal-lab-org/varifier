@@ -37,6 +37,12 @@ def perfect_matches_to_conservative_match_coords(matches_in, trim=5):
         if ref_end != m.ref_length - 1 or qry_end != m.qry_length - 1:
             ref_end -= trim
             qry_end -= trim
+
+        # Can have indels that result in the perfect matches overlapping
+        # a little. If this happens, ignore the current match. Is fine because
+        # we fill in the gaps later with a proper alignment anyway
+        if len(matches_out) > 0 and (ref_start <= matches_out[-1]["ref_end"] or  qry_start <= matches_out[-1]["qry_end"]):
+           continue
         matches_out.append(
             {
                 "ref_start": ref_start,
@@ -52,7 +58,7 @@ def perfect_matches_to_conservative_match_coords(matches_in, trim=5):
 
     matches_out.sort(key=itemgetter("ref_start"))
     for i in range(len(matches_out) - 1):
-        if matches_out[i]["qry_end"] >= matches_out[i + 1]["qry_start"]:
+        if matches_out[i]["qry_start"] >= matches_out[i + 1]["qry_start"]:
             print(
                 "Cannot align two genomes with rearrangements. Found these two matches:",
                 file=sys.stderr,
