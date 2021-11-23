@@ -112,10 +112,10 @@ def test_perfect_matches_to_conservative_match_coords_handle_qry_overlap():
     nuc_match0.qry_length = 100
 
     nuc_match1 = mock.Mock()
-    nuc_match1.ref_start = 50
-    nuc_match1.ref_end = 80
-    nuc_match1.qry_start = 30
-    nuc_match1.qry_end = 60
+    nuc_match1.ref_start = 60
+    nuc_match1.ref_end = 90
+    nuc_match1.qry_start = 33
+    nuc_match1.qry_end = 72
     nuc_match1.ref_length = 100
     nuc_match1.qry_length = 100
 

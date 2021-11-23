@@ -42,8 +42,8 @@ def perfect_matches_to_conservative_match_coords(matches_in, trim=5):
         # a little. If this happens, ignore the current match. Is fine because
         # we fill in the gaps later with a proper alignment anyway
         if len(matches_out) > 0 and (
-            ref_start <= matches_out[-1]["ref_end"]
-            or qry_start <= matches_out[-1]["qry_end"]
+            ref_start <= matches_out[-1]["ref_end"] + 1
+            or qry_start <= matches_out[-1]["qry_end"] + 1
         ):
             continue
         matches_out.append(
