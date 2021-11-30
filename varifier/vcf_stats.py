@@ -24,7 +24,7 @@ def _frs_from_vcf_record(record, cov_key="COV"):
         return "NA"
 
     allele_index = int(genotypes.pop())
-    coverages = [int(x) for x in record.FORMAT[cov_key].split(",")]
+    coverages = [float(x) for x in record.FORMAT[cov_key].split(",")]
     total_cov = sum(coverages)
     if total_cov == 0:
         return 0
