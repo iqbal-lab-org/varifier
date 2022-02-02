@@ -56,6 +56,8 @@ def test_vcf_eval():
     options.cpus = 1
     options.no_maxmatch = False
     options.global_align = False
+    options.global_align_min_coord = 0
+    options.global_align_max_coord = float("inf")
     subprocess.check_output(f"rm -rf {options.outdir}", shell=True)
     tasks.vcf_eval.run(options)
     expect_json = os.path.join(data_dir, "vcf_eval.expect.summary_stats.json")

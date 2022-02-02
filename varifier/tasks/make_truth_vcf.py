@@ -19,6 +19,7 @@ def run(options):
         threads=options.cpus,
         maxmatch=not options.no_maxmatch,
         use_global_align=options.global_align,
+        fix_truth_gap_lengths=options.sanitise_truth_gaps,
         global_align_min_coord=options.global_align_min_coord - 1,
         global_align_max_coord=options.global_align_max_coord - 1,
     )
