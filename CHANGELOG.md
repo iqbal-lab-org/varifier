@@ -14,6 +14,13 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   where both truth and reference are one sequence only. It is less efficient
   but more accurate.
 
+- Added command line options that only apply when `--global_align` is used:
+  `--global_align_min_coord`, `--global_align_max_coord`,
+  `--sanitise_truth_gaps`.
+
+- If using `--global_align`, writes an MSA of rev and truth sequences, and
+  a FASTA of the truth sequence, but with santised gap lengths.
+
 - New tag in VCF file `VCF_QRY_VARIANT`, which is the variant with respect to
   the query sequence, as opposed to the ref sequence.
 

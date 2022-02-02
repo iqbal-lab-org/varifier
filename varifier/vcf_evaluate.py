@@ -132,6 +132,8 @@ def evaluate_vcf(
     threads=1,
     maxmatch=True,
     use_global_align=False,
+    global_align_min_coord=0,
+    global_align_max_coord=float("inf"),
 ):
     if force:
         subprocess.check_output(f"rm -rf {outdir}", shell=True)
@@ -197,6 +199,8 @@ def evaluate_vcf(
         threads=threads,
         maxmatch=maxmatch,
         use_global_align=use_global_align,
+        global_align_min_coord=global_align_min_coord,
+        global_align_max_coord=global_align_max_coord,
     )
     if ref_mask_bed_file is not None:
         logging.info("Masking recall VCF...")
