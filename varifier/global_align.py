@@ -73,8 +73,46 @@ def perfect_matches_to_conservative_match_coords(matches_in, trim=5):
             )
     return matches_out
 
+def fix_query_gaps_in_msa(ref_seq, qry_seq):
+    """Returns new sequences, with corrected length of gaps in the qry sequence
+    alignment qry_seq, so that no gaps are also indels. eg:
+    ref: ACGT-ACTGC-GTTTGAGTAGT
+    qry: ACGTNNNNGCAG-T--NNNNGT
+    becomes:
+    ref: ACGTACTGC-GTTTGAGTAGT
+    qry: ACGTNNNGCAG-TNNNNNNGT
+    """
+    # To fix where gap in qry is too short, we need to find dashes next to Ns,
+    # and replace each dash with an N. Don't assume dashes always before Ns
+    pos = 0
+    while pos < len(qry_seq):
+        try:
+            pos = qry_seq.index("N", pos)
+        except ValueError:
+            break
+        # If we're here, we've found the start of the next gap.
+        # Replace any immediately previous dashes with an N
+        i = pos - 1
+        while i >= 0 and qry_seq[i] == "-":
+            qry_seq[i] = "N"
+            i -= 1
 
-def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
+        # Get to the end of the gap, and replace any following dashes with Ns
+        while pos < len(qry_seq) and qry_seq[pos] == "N":
+            pos += 1
+        while pos < len(qry_seq) and qry_seq[pos] == "-":
+            qry_seq[pos] = "N"
+            pos += 1
+
+    # To fix where gap is too long, we're looking for "-" in the ref, and
+    # "N" in the query. Delete all those positions from both sequences
+    bad_indexes = set([i for i in range(len(qry_seq)) if qry_seq[i] == "N" and ref_seq[i] == "-"])
+    ref_seq = [x for i, x in enumerate(ref_seq) if i not in bad_indexes]
+    qry_seq = [x for i, x in enumerate(qry_seq) if i not in bad_indexes]
+    return ref_seq, qry_seq
+
+
+def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False, fix_query_gap_lengths=False):
     try:
         ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
         qry_seq = utils.load_one_seq_fasta_file(query_fasta)
@@ -93,15 +131,15 @@ def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
         ref_aln, qry_aln = edit_distance.needleman_wunsch(
             ref_seq[: matches[0]["ref_start"]], qry_seq[: matches[0]["qry_start"]]
         )
-        aln_ref_seq = [ref_aln]
-        aln_qry_seq = [qry_aln]
+        aln_ref_seq = list(ref_aln)
+        aln_qry_seq = list(qry_aln)
     else:
         aln_ref_seq = []
         aln_qry_seq = []
 
     for i, match in enumerate(matches):
-        aln_ref_seq.append(ref_seq[match["ref_start"] : match["ref_end"] + 1])
-        aln_qry_seq.append(qry_seq[match["qry_start"] : match["qry_end"] + 1])
+        aln_ref_seq.extend(list(ref_seq[match["ref_start"] : match["ref_end"] + 1]))
+        aln_qry_seq.extend(list(qry_seq[match["qry_start"] : match["qry_end"] + 1]))
         if i < len(matches) - 1:
             ref_end = matches[i + 1]["ref_start"]
             qry_end = matches[i + 1]["qry_start"]
@@ -117,23 +155,25 @@ def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
             ref_seq[match["ref_end"] + 1 : ref_end],
             qry_seq[match["qry_end"] + 1 : qry_end],
         )
-        aln_ref_seq.append(ref_aln)
-        aln_qry_seq.append(qry_aln)
+        aln_ref_seq.extend(list(ref_aln))
+        aln_qry_seq.extend(list(qry_aln))
 
-    aln_ref_seq = "".join(aln_ref_seq)
-    aln_qry_seq = "".join(aln_qry_seq)
+    if fix_query_gap_lengths:
+        aln_ref_seq, aln_qry_seq = fix_query_gaps_in_msa(aln_ref_seq, aln_qry_seq)
+
     ref_len_check = len([x for x in aln_ref_seq if x != "-"])
     qry_len_check = len([x for x in aln_qry_seq if x != "-"])
     if (
         len(aln_ref_seq) != len(aln_qry_seq)
         or ref_len_check != len(ref_seq)
-        or qry_len_check != len(qry_seq)
+        or (not fix_query_gap_lengths and qry_len_check != len(qry_seq))
     ):
         raise Exception(
             f"Error aligning sequences. Got unexpected length(s) after aligning sequences. Ref length={len(ref_seq)}. Query length={len(qry_seq)}. But non-gap lengths are ref={ref_len_check}, qry={qry_len_check}. Cannot continue"
         )
 
-    return aln_ref_seq, aln_qry_seq
+
+    return "".join(aln_ref_seq), "".join(aln_qry_seq)
 
 
 def variants_from_global_alignment(ref_aln, qry_aln):
@@ -218,11 +258,12 @@ def vcf_using_global_alignment(
     query_fasta,
     vcf_out,
     debug=False,
+    fix_query_gap_lengths=False,
     min_ref_coord=0,
     max_ref_coord=float("inf"),
 ):
     ref_aln, qry_aln = global_align(
-        ref_fasta, query_fasta, f"{vcf_out}.tmp.nucmer", debug=debug
+        ref_fasta, query_fasta, f"{vcf_out}.tmp.nucmer", debug=debug, fix_query_gap_lengths=fix_query_gap_lengths,
     )
     variants = variants_from_global_alignment(ref_aln, qry_aln)
     variants = expand_combined_snps(variants)

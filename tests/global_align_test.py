@@ -126,6 +126,38 @@ def test_perfect_matches_to_conservative_match_coords_handle_qry_overlap():
     assert got == [expect_match0]
 
 
+def test_fix_query_gaps_in_msa():
+    ref = list("ACG")
+    qry = list("ATG")
+    got_ref, got_qry = global_align.fix_query_gaps_in_msa(ref, qry)
+    assert got_ref == ref
+    assert got_qry == qry
+
+    ref = list("A-G")
+    qry = list("ANC")
+    got_ref, got_qry = global_align.fix_query_gaps_in_msa(ref, qry)
+    assert got_ref == list("AG")
+    assert got_qry == list("AC")
+
+    ref = list("A-CG")
+    qry = list("ANNC")
+    got_ref, got_qry = global_align.fix_query_gaps_in_msa(ref, qry)
+    assert got_ref == list("ACG")
+    assert got_qry == list("ANC")
+
+    ref = list("ACGCTACGT")
+    qry = list("-NG-N-N--")
+    got_ref, got_qry = global_align.fix_query_gaps_in_msa(ref, qry)
+    assert got_ref == ref
+    assert got_qry == list("NNGNNNNNN")
+
+    ref = list("A--T-ACTGC-GTTTGAGTAGT")
+    qry = list("ACGTNN-NGCAG-T--NN-N-T")
+    got_ref, got_qry = global_align.fix_query_gaps_in_msa(ref, qry)
+    assert got_ref == list("A--TACTGC-GTTTGAGTAGT")
+    assert got_qry == list("ACGTNNNGCAG-TNNNNNNNT")
+
+
 def test_global_align():
     ref_fasta = os.path.join(data_dir, "global_aln.ref.fa")
     qry_fasta = os.path.join(data_dir, "global_aln.qry.fa")
@@ -133,8 +165,15 @@ def test_global_align():
     subprocess.check_output(f"rm -rf {tmp_nucmer}", shell=True)
     got = global_align.global_align(ref_fasta, qry_fasta, tmp_nucmer)
     expect = (
+        "AGCCCCGAGGCTATTCGT-CACCGTAGTGCGTCGACTCCCGATAGTCCT-ATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCG---",
+        "AG-CCCGAGCCTATTCGNNCACCGTAGTGCGTCGACTCCCGATAGTCCTCATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCGGGT",
+    )
+    assert got == expect
+
+    got = global_align.global_align(ref_fasta, qry_fasta, tmp_nucmer, fix_query_gap_lengths=True)
+    expect = (
         "AGCCCCGAGGCTATTCGTCACCGTAGTGCGTCGACTCCCGATAGTCCT-ATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCG---",
-        "AG-CCCGAGCCTATTCGTCACCGTAGTGCGTCGACTCCCGATAGTCCTCATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCGGGT",
+        "AG-CCCGAGCCTATTCGNCACCGTAGTGCGTCGACTCCCGATAGTCCTCATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCGGGT",
     )
     assert got == expect
 
