@@ -74,6 +74,7 @@ def perfect_matches_to_conservative_match_coords(matches_in, trim=5):
             )
     return matches_out
 
+
 def fix_query_gaps_in_msa(ref_seq, qry_seq):
     """Returns new sequences, with corrected length of gaps in the qry sequence
     alignment qry_seq, so that no gaps are also indels. eg:
@@ -107,13 +108,21 @@ def fix_query_gaps_in_msa(ref_seq, qry_seq):
 
     # To fix where gap is too long, we're looking for "-" in the ref, and
     # "N" in the query. Delete all those positions from both sequences
-    bad_indexes = set([i for i in range(len(qry_seq)) if qry_seq[i] == "N" and ref_seq[i] == "-"])
+    bad_indexes = set(
+        [i for i in range(len(qry_seq)) if qry_seq[i] == "N" and ref_seq[i] == "-"]
+    )
     ref_seq = [x for i, x in enumerate(ref_seq) if i not in bad_indexes]
     qry_seq = [x for i, x in enumerate(qry_seq) if i not in bad_indexes]
     return ref_seq, qry_seq
 
 
-def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False, fix_query_gap_lengths=False):
+def global_align(
+    ref_fasta,
+    query_fasta,
+    tmp_nucmer_filename,
+    debug=False,
+    fix_query_gap_lengths=False,
+):
     try:
         ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
         qry_seq = utils.load_one_seq_fasta_file(query_fasta)
@@ -172,7 +181,6 @@ def global_align(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False, fix_q
         raise Exception(
             f"Error aligning sequences. Got unexpected length(s) after aligning sequences. Ref length={len(ref_seq)}. Query length={len(qry_seq)}. But non-gap lengths are ref={ref_len_check}, qry={qry_len_check}. Cannot continue"
         )
-
 
     return "".join(aln_ref_seq), "".join(aln_qry_seq)
 
@@ -266,7 +274,11 @@ def vcf_using_global_alignment(
     max_ref_coord=float("inf"),
 ):
     ref_aln, qry_aln = global_align(
-        ref_fasta, query_fasta, f"{vcf_out}.tmp.nucmer", debug=debug, fix_query_gap_lengths=fix_query_gap_lengths,
+        ref_fasta,
+        query_fasta,
+        f"{vcf_out}.tmp.nucmer",
+        debug=debug,
+        fix_query_gap_lengths=fix_query_gap_lengths,
     )
 
     if msa_file is not None:

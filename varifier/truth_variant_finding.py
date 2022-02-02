@@ -174,8 +174,7 @@ def make_truth_vcf(
             max_ref_coord=global_align_max_coord,
             fix_query_gap_lengths=fix_truth_gap_lengths,
             fixed_query_fasta=os.path.join(outdir, "04.qry_sanitised_gaps.fa"),
-            msa_file=os.path.join(outdir, "04.msa")
-
+            msa_file=os.path.join(outdir, "04.msa"),
         )
         logging.info(
             f"Made VCF file of variants '{merged_vcf}' by globally aligning ref/truth sequences"
