@@ -235,8 +235,18 @@ def test_vcf_using_global_alignment():
     expect_vcf = os.path.join(data_dir, "vcf_using_global_alignment.vcf")
     vcf_out = "tmp.vcf_using_global_alignment.vcf"
     subprocess.check_output(f"rm -rf {vcf_out}", shell=True)
-    global_align.vcf_using_global_alignment(ref_fasta, qry_fasta, vcf_out)
+    tmp_msa = "tmp.global_aln.msa"
+    subprocess.check_output(f"rm -rf {tmp_msa}", shell=True)
+    tmp_qry_fasta = "tmp.global_aln.qry.fa"
+    subprocess.check_output(f"rm -rf {tmp_qry_fasta}", shell=True)
+    global_align.vcf_using_global_alignment(ref_fasta, qry_fasta, vcf_out, fix_query_gap_lengths=True, fixed_query_fasta=tmp_qry_fasta, msa_file=tmp_msa)
     assert utils.vcf_records_are_the_same(vcf_out, expect_vcf)
+    expect_qry_fa = os.path.join(data_dir, "vcf_using_global_alignment.expect_qry_out.fa")
+    expect_msa = os.path.join(data_dir, "vcf_using_global_alignment.msa")
+    assert filecmp.cmp(expect_qry_fa, tmp_qry_fasta, shallow=False)
+    assert filecmp.cmp(expect_msa, tmp_msa, shallow=False)
+    os.unlink(tmp_qry_fasta)
+    os.unlink(tmp_msa)
     os.unlink(vcf_out)
 
     expect_vcf = os.path.join(data_dir, "vcf_using_global_alignment.1-100.vcf")

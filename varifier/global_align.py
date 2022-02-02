@@ -4,6 +4,7 @@ import sys
 
 from varifier import edit_distance, utils
 import pymummer
+import pyfastaq
 
 
 def get_perfect_matches(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
@@ -259,12 +260,25 @@ def vcf_using_global_alignment(
     vcf_out,
     debug=False,
     fix_query_gap_lengths=False,
+    fixed_query_fasta=None,
+    msa_file=None,
     min_ref_coord=0,
     max_ref_coord=float("inf"),
 ):
     ref_aln, qry_aln = global_align(
         ref_fasta, query_fasta, f"{vcf_out}.tmp.nucmer", debug=debug, fix_query_gap_lengths=fix_query_gap_lengths,
     )
+
+    if msa_file is not None:
+        with open(msa_file, "w") as f:
+            print(ref_aln, qry_aln, sep="\n", file=f)
+
+    if fixed_query_fasta is not None:
+        no_dash_query = "".join([x for x in qry_aln if x != "-"])
+        seq = pyfastaq.sequences.Fasta("gap_fixed_query", no_dash_query)
+        with open(fixed_query_fasta, "w") as f:
+            print(seq, file=f)
+
     variants = variants_from_global_alignment(ref_aln, qry_aln)
     variants = expand_combined_snps(variants)
     ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
