@@ -70,6 +70,11 @@ def main(args=None):
         metavar="INT",
         default=float("inf"),
     )
+    common_parser.add_argument(
+        "--use_non_acgt",
+        help="Only used if also using --global_align. When writing initial VCF file (before removing FPs using probe mapping), include records that have non-ACGT characters in their alleles",
+        action="store_true",
+    )
 
     # ---------------------- make_truth_vcf ------------------------------------
     subparser_make_truth_vcf = subparsers.add_parser(

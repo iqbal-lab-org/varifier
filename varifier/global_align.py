@@ -185,15 +185,16 @@ def global_align(
     return "".join(aln_ref_seq), "".join(aln_qry_seq)
 
 
-def variants_from_global_alignment(ref_aln, qry_aln):
+def variants_from_global_alignment(ref_aln, qry_aln, ignore_non_acgt=True):
     variants = []
     assert len(ref_aln) == len(qry_aln)
     ref_coord = 0
     current_variant = None
+    acgt = {"A", "C", "G", "T", "-"}
 
     for i, ref_char in enumerate(ref_aln):
         assert not ref_char == "-" == qry_aln[i]
-        if "N" in [ref_char, qry_aln[i]]:
+        if ignore_non_acgt and (ref_char not in acgt or qry_aln[i] not in acgt):
             if current_variant is not None:
                 variants.append(current_variant)
                 current_variant = None
@@ -248,7 +249,7 @@ def variants_from_global_alignment(ref_aln, qry_aln):
 def expand_combined_snps(variants_in):
     variants_out = []
     for variant in variants_in:
-        if len(variant["ref_allele"]) == len(variant["qry_allele"]):
+        if len(variant["ref_allele"]) == len(variant["qry_allele"]) and "N" not in variant["ref_allele"] and "N" not in variant["qry_allele"]:
             for i in range(len(variant["ref_allele"])):
                 variants_out.append(
                     {
@@ -272,6 +273,7 @@ def vcf_using_global_alignment(
     msa_file=None,
     min_ref_coord=0,
     max_ref_coord=float("inf"),
+    ignore_non_acgt=True,
 ):
     ref_aln, qry_aln = global_align(
         ref_fasta,
@@ -291,7 +293,7 @@ def vcf_using_global_alignment(
         with open(fixed_query_fasta, "w") as f:
             print(seq, file=f)
 
-    variants = variants_from_global_alignment(ref_aln, qry_aln)
+    variants = variants_from_global_alignment(ref_aln, qry_aln, ignore_non_acgt=ignore_non_acgt)
     variants = expand_combined_snps(variants)
     ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
     ref_name = ref_seq.id.split()[0]

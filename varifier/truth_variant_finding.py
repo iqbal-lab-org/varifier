@@ -150,6 +150,7 @@ def make_truth_vcf(
     fix_truth_gap_lengths=False,
     global_align_min_coord=0,
     global_align_max_coord=float("inf"),
+    ignore_non_acgt=True,
 ):
     _check_dependencies_in_path()
     os.mkdir(outdir)
@@ -175,6 +176,7 @@ def make_truth_vcf(
             fix_query_gap_lengths=fix_truth_gap_lengths,
             fixed_query_fasta=os.path.join(outdir, "04.qry_sanitised_gaps.fa"),
             msa_file=os.path.join(outdir, "04.msa"),
+            ignore_non_acgt=ignore_non_acgt,
         )
         logging.info(
             f"Made VCF file of variants '{merged_vcf}' by globally aligning ref/truth sequences"

@@ -25,4 +25,5 @@ def run(options):
         use_global_align=options.global_align,
         global_align_min_coord=options.global_align_min_coord - 1,
         global_align_max_coord=options.global_align_max_coord - 1,
+        ignore_non_acgt=not options.use_non_acgt,
     )

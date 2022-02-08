@@ -16,7 +16,7 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - Added command line options that only apply when `--global_align` is used:
   `--global_align_min_coord`, `--global_align_max_coord`,
-  `--sanitise_truth_gaps`.
+  `--sanitise_truth_gaps`, `--use_non_acgt`,
 
 - If using `--global_align`, writes an MSA of rev and truth sequences, and
   a FASTA of the truth sequence, but with santised gap lengths.

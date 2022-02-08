@@ -89,6 +89,8 @@ def get_recall(
     use_global_align=False,
     global_align_min_coord=0,
     global_align_max_coord=float("inf"),
+    ignore_non_acgt=True,
+
 ):
     os.mkdir(outdir)
 
@@ -109,6 +111,7 @@ def get_recall(
             use_global_align=use_global_align,
             global_align_min_coord=global_align_min_coord,
             global_align_max_coord=global_align_max_coord,
+            ignore_non_acgt=ignore_non_acgt,
         )
     else:
         assert truth_fasta is None

@@ -193,6 +193,9 @@ def test_variants_from_global_alignment():
         {"ref_start": 15, "ref_allele": "T", "qry_allele": "TA"},
     ]
     assert got == expect
+    got = global_align.variants_from_global_alignment(ref_aln, qry_aln, ignore_non_acgt=False)
+    expect.insert(2, {"ref_start": 9, "ref_allele": "N", "qry_allele": "T"})
+    assert got == expect
 
 
 def test_variants_from_global_alignment_insertion_at_start():
