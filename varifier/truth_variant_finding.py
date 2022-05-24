@@ -12,8 +12,10 @@ from cluster_vcf_records import variant_tracking, vcf_file_read
 from varifier import global_align, dnadiff, probe_mapping, utils
 
 
-def _check_dependencies_in_path():
-    programs = ["minimap2", "paftools.js", "k8"]
+def _check_dependencies_in_path(minimap2_only=False):
+    programs = ["minimap2"]
+    if not minimap2_only:
+        programs.extend(["paftools.js", "k8"])
     found_all = True
     for program in programs:
         if shutil.which(program) is None:
@@ -152,7 +154,7 @@ def make_truth_vcf(
     global_align_max_coord=float("inf"),
     ignore_non_acgt=True,
 ):
-    _check_dependencies_in_path()
+    _check_dependencies_in_path(minimap2_only=use_global_align)
     os.mkdir(outdir)
     minimap2_vcf = os.path.join(outdir, "00.minimap2.vcf")
     dnadiff_vcf = os.path.join(outdir, "00.dnadiff.vcf")
