@@ -6,7 +6,6 @@ on:
       - 'v*.*.*'
     branches:
       - master
-      - paftools_optional
   pull_request:
     branches:
       - master
