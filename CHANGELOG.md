@@ -7,6 +7,9 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+
+## 0.4.0
+
 ### Added
 
 - Added new command line option `--global_align` to both command line tasks
@@ -32,4 +35,4 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - edge case caused by indels when making VCF with `--global align`.
 
 
-[Unreleased]: https://github.com/iqbal-lab-org/varifier/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/iqbal-lab-org/varifier/compare/v0.4.0...HEAD

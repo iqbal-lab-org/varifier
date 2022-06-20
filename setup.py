@@ -6,7 +6,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="varifier",
-    version="0.3.1",
+    version="0.4.0",
     description="varifier: variant call verification",
     packages=find_packages(),
     author="Martin Hunt",
