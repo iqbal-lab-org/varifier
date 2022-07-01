@@ -216,7 +216,10 @@ def make_truth_vcf(
         probe_mapped_vcf, probe_filtered_vcf, max_ref_len
     )
     logging.info(f"Made filtered VCF file {probe_filtered_vcf}")
-    logging.info("Using bcftools to normalise and remove duplicates")
-    _bcftools_norm(ref_fasta, probe_filtered_vcf, truth_vcf)
+    if use_global_align:
+        shutil.copyfile(probe_filtered_vcf, truth_vcf)
+    else:
+        logging.info("Using bcftools to normalise and remove duplicates")
+        _bcftools_norm(ref_fasta, probe_filtered_vcf, truth_vcf)
     logging.info(f"Finished making truth VCF file {truth_vcf}")
     return truth_vcf
