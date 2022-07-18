@@ -1,6 +1,7 @@
 import filecmp
 import os
 import pytest
+import random
 import subprocess
 from unittest import mock
 
@@ -180,6 +181,41 @@ def test_global_align():
     assert got == expect
 
 
+def test_global_align_no_gap_next_to_end():
+    # In covid (which is the main use case), we see
+    # alignments like this at the end of the genome if we do global align:
+    # ref: GCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+    # qry: GCTTCTTAGGAG--------------------------------------A
+    # We want to move that final A back so the alignment ends with a gap!
+    # This test added in to check this case. It was failing before the
+    # code was fixed. Experimented with tring to get the same effect
+    # at the start of the MSA, but it always started with a gap. Test the
+    # start here anyway.
+    ref_fasta = "tmp.global_align_no_gap_next_to_end.ref.fa"
+    qry_fasta = "tmp.global_align_no_gap_next_to_end.qry.fa"
+    subprocess.check_output(f"rm -f {ref_fasta} {qry_fasta}", shell=True)
+    random.seed(42)
+    middle_seq = "".join(random.choices(["A", "C", "G", "T"], k=50))
+    polyA = "A" * 15
+    polyDash = "-" * 20
+    ref_seq = polyA + "CAGTAAGAGGATT" + middle_seq + "GCTTCTTAGGAGAATGAC" + polyA
+    qry_seq = "AGAGGATT" + middle_seq + "GCTTCTTAGGAGA"
+    with open(ref_fasta, "w") as f:
+        print(">ref", ref_seq, sep="\n", file=f)
+    with open(qry_fasta, "w") as f:
+        print(">qry", qry_seq, sep="\n", file=f)
+    tmp_nucmer = "tmp.gloabl_align.nucmer"
+    subprocess.check_output(f"rm -rf {tmp_nucmer}", shell=True)
+    got = global_align.global_align(ref_fasta, qry_fasta, tmp_nucmer)
+    expect = (
+        ref_seq,
+        polyDash + qry_seq + polyDash,
+    )
+    assert got == expect
+    os.unlink(ref_fasta)
+    os.unlink(qry_fasta)
+
+
 def test_variants_from_global_alignment():
     #          01234567--89012345
     ref_aln = "AGCTGCGC--CNATCGAT-"
@@ -193,7 +229,9 @@ def test_variants_from_global_alignment():
         {"ref_start": 15, "ref_allele": "T", "qry_allele": "TA"},
     ]
     assert got == expect
-    got = global_align.variants_from_global_alignment(ref_aln, qry_aln, ignore_non_acgt=False)
+    got = global_align.variants_from_global_alignment(
+        ref_aln, qry_aln, ignore_non_acgt=False
+    )
     expect.insert(2, {"ref_start": 9, "ref_allele": "N", "qry_allele": "T"})
     assert got == expect
 
