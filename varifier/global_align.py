@@ -169,10 +169,11 @@ def global_align(
         # not penalise gaps at the end of the query, and then we get this:
         # ref: GCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
         # qry: GCTTCTTAGGAGA--------------------------------------
+        penalise_end = i < len(matches) - 1
         ref_aln, qry_aln = edit_distance.needleman_wunsch(
             ref_seq[match["ref_end"] + 1 : ref_end],
             qry_seq[match["qry_end"] + 1 : qry_end],
-            penalise_seq2_end_gap=False,
+            penalise_seq2_end_gap=penalise_end,
         )
         aln_ref_seq.extend(list(ref_aln))
         aln_qry_seq.extend(list(qry_aln))
