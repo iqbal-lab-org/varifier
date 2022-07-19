@@ -13,6 +13,17 @@ def test_needleman_wunsch():
     assert aln2 == expect2
 
 
+def test_needleman_wunsch_penalise_seq2_end_gap():
+    seq1 = "GCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    seq2 = "GCTTCTTAGGAGA"
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2)
+    assert aln1 == seq1
+    assert aln2 == "GCTTCTTAGGAG--------------------------------------A"
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, penalise_seq2_end_gap=False)
+    assert aln1 == seq1
+    assert aln2 == "GCTTCTTAGGAGA--------------------------------------"
+
+
 def test_edit_distance_from_aln_strings():
     assert edit_distance.edit_distance_from_aln_strings("A", "A") == 0
     assert edit_distance.edit_distance_from_aln_strings("A", "C") == 1

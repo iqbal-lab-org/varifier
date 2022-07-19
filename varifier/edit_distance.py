@@ -1,11 +1,25 @@
 from Bio import pairwise2
 
 
-def needleman_wunsch(seq1, seq2, match=1, mismatch=-1, gap_open=-5, gap_extend=-3):
+def needleman_wunsch(
+    seq1,
+    seq2,
+    match=1,
+    mismatch=-1,
+    gap_open=-5,
+    gap_extend=-3,
+    penalise_seq2_end_gap=True,
+):
     """Returns global alignment strings from NM alignment of the
     two sequences. Dashes for gaps"""
     alignments = pairwise2.align.globalms(
-        seq1, seq2, match, mismatch, gap_open, gap_extend
+        seq1,
+        seq2,
+        match,
+        mismatch,
+        gap_open,
+        gap_extend,
+        penalize_end_gaps=(True, penalise_seq2_end_gap),
     )
     assert len(alignments[0][0]) == len(alignments[0][1])
     return alignments[0][0], alignments[0][1]

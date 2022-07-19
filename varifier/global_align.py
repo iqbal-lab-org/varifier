@@ -161,9 +161,19 @@ def global_align(
             ref_end = len(ref_seq)
             qry_end = len(qry_seq)
 
+        # When we're aligning the end of the genomes, we don't want to do
+        # proper global align because can end up with something like this:
+        # ref: GCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        # qry: GCTTCTTAGGAG--------------------------------------A
+        # Using penalise_seq2_end_gap=False means it does an alignment that does
+        # not penalise gaps at the end of the query, and then we get this:
+        # ref: GCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        # qry: GCTTCTTAGGAGA--------------------------------------
+        penalise_end = i < len(matches) - 1
         ref_aln, qry_aln = edit_distance.needleman_wunsch(
             ref_seq[match["ref_end"] + 1 : ref_end],
             qry_seq[match["qry_end"] + 1 : qry_end],
+            penalise_seq2_end_gap=penalise_end,
         )
         aln_ref_seq.extend(list(ref_aln))
         aln_qry_seq.extend(list(qry_aln))
@@ -249,7 +259,11 @@ def variants_from_global_alignment(ref_aln, qry_aln, ignore_non_acgt=True):
 def expand_combined_snps(variants_in):
     variants_out = []
     for variant in variants_in:
-        if len(variant["ref_allele"]) == len(variant["qry_allele"]) and "N" not in variant["ref_allele"] and "N" not in variant["qry_allele"]:
+        if (
+            len(variant["ref_allele"]) == len(variant["qry_allele"])
+            and "N" not in variant["ref_allele"]
+            and "N" not in variant["qry_allele"]
+        ):
             for i in range(len(variant["ref_allele"])):
                 variants_out.append(
                     {
@@ -293,7 +307,9 @@ def vcf_using_global_alignment(
         with open(fixed_query_fasta, "w") as f:
             print(seq, file=f)
 
-    variants = variants_from_global_alignment(ref_aln, qry_aln, ignore_non_acgt=ignore_non_acgt)
+    variants = variants_from_global_alignment(
+        ref_aln, qry_aln, ignore_non_acgt=ignore_non_acgt
+    )
     variants = expand_combined_snps(variants)
     ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
     ref_name = ref_seq.id.split()[0]
