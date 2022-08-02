@@ -7,6 +7,20 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+- Add command line option `--hp_min_fix_length` to fix homopolymers of at
+  least the given length, so that they match the reference sequence.
+
+### Fixed
+
+- Do not run `bcftools norm` when using global align, because it could
+  result in inconsistency between VCF and output sequences
+
+- Fix bug in global alignment, where alignment was forced to end at the
+  end of the query sequence. Instead, allow it to stop earlier otherwise
+  had some strange alignments that were incorrect (ending with a long gap and
+  then a single aligned base, instead of aligned base, then a long gap)
 
 ## 0.4.0
 
