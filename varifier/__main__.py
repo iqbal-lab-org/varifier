@@ -109,6 +109,12 @@ def main(args=None):
         help="Only used if also using --global_align. Use the global alignment to change gap lengths in the truth fasta so that gaps are same length as missing sequence from the reference",
         action="store_true",
     )
+    subparser_make_truth_vcf.add_argument(
+        "--hp_min_fix_length",
+        help="Only used if also using --global_align. Use the global alignment to change homopolymers to match the reference. Default is not to do this. Using this option with an integer N will correct all homopolymers of length (in the reference or consensus sequence) at least N",
+        type=int,
+        metavar="INT",
+    )
 
     subparser_make_truth_vcf.add_argument("outdir", help="Name of output directory")
     subparser_make_truth_vcf.set_defaults(func=varifier.tasks.make_truth_vcf.run)
