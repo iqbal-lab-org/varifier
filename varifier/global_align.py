@@ -6,6 +6,8 @@ from varifier import edit_distance, utils
 import pymummer
 import pyfastaq
 
+ACGT = {"A", "C", "G", "T"}
+
 
 def get_perfect_matches(ref_fasta, query_fasta, tmp_nucmer_filename, debug=False):
     # breaklen=1 stops nucmer from joining up matches to give longer
@@ -116,12 +118,85 @@ def fix_query_gaps_in_msa(ref_seq, qry_seq):
     return ref_seq, qry_seq
 
 
+def homopolymer_char(ref_seq, qry_seq, i):
+    if ref_seq[i] == qry_seq[i] and ref_seq[i] in ACGT:
+        return ref_seq[i]
+    elif ref_seq[i] == "-" and qry_seq[i] in ACGT:
+        return qry_seq[i]
+    elif qry_seq[i] == "-" and ref_seq[i] in ACGT:
+        return ref_seq[i]
+    else:
+        return None
+
+
+def is_homopolymer_block(ref_seq, qry_seq, min_length, start, end=None):
+    ref_count = len([x for x in ref_seq[start:end] if x in ACGT])
+    qry_count = len([x for x in qry_seq[start:end] if x in ACGT])
+    return (
+        ref_count > 0
+        and qry_count > 0
+        and (ref_count >= min_length or qry_count >= min_length)
+    )
+
+
+def find_homopolymer_blocks(ref_seq, qry_seq, min_poly_length):
+    if min_poly_length < 3:
+        raise NotImplementedError(f"min_poly_length must be at least 3")
+
+    blocks = []
+    current_char = homopolymer_char(ref_seq, qry_seq, 0)
+    start = None if current_char is None else 0
+    for i in range(1, len(ref_seq)):
+        new_char = homopolymer_char(ref_seq, qry_seq, i)
+        if new_char is None or new_char != current_char:
+            if start is not None and is_homopolymer_block(
+                ref_seq, qry_seq, min_poly_length, start, end=i
+            ):
+                blocks.append((start, i - 1, current_char))
+
+            start = None if new_char is None else i
+            current_char = new_char
+
+    if start is not None and is_homopolymer_block(
+        ref_seq, qry_seq, min_poly_length, start
+    ):
+        blocks.append((start, len(ref_seq) - 1, current_char))
+
+    return blocks
+
+
+def fix_homopolymer_indels_in_msa(ref_seq, qry_seq, min_poly_length):
+    homopolymers = find_homopolymer_blocks(ref_seq, qry_seq, min_poly_length)
+    if len(homopolymers) == 0:
+        return ref_seq, qry_seq
+
+    new_ref_seq = []
+    new_qry_seq = []
+
+    for i, (start, end, base) in enumerate(homopolymers):
+        if i == 0:
+            to_add_start = 0
+        else:
+            to_add_start = homopolymers[i - 1][1] + 1
+
+        new_ref_seq.extend(ref_seq[to_add_start:start])
+        new_qry_seq.extend(qry_seq[to_add_start:start])
+        homopolymer = [x for x in ref_seq[start : end + 1] if x == base]
+        new_ref_seq.extend(homopolymer)
+        new_qry_seq.extend(homopolymer)
+
+    new_ref_seq.extend(ref_seq[homopolymers[-1][1] + 1 :])
+    new_qry_seq.extend(qry_seq[homopolymers[-1][1] + 1 :])
+    return new_ref_seq, new_qry_seq
+
+
 def global_align(
     ref_fasta,
     query_fasta,
     tmp_nucmer_filename,
     debug=False,
     fix_query_gap_lengths=False,
+    hp_min_fix_length=None,
 ):
     try:
         ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
@@ -181,12 +256,20 @@ def global_align(
     if fix_query_gap_lengths:
         aln_ref_seq, aln_qry_seq = fix_query_gaps_in_msa(aln_ref_seq, aln_qry_seq)
 
+    if hp_min_fix_length is not None:
+        aln_ref_seq, aln_qry_seq = fix_homopolymer_indels_in_msa(
+            aln_ref_seq, aln_qry_seq, hp_min_fix_length
+        )
+
     ref_len_check = len([x for x in aln_ref_seq if x != "-"])
     qry_len_check = len([x for x in aln_qry_seq if x != "-"])
     if (
         len(aln_ref_seq) != len(aln_qry_seq)
         or ref_len_check != len(ref_seq)
-        or (not fix_query_gap_lengths and qry_len_check != len(qry_seq))
+        or (
+            (hp_min_fix_length is None and not fix_query_gap_lengths)
+            and qry_len_check != len(qry_seq)
+        )
     ):
         raise Exception(
             f"Error aligning sequences. Got unexpected length(s) after aligning sequences. Ref length={len(ref_seq)}. Query length={len(qry_seq)}. But non-gap lengths are ref={ref_len_check}, qry={qry_len_check}. Cannot continue"
@@ -283,6 +366,7 @@ def vcf_using_global_alignment(
     vcf_out,
     debug=False,
     fix_query_gap_lengths=False,
+    hp_min_fix_length=None,
     fixed_query_fasta=None,
     msa_file=None,
     min_ref_coord=0,
@@ -295,6 +379,7 @@ def vcf_using_global_alignment(
         f"{vcf_out}.tmp.nucmer",
         debug=debug,
         fix_query_gap_lengths=fix_query_gap_lengths,
+        hp_min_fix_length=hp_min_fix_length,
     )
 
     if msa_file is not None:

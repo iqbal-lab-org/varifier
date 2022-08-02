@@ -20,6 +20,7 @@ def run(options):
         maxmatch=not options.no_maxmatch,
         use_global_align=options.global_align,
         fix_truth_gap_lengths=options.sanitise_truth_gaps,
+        hp_min_fix_length=options.hp_min_fix_length,
         global_align_min_coord=options.global_align_min_coord - 1,
         global_align_max_coord=options.global_align_max_coord - 1,
         ignore_non_acgt=not options.use_non_acgt,

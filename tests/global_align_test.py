@@ -159,6 +159,99 @@ def test_fix_query_gaps_in_msa():
     assert got_qry == list("ACGTNNNGCAG-TNNNNNNNT")
 
 
+def test_homopolymer_char():
+    f = global_align.homopolymer_char
+    assert f("A", "A", 0) == "A"
+    assert f("C", "A", 0) == None
+    assert f("C", "T", 0) == None
+    assert f("-", "T", 0) == "T"
+    assert f("T", "-", 0) == "T"
+    assert f("N", "-", 0) == None
+    assert f("-", "N", 0) == None
+    assert f("N", "N", 0) == None
+    assert f("N", "A", 0) == None
+    assert f("A", "N", 0) == None
+
+
+def test_find_homopolymer_blocks():
+    f = global_align.find_homopolymer_blocks
+    ref = "AGAAA-TA"
+    qry = "AGAAAATA"
+    assert f(ref, qry, 3) == [(2, 5, "A")]
+    assert f(ref, qry, 4) == [(2, 5, "A")]
+    assert f(ref, qry, 5) == []
+
+    ref = "TTTAGACA-TA"
+    qry = "TTTGAAAAATA"
+    assert f(ref, qry, 3) == [(0, 2, "T")]
+    assert f(ref, qry, 4) == []
+
+    ref = "AGAAA-TCCCCC"
+    qry = "AGAAAATCCC-C"
+    assert f(ref, qry, 3) == [(2, 5, "A"), (7, 11, "C")]
+    assert f(ref, qry, 4) == [(2, 5, "A"), (7, 11, "C")]
+    assert f(ref, qry, 5) == [(7, 11, "C")]
+    assert f(ref, qry, 6) == []
+
+    ref = "AG-A-AA-TA"
+    qry = "AGAAAAAATA"
+    assert f(ref, qry, 3) == [(2, 7, "A")]
+
+    ref = "AG-A-AA-TA"
+    qry = "AGTAAAAATA"
+    assert f(ref, qry, 3) == [(3, 7, "A")]
+
+
+def test_fix_homopolymer_indels_in_msa():
+    f = global_align.fix_homopolymer_indels_in_msa
+    ref = list("AGTA")
+    qry = list("AGTA")
+    assert f(ref, qry, 4) == (ref, qry)
+    ref = list("AGAAAATA")
+    qry = list("AGAAAATA")
+    assert f(ref, qry, 4) == (ref, qry)
+    ref = list("AGAAAATA")
+    qry = list("AGAAA-TA")
+    assert f(ref, qry, 4) == (ref, ref)
+    ref = list("AGAAA-TA")
+    qry = list("AGAAAATA")
+    assert f(ref, qry, 4) == (list("AGAAATA"), list("AGAAATA"))
+    ref = list("AGAAA-TA")
+    qry = list("AGAAAATA")
+    assert f(ref, qry, 3) == (list("AGAAATA"), list("AGAAATA"))
+    ref = list("AG-A-AA-TA")
+    qry = list("AGAAAAAATA")
+    assert f(ref, qry, 3) == (list("AGAAATA"), list("AGAAATA"))
+    assert f(ref, qry, 4) == (list("AGAAATA"), list("AGAAATA"))
+    assert f(ref, qry, 5) == (list("AGAAATA"), list("AGAAATA"))
+    assert f(ref, qry, 6) == (list("AGAAATA"), list("AGAAATA"))
+    assert f(ref, qry, 7) == (ref, qry)
+    ref = list("AG-A-AA-TA")
+    qry = list("AGTAAAAATA")
+    assert f(ref, qry, 3) == (list("AG-AAATA"), list("AGTAAATA"))
+    ref = list("AG-A-TA-TA")
+    qry = list("AGTAAAAATA")
+    assert f(ref, qry, 3) == (ref, qry)
+    ref = list("TTTTG-A-AA-TCC-")
+    qry = list("TTT-GTAAAAATCCC")
+    assert f(ref, qry, 3) == (list("TTTTG-AAATCC"), list("TTTTGTAAATCC"))
+    assert f(ref, qry, 4) == (list("TTTTG-AAATCC-"), list("TTTTGTAAATCCC"))
+    assert f(ref, qry, 5) == (list("TTTTG-AAATCC-"), list("TTT-GTAAATCCC"))
+    assert f(ref, qry, 6) == (ref, qry)
+    ref = list("TTTTTGCA")
+    qry = list("-----GCA")
+    assert f(ref, qry, 3) == (ref, qry)
+    ref = list("ACGTAAAAAAAAAC")
+    qry = list("ACGT---------C")
+    assert f(ref, qry, 3) == (ref, qry)
+    ref = list("ACGAAAAAAAAAAC")
+    qry = list("ACGT---A-----C")
+    assert f(ref, qry, 3) == (ref, list("ACGTAAAAAAAAAC"))
+    ref = list("AGTAAAAAAAA")
+    qry = list("AGTC-------")
+    assert f(ref, qry, 3) == (ref, qry)
+
+
 def test_global_align():
     ref_fasta = os.path.join(data_dir, "global_aln.ref.fa")
     qry_fasta = os.path.join(data_dir, "global_aln.qry.fa")

@@ -1,6 +1,7 @@
 import filecmp
 import os
 import pytest
+import random
 import subprocess
 
 from varifier import truth_variant_finding, utils
@@ -239,3 +240,64 @@ def test_make_truth_vcf_hangle_Ns_3():
         for line in f:
             assert line.startswith("#")
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+
+def test_make_truth_vcf_homopolymer_fix():
+    random.seed(42)
+    seq1 = "".join(random.choices(["A", "C", "G", "T"], k=100))
+    seq2 = "".join(random.choices(["A", "C", "G", "T"], k=100))
+    hp = "A" * 10
+    ref_seq = seq1 + "C" + hp + "AT" + seq2
+    truth_seq = seq1 + "C" + hp + "T" + seq2
+    ref_fasta = "tmp.make_truth_vcf_homopolymer_fix.ref.fa"
+    truth_fasta = "tmp.make_truth_vcf_homopolymer_fix.truth.fa"
+    tmp_out = "tmp.make_truth_vcf_homopolymer_fix"
+    with open(ref_fasta, "w") as f:
+        print(">ref", ref_seq, sep="\n", file=f)
+    with open(truth_fasta, "w") as f:
+        print(">truth", truth_seq, sep="\n", file=f)
+    subprocess.check_output(f"rm -rf {tmp_out}", shell=True)
+    got_fasta = os.path.join(tmp_out, "04.qry_sanitised_gaps.fa")
+
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True
+    )
+    expect_vcf = os.path.join(
+        data_dir, "make_truth_vcf_homopolymer_fix.ref_v_truth_expect.default.vcf"
+    )
+    assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
+    got_seq = utils.load_one_seq_fasta_file(got_fasta)
+    assert got_seq.seq == truth_seq
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        ref_fasta,
+        truth_fasta,
+        tmp_out,
+        100,
+        use_global_align=True,
+        hp_min_fix_length=12,
+    )
+    assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
+    got_seq = utils.load_one_seq_fasta_file(got_fasta)
+    assert got_seq.seq == truth_seq
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+    got_vcf = truth_variant_finding.make_truth_vcf(
+        ref_fasta,
+        truth_fasta,
+        tmp_out,
+        100,
+        use_global_align=True,
+        hp_min_fix_length=11,
+    )
+    expect_vcf = os.path.join(
+        data_dir, "make_truth_vcf_homopolymer_fix.ref_v_truth_expect.length_11.vcf"
+    )
+    assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
+    got_seq = utils.load_one_seq_fasta_file(got_fasta)
+    assert got_seq.seq == ref_seq
+    subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+    os.unlink(ref_fasta)
+    os.unlink(truth_fasta)
