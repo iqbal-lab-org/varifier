@@ -9,13 +9,7 @@ def last_gap_end_in_string(string):
 
 
 def needleman_wunsch(
-    seq1,
-    seq2,
-    match=1,
-    mismatch=-1,
-    gap_open=-5,
-    gap_extend=-3,
-    at_genome_start=False
+    seq1, seq2, match=1, mismatch=-1, gap_open=-5, gap_extend=-3, at_genome_start=False
 ):
     """Returns global alignment strings from NM alignment of the
     two sequences. Dashes for gaps"""
@@ -51,7 +45,6 @@ def needleman_wunsch(
         if gap_pos > best_pos:
             best = a
             best_pos = gap_pos
-
 
     return best[0], best[1]
 

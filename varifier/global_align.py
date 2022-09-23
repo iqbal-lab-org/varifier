@@ -214,7 +214,9 @@ def global_align(
     if matches[0]["ref_start"] > 0:
         assert matches[0]["qry_start"] > 0
         ref_aln, qry_aln = edit_distance.needleman_wunsch(
-            ref_seq[: matches[0]["ref_start"]], qry_seq[: matches[0]["qry_start"]], at_genome_start=True
+            ref_seq[: matches[0]["ref_start"]],
+            qry_seq[: matches[0]["qry_start"]],
+            at_genome_start=True,
         )
         aln_ref_seq = list(ref_aln)
         aln_qry_seq = list(qry_aln)

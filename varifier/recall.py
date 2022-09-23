@@ -90,7 +90,6 @@ def get_recall(
     global_align_min_coord=0,
     global_align_max_coord=float("inf"),
     ignore_non_acgt=True,
-
 ):
     os.mkdir(outdir)
 
