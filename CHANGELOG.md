@@ -22,6 +22,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   had some strange alignments that were incorrect (ending with a long gap and
   then a single aligned base, instead of aligned base, then a long gap)
 
+- Make indel calling consistent by putting gaps in consistent places.
+
 ## 0.4.0
 
 ### Added
