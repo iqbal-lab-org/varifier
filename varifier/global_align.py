@@ -214,7 +214,7 @@ def global_align(
     if matches[0]["ref_start"] > 0:
         assert matches[0]["qry_start"] > 0
         ref_aln, qry_aln = edit_distance.needleman_wunsch(
-            ref_seq[: matches[0]["ref_start"]], qry_seq[: matches[0]["qry_start"]]
+            ref_seq[: matches[0]["ref_start"]], qry_seq[: matches[0]["qry_start"]], at_genome_start=True
         )
         aln_ref_seq = list(ref_aln)
         aln_qry_seq = list(qry_aln)
@@ -236,19 +236,10 @@ def global_align(
             ref_end = len(ref_seq)
             qry_end = len(qry_seq)
 
-        # When we're aligning the end of the genomes, we don't want to do
-        # proper global align because can end up with something like this:
-        # ref: GCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        # qry: GCTTCTTAGGAG--------------------------------------A
-        # Using penalise_seq2_end_gap=False means it does an alignment that does
-        # not penalise gaps at the end of the query, and then we get this:
-        # ref: GCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-        # qry: GCTTCTTAGGAGA--------------------------------------
-        penalise_end = i < len(matches) - 1
         ref_aln, qry_aln = edit_distance.needleman_wunsch(
             ref_seq[match["ref_end"] + 1 : ref_end],
             qry_seq[match["qry_end"] + 1 : qry_end],
-            penalise_seq2_end_gap=penalise_end,
+            at_genome_start=False,
         )
         aln_ref_seq.extend(list(ref_aln))
         aln_qry_seq.extend(list(qry_aln))

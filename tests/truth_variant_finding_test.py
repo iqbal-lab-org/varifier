@@ -200,8 +200,14 @@ def test_make_truth_vcf_handle_Ns_2():
     )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)
+
+    # When using global align, indels are moved to the left compared to
+    # default, so different expected VCF
     got_vcf = truth_variant_finding.make_truth_vcf(
         ref_fasta, truth_fasta, tmp_out, 100, use_global_align=True
+    )
+    expect_vcf = os.path.join(
+        data_dir, "make_truth_vcf_handle_Ns_2.ref_v_truth_expect.global.vcf"
     )
     assert utils.vcf_records_are_the_same(got_vcf, expect_vcf)
     subprocess.check_output(f"rm -r {tmp_out}", shell=True)

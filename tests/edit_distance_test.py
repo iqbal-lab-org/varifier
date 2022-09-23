@@ -16,12 +16,39 @@ def test_needleman_wunsch():
 def test_needleman_wunsch_penalise_seq2_end_gap():
     seq1 = "GCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     seq2 = "GCTTCTTAGGAGA"
-    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2)
-    assert aln1 == seq1
-    assert aln2 == "GCTTCTTAGGAG--------------------------------------A"
-    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, penalise_seq2_end_gap=False)
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, at_genome_start=False)
     assert aln1 == seq1
     assert aln2 == "GCTTCTTAGGAGA--------------------------------------"
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, at_genome_start=True)
+    assert aln1 == seq1
+    assert aln2 == "GCTTCTTAGGAG--------------------------------------A"
+
+    seq1 = "GAGCCACCACATTTTCACCGAGGCCACGCGGAGTACGATCGAGTGTACAGTGAACAATGCTAGGGAGAGCTGCCTATATGGAAGAGCCCTAATGTGTAAAATTAATTTTAGTAGTGCTATCCCCATGTGATTTTAATAGCTTCTTAGGAGAATGACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    seq2 = "GAGCC"
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, at_genome_start=True)
+    assert aln1 == seq1
+    assert aln2 == "GAGCC----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, at_genome_start=False)
+    assert aln1 == seq1
+    assert aln2 == "GAGCC----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
+    seq1 = "AGTACTTACGT"
+    seq2 = "AGTACGT"
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, at_genome_start=True)
+    assert aln1 == seq1
+    assert aln2 == "AG----TACGT"
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, at_genome_start=False)
+    assert aln1 == seq1
+    assert aln2 == "AGTAC----GT"
+
+    seq1 = "ACGTGAGAGAACGT"
+    seq2 = "ACGT"
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, at_genome_start=True)
+    assert aln1 == seq1
+    assert aln2 == "----------ACGT"
+    aln1, aln2 = edit_distance.needleman_wunsch(seq1, seq2, at_genome_start=False)
+    assert aln1 == seq1
+    assert aln2 == "ACGT----------"
 
 
 def test_edit_distance_from_aln_strings():
