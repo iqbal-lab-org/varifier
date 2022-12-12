@@ -219,7 +219,7 @@ def normalise_seq1_indel_positions(seq1, seq2):
             continue
         while start > 0 and seq1[start - 1] == seq2[end]:
             seq1[end] = seq1[start - 1]
-            seq1[start -1] = "-"
+            seq1[start - 1] = "-"
             start -= 1
             end -= 1
 
