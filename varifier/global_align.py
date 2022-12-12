@@ -190,6 +190,45 @@ def fix_homopolymer_indels_in_msa(ref_seq, qry_seq, min_poly_length):
     return new_ref_seq, new_qry_seq
 
 
+def find_indels(seq):
+    gaps = []
+    start = None
+    for i, c in enumerate(seq):
+        if c == "-":
+            if start is None:
+                start = i
+        elif start is not None:
+            gaps.append((start, i - 1))
+            start = None
+    if start is not None:
+        gaps.append((start, len(seq) - 1))
+    return gaps
+
+
+def normalise_seq1_indel_positions(seq1, seq2):
+    # Want to shift the dashes as far left as possible, except for any
+    # gap that is at the end of the genome
+    gaps = find_indels(seq1)
+    # Want to shift each gap left 1bp until can't do it any more. eg:
+    # ACGTGTGCAC  seq2
+    # ACGT--GCAC  seq1
+    # ACG--TGCAC  seq1 iter1
+    # AC--GTGCAC  seq1 iter2
+    for (start, end) in gaps:
+        if start == 0 or end == len(seq1) - 1:
+            continue
+        while start > 0 and seq1[start - 1] == seq2[end]:
+            seq1[end] = seq1[start - 1]
+            seq1[start -1] = "-"
+            start -= 1
+            end -= 1
+
+
+def normalise_indel_positions(ref_seq, qry_seq):
+    normalise_seq1_indel_positions(ref_seq, qry_seq)
+    normalise_seq1_indel_positions(qry_seq, ref_seq)
+
+
 def global_align(
     ref_fasta,
     query_fasta,
@@ -268,6 +307,7 @@ def global_align(
             f"Error aligning sequences. Got unexpected length(s) after aligning sequences. Ref length={len(ref_seq)}. Query length={len(qry_seq)}. But non-gap lengths are ref={ref_len_check}, qry={qry_len_check}. Cannot continue"
         )
 
+    normalise_indel_positions(ref_seq, qry_seq)
     return "".join(aln_ref_seq), "".join(aln_qry_seq)
 
 

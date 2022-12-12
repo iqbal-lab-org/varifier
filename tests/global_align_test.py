@@ -309,6 +309,40 @@ def test_global_align_no_gap_next_to_end():
     os.unlink(qry_fasta)
 
 
+def test_find_indels():
+    assert global_align.find_indels("") == []
+    assert global_align.find_indels("ACGT") == []
+    assert global_align.find_indels("-CGT-") == [(0, 0), (4, 4)]
+    assert global_align.find_indels("--C---GT--") == [(0, 1), (3, 5), (8, 9)]
+    assert global_align.find_indels("C---G") == [(1, 3)]
+
+
+def test_normalise_indel_positions():
+    ref_seq = list("ACGT")
+    qry_seq = list("ACGT")
+    global_align.normalise_indel_positions(ref_seq, qry_seq)
+    assert ref_seq == list("ACGT")
+    assert qry_seq == list("ACGT")
+
+    ref_seq = list("AACGG")
+    qry_seq = list("-ACG-")
+    global_align.normalise_indel_positions(ref_seq, qry_seq)
+    assert ref_seq == list("AACGG")
+    assert qry_seq == list("-ACG-")
+
+    ref_seq = list("-ACG-")
+    qry_seq = list("AACGG")
+    global_align.normalise_indel_positions(ref_seq, qry_seq)
+    ref_seq = list("-ACG-")
+    qry_seq = list("AACGG")
+
+    ref_seq = list("-ACGGTATAGGCGT--A-")
+    qry_seq = list("AACGGTA--GGCGTGTAG")
+    global_align.normalise_indel_positions(ref_seq, qry_seq)
+    ref_seq = list("-ACGGTATAGGC--GTA-")
+    qry_seq = list("AACGG--TAGGCGTGTAA")
+
+
 def test_variants_from_global_alignment():
     #          01234567--89012345
     ref_aln = "AGCTGCGC--CNATCGAT-"
