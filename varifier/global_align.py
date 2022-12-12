@@ -307,7 +307,7 @@ def global_align(
             f"Error aligning sequences. Got unexpected length(s) after aligning sequences. Ref length={len(ref_seq)}. Query length={len(qry_seq)}. But non-gap lengths are ref={ref_len_check}, qry={qry_len_check}. Cannot continue"
         )
 
-    normalise_indel_positions(ref_seq, qry_seq)
+    normalise_indel_positions(aln_ref_seq, aln_qry_seq)
     return "".join(aln_ref_seq), "".join(aln_qry_seq)
 
 
