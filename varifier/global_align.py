@@ -1,3 +1,4 @@
+import copy
 from operator import itemgetter, attrgetter
 import os
 import sys
@@ -190,7 +191,7 @@ def fix_homopolymer_indels_in_msa(ref_seq, qry_seq, min_poly_length):
     return new_ref_seq, new_qry_seq
 
 
-def find_indels(seq):
+def find_indels(seq, max_length=float("Inf")):
     gaps = []
     start = None
     for i, c in enumerate(seq):
@@ -198,9 +199,10 @@ def find_indels(seq):
             if start is None:
                 start = i
         elif start is not None:
-            gaps.append((start, i - 1))
+            if i - start <= max_length:
+                gaps.append((start, i - 1))
             start = None
-    if start is not None:
+    if start is not None and len(seq) - start <= max_length:
         gaps.append((start, len(seq) - 1))
     return gaps
 
@@ -229,6 +231,33 @@ def normalise_indel_positions(ref_seq, qry_seq):
     normalise_seq1_indel_positions(qry_seq, ref_seq)
 
 
+def remove_small_indels_in_msa(aln_ref_seq, aln_qry_seq, max_len_to_remove):
+    ref_gaps = find_indels(aln_ref_seq, max_length=max_len_to_remove)
+    qry_gaps = find_indels(aln_qry_seq, max_length=max_len_to_remove)
+    if len(ref_gaps) == len(qry_gaps) == 0:
+        return aln_ref_seq, aln_qry_seq
+
+    tmp_new_qry = copy.copy(aln_qry_seq)
+    # replace query gaps with the ref sequence
+    for start, end in qry_gaps:
+        tmp_new_qry[start : end + 1] = aln_ref_seq[start : end + 1]
+
+    if len(ref_gaps) == 0:
+        return aln_ref_seq, tmp_new_qry
+
+    # delete columns where there's a ref gap
+    new_ref = aln_ref_seq[: ref_gaps[0][0]]
+    new_qry = tmp_new_qry[: ref_gaps[0][0]]
+    for i, this_gap in enumerate(ref_gaps):
+        if i == len(ref_gaps) - 1:
+            break
+        new_ref.extend(aln_ref_seq[this_gap[1] + 1 : ref_gaps[i + 1][0]])
+        new_qry.extend(tmp_new_qry[this_gap[1] + 1 : ref_gaps[i + 1][0]])
+    new_ref.extend(aln_ref_seq[ref_gaps[-1][1] + 1 :])
+    new_qry.extend(tmp_new_qry[ref_gaps[-1][1] + 1 :])
+    return new_ref, new_qry
+
+
 def global_align(
     ref_fasta,
     query_fasta,
@@ -236,6 +265,7 @@ def global_align(
     debug=False,
     fix_query_gap_lengths=False,
     hp_min_fix_length=None,
+    fix_indel_max_length=None,
 ):
     try:
         ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
@@ -293,13 +323,22 @@ def global_align(
             aln_ref_seq, aln_qry_seq, hp_min_fix_length
         )
 
+    if fix_indel_max_length is not None:
+        aln_ref_seq, aln_qry_seq = remove_small_indels_in_msa(
+            aln_ref_seq, aln_qry_seq, fix_indel_max_length
+        )
+
     ref_len_check = len([x for x in aln_ref_seq if x != "-"])
     qry_len_check = len([x for x in aln_qry_seq if x != "-"])
     if (
         len(aln_ref_seq) != len(aln_qry_seq)
         or ref_len_check != len(ref_seq)
         or (
-            (hp_min_fix_length is None and not fix_query_gap_lengths)
+            (
+                fix_indel_max_length is None
+                and hp_min_fix_length is None
+                and not fix_query_gap_lengths
+            )
             and qry_len_check != len(qry_seq)
         )
     ):
@@ -400,6 +439,7 @@ def vcf_using_global_alignment(
     debug=False,
     fix_query_gap_lengths=False,
     hp_min_fix_length=None,
+    fix_indel_max_length=None,
     fixed_query_fasta=None,
     msa_file=None,
     min_ref_coord=0,
@@ -413,6 +453,7 @@ def vcf_using_global_alignment(
         debug=debug,
         fix_query_gap_lengths=fix_query_gap_lengths,
         hp_min_fix_length=hp_min_fix_length,
+        fix_indel_max_length=fix_indel_max_length,
     )
 
     if msa_file is not None:
