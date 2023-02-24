@@ -230,6 +230,7 @@ def normalise_indel_positions(ref_seq, qry_seq):
     normalise_seq1_indel_positions(ref_seq, qry_seq)
     normalise_seq1_indel_positions(qry_seq, ref_seq)
 
+
 def remove_small_indels_in_msa(aln_ref_seq, aln_qry_seq, max_len_to_remove):
     ref_gaps = find_indels(aln_ref_seq, max_length=max_len_to_remove)
     qry_gaps = find_indels(aln_qry_seq, max_length=max_len_to_remove)
@@ -239,22 +240,23 @@ def remove_small_indels_in_msa(aln_ref_seq, aln_qry_seq, max_len_to_remove):
     tmp_new_qry = copy.copy(aln_qry_seq)
     # replace query gaps with the ref sequence
     for start, end in qry_gaps:
-        tmp_new_qry[start:end+1] = aln_ref_seq[start:end+1]
+        tmp_new_qry[start : end + 1] = aln_ref_seq[start : end + 1]
 
     if len(ref_gaps) == 0:
         return aln_ref_seq, tmp_new_qry
 
     # delete columns where there's a ref gap
-    new_ref = aln_ref_seq[:ref_gaps[0][0]]
-    new_qry = tmp_new_qry[:ref_gaps[0][0]]
+    new_ref = aln_ref_seq[: ref_gaps[0][0]]
+    new_qry = tmp_new_qry[: ref_gaps[0][0]]
     for i, this_gap in enumerate(ref_gaps):
         if i == len(ref_gaps) - 1:
             break
-        new_ref.extend(aln_ref_seq[this_gap[1]+1:ref_gaps[i+1][0]])
-        new_qry.extend(tmp_new_qry[this_gap[1]+1:ref_gaps[i+1][0]])
-    new_ref.extend(aln_ref_seq[ref_gaps[-1][1]+1:])
-    new_qry.extend(tmp_new_qry[ref_gaps[-1][1]+1:])
+        new_ref.extend(aln_ref_seq[this_gap[1] + 1 : ref_gaps[i + 1][0]])
+        new_qry.extend(tmp_new_qry[this_gap[1] + 1 : ref_gaps[i + 1][0]])
+    new_ref.extend(aln_ref_seq[ref_gaps[-1][1] + 1 :])
+    new_qry.extend(tmp_new_qry[ref_gaps[-1][1] + 1 :])
     return new_ref, new_qry
+
 
 def global_align(
     ref_fasta,
@@ -322,7 +324,9 @@ def global_align(
         )
 
     if fix_indel_max_length is not None:
-        aln_ref_seq, aln_qry_seq = remove_small_indels_in_msa(aln_ref_seq, aln_qry_seq, fix_indel_max_length)
+        aln_ref_seq, aln_qry_seq = remove_small_indels_in_msa(
+            aln_ref_seq, aln_qry_seq, fix_indel_max_length
+        )
 
     ref_len_check = len([x for x in aln_ref_seq if x != "-"])
     qry_len_check = len([x for x in aln_qry_seq if x != "-"])
@@ -330,7 +334,11 @@ def global_align(
         len(aln_ref_seq) != len(aln_qry_seq)
         or ref_len_check != len(ref_seq)
         or (
-            (fix_indel_max_length is None and hp_min_fix_length is None and not fix_query_gap_lengths)
+            (
+                fix_indel_max_length is None
+                and hp_min_fix_length is None
+                and not fix_query_gap_lengths
+            )
             and qry_len_check != len(qry_seq)
         )
     ):

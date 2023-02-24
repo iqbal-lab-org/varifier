@@ -317,8 +317,16 @@ def test_find_indels():
     assert global_align.find_indels("C---G") == [(1, 3)]
     assert global_align.find_indels("--C---GT--", max_length=1) == []
     assert global_align.find_indels("--C---GT--", max_length=2) == [(0, 1), (8, 9)]
-    assert global_align.find_indels("--C---GT--", max_length=3) == [(0, 1), (3, 5), (8, 9)]
-    assert global_align.find_indels("--C---GT--", max_length=4) == [(0, 1), (3, 5), (8, 9)]
+    assert global_align.find_indels("--C---GT--", max_length=3) == [
+        (0, 1),
+        (3, 5),
+        (8, 9),
+    ]
+    assert global_align.find_indels("--C---GT--", max_length=4) == [
+        (0, 1),
+        (3, 5),
+        (8, 9),
+    ]
 
 
 def test_normalise_indel_positions():
@@ -346,6 +354,7 @@ def test_normalise_indel_positions():
     ref_seq = list("-ACGGTATAGGC--GTA-")
     qry_seq = list("AACGG--TAGGCGTGTAA")
 
+
 def test_remove_small_indels_in_msa():
     f = global_align.remove_small_indels_in_msa
     assert f(list("ACGT"), list("ACCT"), 1) == (list("ACGT"), list("ACCT"))
@@ -358,6 +367,7 @@ def test_remove_small_indels_in_msa():
     assert f(ref, qry, 1) == (list("A--GTCTA---G"), list("ACCGTCTACCCG"))
     assert f(ref, qry, 2) == (list("AGTCTA---G"), list("AGTCTACCCG"))
     assert f(ref, qry, 3) == (list("AGTCTAG"), list("AGTCTAG"))
+
 
 def test_variants_from_global_alignment():
     #          01234567--89012345
