@@ -115,6 +115,12 @@ def main(args=None):
         type=int,
         metavar="INT",
     )
+    subparser_make_truth_vcf.add_argument(
+        "--indel_max_fix_length",
+        help="Only used if also using --global_align. If --indel_max_fix_length N used, will remove all indels of length <=N. Insertions in the query are deleted. Deletions in query replaced with reference sequence. Default is no indel fixing",
+        type=int,
+        metavar="INT",
+    )
 
     subparser_make_truth_vcf.add_argument("outdir", help="Name of output directory")
     subparser_make_truth_vcf.set_defaults(func=varifier.tasks.make_truth_vcf.run)

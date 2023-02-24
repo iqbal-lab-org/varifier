@@ -263,6 +263,7 @@ def global_align(
     debug=False,
     fix_query_gap_lengths=False,
     hp_min_fix_length=None,
+    fix_indel_max_length=None,
 ):
     try:
         ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
@@ -320,13 +321,16 @@ def global_align(
             aln_ref_seq, aln_qry_seq, hp_min_fix_length
         )
 
+    if fix_indel_max_length is not None:
+        aln_ref_seq, aln_qry_seq = remove_small_indels_in_msa(aln_ref_seq, aln_qry_seq, fix_indel_max_length)
+
     ref_len_check = len([x for x in aln_ref_seq if x != "-"])
     qry_len_check = len([x for x in aln_qry_seq if x != "-"])
     if (
         len(aln_ref_seq) != len(aln_qry_seq)
         or ref_len_check != len(ref_seq)
         or (
-            (hp_min_fix_length is None and not fix_query_gap_lengths)
+            (fix_indel_max_length is None and hp_min_fix_length is None and not fix_query_gap_lengths)
             and qry_len_check != len(qry_seq)
         )
     ):
@@ -427,6 +431,7 @@ def vcf_using_global_alignment(
     debug=False,
     fix_query_gap_lengths=False,
     hp_min_fix_length=None,
+    fix_indel_max_length=None,
     fixed_query_fasta=None,
     msa_file=None,
     min_ref_coord=0,
@@ -440,6 +445,7 @@ def vcf_using_global_alignment(
         debug=debug,
         fix_query_gap_lengths=fix_query_gap_lengths,
         hp_min_fix_length=hp_min_fix_length,
+        fix_indel_max_length=fix_indel_max_length,
     )
 
     if msa_file is not None:
