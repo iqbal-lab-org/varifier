@@ -230,9 +230,9 @@ def normalise_indel_positions(ref_seq, qry_seq):
     normalise_seq1_indel_positions(ref_seq, qry_seq)
     normalise_seq1_indel_positions(qry_seq, ref_seq)
 
-def remove_small_indels_in_msa(aln_ref_seq, aln_qry_seq, min_len_to_remove):
-    ref_gaps = find_indels(aln_ref_seq, max_length=min_len_to_remove)
-    qry_gaps = find_indels(aln_qry_seq, max_length=min_len_to_remove)
+def remove_small_indels_in_msa(aln_ref_seq, aln_qry_seq, max_len_to_remove):
+    ref_gaps = find_indels(aln_ref_seq, max_length=max_len_to_remove)
+    qry_gaps = find_indels(aln_qry_seq, max_length=max_len_to_remove)
     if len(ref_gaps) == len(qry_gaps) == 0:
         return aln_ref_seq, aln_qry_seq
 
@@ -255,9 +255,6 @@ def remove_small_indels_in_msa(aln_ref_seq, aln_qry_seq, min_len_to_remove):
     new_ref.extend(aln_ref_seq[ref_gaps[-1][1]+1:])
     new_qry.extend(tmp_new_qry[ref_gaps[-1][1]+1:])
     return new_ref, new_qry
-
-
-
 
 def global_align(
     ref_fasta,
