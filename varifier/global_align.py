@@ -515,16 +515,6 @@ def vcf_using_global_alignment(
             end_coord = variant["ref_start"] + len(variant["ref_allele"]) - 1
             if min_ref_coord > variant["ref_start"] or end_coord > max_ref_coord:
                 continue
-            # mafft can end up with too long ref/alt alleles that share
-            # the same prefix
-            while (
-                len(variant["ref_allele"]) > 1
-                and len(variant["qry_allele"]) > 1
-                and variant["ref_allele"][0] == variant["qry_allele"][0]
-            ):
-                variant["ref_allele"] = variant["ref_allele"][1:]
-                variant["qry_allele"] = variant["qry_allele"][1:]
-                variant["ref_start"] += 1
             print(
                 ref_name,
                 variant["ref_start"] + 1,

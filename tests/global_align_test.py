@@ -264,10 +264,10 @@ def test_global_align():
     )
     assert got == expect
 
-    # mafft makes gaps slightly different at the start, and also where there's Ns
+    # mafft makes gaps slightly different at the start
     got = global_align.global_align(ref_fasta, qry_fasta, tmp_nucmer, use_mafft=True)
     expect = (
-        "AGCCCCGAGGCTATTCG-TCACCGTAGTGCGTCGACTCCCGATAGTCCT-ATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCG---",
+        "AGCCCCGAGGCTATTCGT-CACCGTAGTGCGTCGACTCCCGATAGTCCT-ATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCG---",
         "-AGCCCGAGCCTATTCGNNCACCGTAGTGCGTCGACTCCCGATAGTCCTCATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCGGGT",
     )
     assert got == expect

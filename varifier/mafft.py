@@ -25,10 +25,14 @@ def mafft_stdout_to_seqs(mafft_stdout, ref_name):
 
 
 def run_mafft(ref_seq, qry_seq):
+    # mafft was added after the initial nucmer-based global align. mafft seems
+    # to put its indels with gaps the opposite way from the nucmer method
+    # (ie as far to left or right as possible). For consistency, reverse the
+    # sequences, run mafft, then reverse the output
     script = "\n".join(
         [
-            f'''ref=">ref\n{ref_seq}"''',
-            f'''qry=">qry\n{qry_seq}"''',
+            f'''ref=">ref\n{ref_seq[::-1]}"''',
+            f'''qry=">qry\n{qry_seq[::-1]}"''',
             """mafft --add <(echo "$qry") <(echo "$ref")""",
         ]
     )
@@ -46,4 +50,4 @@ def run_mafft(ref_seq, qry_seq):
 
     ref_seq, aln_seqs = mafft_stdout_to_seqs(p.stdout, "ref")
     assert len(aln_seqs) == 1
-    return list(ref_seq.upper()), list(aln_seqs["qry"].upper())
+    return list(ref_seq[::-1].upper()), list(aln_seqs["qry"][::-1].upper())
