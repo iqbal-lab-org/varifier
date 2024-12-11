@@ -57,6 +57,11 @@ def main(args=None):
         action="store_true",
     )
     common_parser.add_argument(
+        "--use_mafft",
+        help="If using --global_align, use mafft to make the alignment",
+        action="store_true",
+    )
+    common_parser.add_argument(
         "--global_align_min_coord",
         help="Only used if also using --global_align. Do not output variants where the REF allele starts before the given (1-based) coordinate. When running vcf_eval, only applies to recall, not precision [%(default)s]",
         type=int,

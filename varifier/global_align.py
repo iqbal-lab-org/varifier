@@ -1,9 +1,10 @@
 import copy
 from operator import itemgetter, attrgetter
+import logging
 import os
 import sys
 
-from varifier import edit_distance, utils
+from varifier import edit_distance, utils, mafft
 import pymummer
 import pyfastaq
 
@@ -219,7 +220,9 @@ def normalise_seq1_indel_positions(seq1, seq2):
     for (start, end) in gaps:
         if start == 0 or end == len(seq1) - 1:
             continue
-        while start > 0 and seq1[start - 1] == seq2[end]:
+        while start > 0 and (
+            seq1[start - 1] == seq2[end]
+        ):  # or (seq1[start-1] != seq2[start-1] and seq2[end] == "N")):
             seq1[end] = seq1[start - 1]
             seq1[start - 1] = "-"
             start -= 1
@@ -258,28 +261,13 @@ def remove_small_indels_in_msa(aln_ref_seq, aln_qry_seq, max_len_to_remove):
     return new_ref, new_qry
 
 
-def global_align(
-    ref_fasta,
-    query_fasta,
-    tmp_nucmer_filename,
-    debug=False,
-    fix_query_gap_lengths=False,
-    hp_min_fix_length=None,
-    fix_indel_max_length=None,
+def global_with_nucmer_plus_NW(
+    ref_seq, qry_seq, ref_fasta, qry_fasta, tmp_nucmer_filename, debug
 ):
-    try:
-        ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
-        qry_seq = utils.load_one_seq_fasta_file(query_fasta)
-    except:
-        raise Exception(
-            "Can only use global align on two FASTA files that each contain one sequence"
-        )
-
     perfect_matches = get_perfect_matches(
-        ref_fasta, query_fasta, tmp_nucmer_filename, debug=debug
+        ref_fasta, qry_fasta, tmp_nucmer_filename, debug=debug
     )
     matches = perfect_matches_to_conservative_match_coords(perfect_matches)
-
     if matches[0]["ref_start"] > 0:
         assert matches[0]["qry_start"] > 0
         ref_aln, qry_aln = edit_distance.needleman_wunsch(
@@ -314,6 +302,36 @@ def global_align(
         )
         aln_ref_seq.extend(list(ref_aln))
         aln_qry_seq.extend(list(qry_aln))
+
+    return aln_ref_seq, aln_qry_seq
+
+
+def global_align(
+    ref_fasta,
+    query_fasta,
+    tmp_nucmer_filename,
+    debug=False,
+    fix_query_gap_lengths=False,
+    hp_min_fix_length=None,
+    fix_indel_max_length=None,
+    use_mafft=False,
+):
+    try:
+        ref_seq = utils.load_one_seq_fasta_file(ref_fasta)
+        qry_seq = utils.load_one_seq_fasta_file(query_fasta)
+    except:
+        raise Exception(
+            "Can only use global align on two FASTA files that each contain one sequence"
+        )
+
+    if use_mafft:
+        logging.info("Running mafft to make global alignment")
+        aln_ref_seq, aln_qry_seq = mafft.run_mafft(ref_seq.seq, qry_seq.seq)
+    else:
+        logging.info("Using nucmer to make global alignment")
+        aln_ref_seq, aln_qry_seq = global_with_nucmer_plus_NW(
+            ref_seq, qry_seq, ref_fasta, query_fasta, tmp_nucmer_filename, debug
+        )
 
     if fix_query_gap_lengths:
         aln_ref_seq, aln_qry_seq = fix_query_gaps_in_msa(aln_ref_seq, aln_qry_seq)
@@ -445,6 +463,7 @@ def vcf_using_global_alignment(
     min_ref_coord=0,
     max_ref_coord=float("inf"),
     ignore_non_acgt=True,
+    use_mafft=False,
 ):
     ref_aln, qry_aln = global_align(
         ref_fasta,
@@ -454,6 +473,7 @@ def vcf_using_global_alignment(
         fix_query_gap_lengths=fix_query_gap_lengths,
         hp_min_fix_length=hp_min_fix_length,
         fix_indel_max_length=fix_indel_max_length,
+        use_mafft=use_mafft,
     )
 
     if msa_file is not None:
@@ -495,6 +515,16 @@ def vcf_using_global_alignment(
             end_coord = variant["ref_start"] + len(variant["ref_allele"]) - 1
             if min_ref_coord > variant["ref_start"] or end_coord > max_ref_coord:
                 continue
+            # mafft can end up with too long ref/alt alleles that share
+            # the same prefix
+            while (
+                len(variant["ref_allele"]) > 1
+                and len(variant["qry_allele"]) > 1
+                and variant["ref_allele"][0] == variant["qry_allele"][0]
+            ):
+                variant["ref_allele"] = variant["ref_allele"][1:]
+                variant["qry_allele"] = variant["qry_allele"][1:]
+                variant["ref_start"] += 1
             print(
                 ref_name,
                 variant["ref_start"] + 1,

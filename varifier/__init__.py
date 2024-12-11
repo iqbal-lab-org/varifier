@@ -9,6 +9,7 @@ except:
 __all__ = [
     "dnadiff",
     "edit_distance",
+    "mafft",
     "probe",
     "probe_mapping",
     "recall",
