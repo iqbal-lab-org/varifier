@@ -264,12 +264,29 @@ def test_global_align():
     )
     assert got == expect
 
+    # mafft makes gaps slightly different at the start
+    got = global_align.global_align(ref_fasta, qry_fasta, tmp_nucmer, use_mafft=True)
+    expect = (
+        "AGCCCCGAGGCTATTCGT-CACCGTAGTGCGTCGACTCCCGATAGTCCT-ATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCG---",
+        "-AGCCCGAGCCTATTCGNNCACCGTAGTGCGTCGACTCCCGATAGTCCTCATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCGGGT",
+    )
+    assert got == expect
+
     got = global_align.global_align(
         ref_fasta, qry_fasta, tmp_nucmer, fix_query_gap_lengths=True
     )
     expect = (
         "AGCCCCGAGGCTATTCGTCACCGTAGTGCGTCGACTCCCGATAGTCCT-ATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCG---",
         "AG-CCCGAGCCTATTCGNCACCGTAGTGCGTCGACTCCCGATAGTCCTCATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCGGGT",
+    )
+    assert got == expect
+
+    got = global_align.global_align(
+        ref_fasta, qry_fasta, tmp_nucmer, fix_query_gap_lengths=True, use_mafft=True
+    )
+    expect = (
+        "AGCCCCGAGGCTATTCGTCACCGTAGTGCGTCGACTCCCGATAGTCCT-ATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCG---",
+        "-AGCCCGAGCCTATTCGNCACCGTAGTGCGTCGACTCCCGATAGTCCTCATGAATTAATATTTGGGCAAAAATGATTGGAGATACCGAGTTGATGGTCCCGGGT",
     )
     assert got == expect
 
@@ -345,14 +362,22 @@ def test_normalise_indel_positions():
     ref_seq = list("-ACG-")
     qry_seq = list("AACGG")
     global_align.normalise_indel_positions(ref_seq, qry_seq)
-    ref_seq = list("-ACG-")
-    qry_seq = list("AACGG")
+    assert ref_seq == list("-ACG-")
+    assert qry_seq == list("AACGG")
 
     ref_seq = list("-ACGGTATAGGCGT--A-")
     qry_seq = list("AACGGTA--GGCGTGTAG")
     global_align.normalise_indel_positions(ref_seq, qry_seq)
-    ref_seq = list("-ACGGTATAGGC--GTA-")
-    qry_seq = list("AACGG--TAGGCGTGTAA")
+    assert ref_seq == list("-ACGGTATAGGC--GTA-")
+    assert qry_seq == list("AACGG--TAGGCGTGTAG")
+
+    ref_seq = list("TTCGT-CACCGT")
+    qry_seq = list("TTCGNNCACCGT")
+    global_align.normalise_indel_positions(ref_seq, qry_seq)
+    print("GOT:", "".join(ref_seq))
+    print("GOT:", "".join(qry_seq))
+    assert ref_seq == list("TTCGT-CACCGT")
+    assert qry_seq == list("TTCGNNCACCGT")
 
 
 def test_remove_small_indels_in_msa():

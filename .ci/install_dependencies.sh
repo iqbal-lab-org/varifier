@@ -32,6 +32,22 @@ fi
 cd $install_root
 
 
+#_________________________ mafft __________________________#
+# Can't apt get mafft because the version is too old and doesn't work
+# with how we call from python (avoid using files). Install from source.
+# See https://mafft.cbrc.jp/alignment/software/installation_without_root.html
+cd $install_root
+wget https://mafft.cbrc.jp/alignment/software/mafft-7.525-without-extensions-src.tgz
+tar xf mafft-7.525-without-extensions-src.tgz
+cd mafft-7.525-without-extensions/core
+sed  -i "s~PREFIX = /usr/local~PREFIX = $install_root/mafft_install~" Makefile
+make
+make install
+cd $install_root
+cp -s mafft_install/bin/mafft .
+rm -rf mafft-7.525-without-extensions*
+
+
 #_________________________ bcftools _______________________#
 cd $install_root
 wget https://github.com/samtools/bcftools/releases/download/1.10.2/bcftools-1.10.2.tar.bz2

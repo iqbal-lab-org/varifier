@@ -12,6 +12,8 @@ this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Add command line option `--hp_min_fix_length` to fix homopolymers of at
   least the given length, so that they match the reference sequence.
 
+- Add cmomand line option `--use_mafft` to use mafft for global alignemnt
+
 ### Fixed
 
 - Do not run `bcftools norm` when using global align, because it could
