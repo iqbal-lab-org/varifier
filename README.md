@@ -1,6 +1,9 @@
 # varifier
 
-Note: full documentation is under construction
+Note: full documentation is under construction.
+
+If you use Varifier, please cite: https://doi.org/10.1186/s13059-022-02714-x
+
 
 ## Installation
 
